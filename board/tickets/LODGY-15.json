@@ -8,17 +8,33 @@
     "No duplicate invoice is created for the same tenant+period",
     "Job survives app restarts (WorkManager persistence)"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T10:05:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T09:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Using a daily PeriodicWorkRequest (WorkManager's floor is 15 minutes; once-a-day is the natural granularity for 'on its billing cycle day') that checks every ACTIVE agreement against today's day-of-month each run. billingCycleDay is already constrained to 1-28 by LODGY-12, so every calendar month actually has that day - no short-month edge case to handle. Enqueued with ExistingPeriodicWorkPolicy.KEEP from Application.onCreate so re-launching the app doesn't reset an already-scheduled job, which is also what makes this survive app restarts (WorkManager persists its own schedule independent of the app process)."
+    },
+    {
+      "timestamp": "2026-09-03T10:05:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built work/InvoiceGenerationWorker.kt (@HiltWorker, checks every ACTIVE agreement's billingCycleDay against today, creates an UNPAID invoice at agreedRent for agreements that match and don't already have one for the current periodMonth/periodYear) and work/WorkScheduler.kt (enqueueUniquePeriodicWork, KEEP policy). Wired Hilt into WorkManager: LodgyApplication now implements Configuration.Provider with an injected HiltWorkerFactory, and the manifest disables WorkManager's default androidx.startup initializer (tools:node=\"remove\") so it doesn't race with the custom config. Added InvoiceDao.getForPeriod and TenancyAgreementDao.getAllActive to support this. `gradlew assembleDebug` -> BUILD SUCCESSFUL, including the hilt-work KSP codegen for @HiltWorker. AC1/AC2 are implemented directly in doWork()'s filter+existsForPeriod check. AC3 (survives restarts) is a WorkManager platform guarantee for periodic work + KEEP policy, not something I wrote myself - reasonably confident by API contract, but the only way to truly confirm it is watching a real day boundary or using WorkManager's test APIs, neither of which I could exercise without a working emulator this session. Tester: worth at least confirming via `adb shell dumpsys jobscheduler` (or WorkManager's own inspector) that the job is actually scheduled once a device is available, even without waiting a full day."
     }
   ]
 }

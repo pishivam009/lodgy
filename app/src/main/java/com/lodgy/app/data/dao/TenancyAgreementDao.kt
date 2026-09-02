@@ -25,4 +25,7 @@ interface TenancyAgreementDao {
 
     @Query("SELECT * FROM tenancy_agreements WHERE tenantId = :tenantId")
     fun getByTenantId(tenantId: String): Flow<List<TenancyAgreement>>
+
+    @Query("SELECT * FROM tenancy_agreements WHERE status = 'ACTIVE'")
+    suspend fun getAllActive(): List<TenancyAgreement>
 }
