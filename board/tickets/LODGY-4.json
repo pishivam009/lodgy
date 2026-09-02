@@ -9,11 +9,11 @@
     "If the device has an enrolled fingerprint/face, the setup flow offers an opt-in toggle to enable biometric unlock",
     "Declining or lacking biometric hardware does not block setup - PIN alone is always sufficient"
   ],
-  "status": "Todo",
+  "status": "In Progress",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Developer",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T00:10:00+00:00",
+  "updatedAt": "2026-09-03T04:20:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -26,6 +26,14 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Added biometric enrollment opt-in per explicit user request for phone biometric/fingerprint login support. PIN remains mandatory baseline."
+    },
+    {
+      "timestamp": "2026-09-03T04:20:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - first-run PIN setup screen + optional biometric opt-in, gating LodgyNavHost behind an AppRoot check for whether a Warden row exists yet. PIN hashed via bcrypt (jbcrypt), biometric enrollment checked via androidx.biometric BiometricManager, biometric-enabled preference stored in DataStore (not the Warden table - it's a device preference, not warden identity data). Scope call: fixing PIN length at 4 digits (auto-advancing enter->confirm->save) since DESIGN.md/the ticket don't fix a length and a variable 4-6 flow needs an explicit confirm control the wireframe didn't show - flagging in case Product Owner wants variable length later."
     }
   ]
 }

@@ -7,17 +7,33 @@
     "Can create, edit, and list multiple hostels",
     "A hostel switcher is visible and changes the active hostel context"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T05:30:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T05:10:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - HostelListScreen (doubles as the switcher) replaces the Property tab's placeholder, plus a HostelForm screen pushed on top for add/edit. Active hostel id persisted in DataStore (HostelPreferences), same pattern as LODGY-4's AuthPreferences, since it's UI/session state rather than domain data."
+    },
+    {
+      "timestamp": "2026-09-03T05:30:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built data/repository/HostelRepository.kt (wraps HostelDao: getByWardenId, create, update), data/prefs/HostelPreferences.kt (DataStore-backed selected-hostel-id), ui/property/HostelListViewModel.kt + HostelListScreen.kt (list of hostel cards, tap to select as active, defaults to the first hostel when none is explicitly selected yet), ui/property/HostelFormViewModel.kt + HostelFormScreen.kt (shared add/edit form, SavedStateHandle-driven hostelId nav arg decides mode). Wired into LodgyNavHost: Property tab now shows HostelListScreen instead of the placeholder, with a hostel_form?hostelId={id} route pushed on top for add/edit (bottom nav bar hides itself on that route, matching the wireframe). `gradlew assembleDebug` -> BUILD SUCCESSFUL. AC1 (create/edit/list) and AC2 (switcher changes active context, persisted) both implemented; not yet exercised on-device - this session's emulator has been extremely slow to cold-boot (Windows host, WHPX acceleration confirmed available but still ~15+ min for one boot), so on-device verification is queued for when it comes up rather than blocking every ticket on it. Tester: please actually run this on-device once possible, not just read the code - multi-step nav flows like this are exactly where a code read misses real bugs."
     }
   ]
 }

@@ -1,3 +1,40 @@
 <resources>
     <string name="app_name">Lodgy</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_property">Property</string>
+    <string name="nav_tenants">Tenants</string>
+    <string name="nav_payments">Payments</string>
+    <string name="nav_more">More</string>
+
+    <string name="placeholder_screen_body">%1$s screen coming soon</string>
+
+    <string name="pin_setup_title">Set up your PIN</string>
+    <string name="pin_setup_headline_enter">Create a PIN</string>
+    <string name="pin_setup_sub_enter">This locks Lodgy on this phone. You\'ll enter it every time you open the app.</string>
+    <string name="pin_setup_headline_confirm">Confirm your PIN</string>
+    <string name="pin_setup_sub_confirm">Enter the same PIN again.</string>
+    <string name="pin_setup_backspace">Backspace</string>
+    <string name="pin_setup_biometric_title">Use your fingerprint too?</string>
+    <string name="pin_setup_biometric_sub">Faster than typing your PIN every time. Your PIN still works if this ever fails.</string>
+    <string name="pin_setup_biometric_toggle">Enable fingerprint unlock</string>
+    <string name="pin_setup_continue">Continue</string>
+    <string name="pin_setup_mismatch_error">PINs didn\'t match — try again</string>
+
+    <string name="pin_lock_title">Enter your PIN</string>
+    <string name="pin_lock_incorrect_error">Incorrect PIN — try again</string>
+    <string name="pin_lock_biometric_title">Unlock Lodgy</string>
+    <string name="pin_lock_use_pin">Use PIN instead</string>
+
+    <string name="hostel_list_title">Your Hostels</string>
+    <string name="hostel_list_empty">No hostels yet. Tap + to add your first one.</string>
+    <string name="hostel_add">Add hostel</string>
+    <string name="hostel_edit">Edit</string>
+    <string name="hostel_selected">Selected</string>
+    <string name="hostel_form_title_add">Add Hostel</string>
+    <string name="hostel_form_title_edit">Edit Hostel</string>
+    <string name="hostel_field_name">Hostel name</string>
+    <string name="hostel_field_address">Address</string>
+    <string name="hostel_field_phone">Contact phone</string>
+    <string name="hostel_form_save">Save Hostel</string>
 </resources>

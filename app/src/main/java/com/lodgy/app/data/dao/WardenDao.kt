@@ -23,6 +23,9 @@ interface WardenDao {
     @Query("SELECT * FROM wardens WHERE id = :id")
     suspend fun getById(id: String): Warden?
 
+    @Query("SELECT * FROM wardens LIMIT 1")
+    suspend fun getFirst(): Warden?
+
     @Query("SELECT * FROM wardens")
     fun getAll(): Flow<List<Warden>>
 }

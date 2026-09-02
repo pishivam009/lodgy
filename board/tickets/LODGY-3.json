@@ -7,17 +7,25 @@
     "App has a consistent Material theme",
     "Navigating between placeholder screens works"
   ],
-  "status": "Todo",
+  "status": "In Progress",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Developer",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T09:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T09:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - LODGY-1 already built a Material3 LodgyTheme with the brand color scheme, so this is mainly the NavHost + bottom navigation shell. Building 5 top-level destinations (Home, Property, Tenants, Payments, More) matching the bottom-nav structure from the just-approved wireframe set, with placeholder screens behind each. Auth/PIN lock is a separate gate outside this NavHost (LODGY-4/5's concern), not a nav-bar tab."
     }
   ]
 }
