@@ -1,0 +1,22 @@
+{
+  "id": "LODGY-23",
+  "epic": "Reporting & Dashboard",
+  "title": "Export report as PDF/CSV",
+  "description": "Let the warden export the monthly report to a file via the system share sheet / SAF.",
+  "acceptanceCriteria": [
+    "Export produces a readable PDF or CSV with the same numbers as the on-screen report"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

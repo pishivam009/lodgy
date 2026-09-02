@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-28",
+  "epic": "Backup & Restore",
+  "title": "Export data (DB + photos) to zip",
+  "description": "Zip the Room DB file and the photos directory, and write it via SAF to a location the warden picks.",
+  "acceptanceCriteria": [
+    "Export produces a single zip file at a user-chosen location",
+    "Zip contains both the DB file and all referenced photos"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-22",
+  "epic": "Reporting & Dashboard",
+  "title": "Monthly report per hostel",
+  "description": "Report showing total collected, total dues, occupancy %, and income vs expense for a selected month.",
+  "acceptanceCriteria": [
+    "Numbers reconcile with underlying invoice/payment/expense records",
+    "Report can be viewed for any past month, not just the current one"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

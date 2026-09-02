@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-26",
+  "epic": "Expenses",
+  "title": "Expense entry CRUD",
+  "description": "Log an expense per hostel: category (wifi/water/electricity/tax/maintenance/repair/other), amount, date, recurring flag, note.",
+  "acceptanceCriteria": [
+    "All categories from DESIGN.md are selectable",
+    "Recurring flag is stored and editable"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

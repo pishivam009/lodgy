@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-18",
+  "epic": "Rent & Payments",
+  "title": "WhatsApp reminder (tap-to-send)",
+  "description": "Button on an unpaid/partial invoice opens WhatsApp via a wa.me deep link with a pre-filled reminder message; warden taps send.",
+  "acceptanceCriteria": [
+    "Tapping the reminder opens WhatsApp with tenant's number and a pre-filled message",
+    "Message includes tenant name, amount due, and due date",
+    "No auto-send occurs without the warden's explicit tap"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-29",
+  "epic": "Backup & Restore",
+  "title": "Import data from a backup zip",
+  "description": "Pick a previously exported zip and restore DB + photos, for warden phone-migration scenarios.",
+  "acceptanceCriteria": [
+    "Importing a valid export fully restores hostels/tenants/invoices/photos",
+    "Importing does not silently merge with existing data - warns before overwrite"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-3",
+  "epic": "Project Setup",
+  "title": "App theme & navigation shell",
+  "description": "Set up Compose theme (colors/typography) and the top-level NavHost with placeholder destinations for each major module.",
+  "acceptanceCriteria": [
+    "App has a consistent Material theme",
+    "Navigating between placeholder screens works"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-24",
+  "epic": "Tenant Notes",
+  "title": "Tenant note CRUD",
+  "description": "Create, edit, and delete tenant notes (COMPLAINT/DAMAGE/GENERAL) with an occurredOn date independent of createdAt/updatedAt, plus an optional photo.",
+  "acceptanceCriteria": [
+    "Note occurredOn can be set in the past",
+    "Editing and deleting an existing note both work",
+    "Deleting is a hard delete (no undo required)"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-25",
+  "epic": "Tenant Notes",
+  "title": "Tenant timeline view",
+  "description": "Per-tenant chronological view of all notes, sorted by occurredOn.",
+  "acceptanceCriteria": [
+    "Timeline sorts by occurredOn, not createdAt",
+    "Editing a note's occurredOn re-sorts it correctly in the timeline"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

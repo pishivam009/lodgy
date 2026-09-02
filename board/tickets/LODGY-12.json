@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-12",
+  "epic": "Tenant Onboarding",
+  "title": "Tenancy agreement capture",
+  "description": "Capture agreed rent, advance deposit, billing cycle day, and move-in date. Move-in date must support past dates for onboarding an already-resident tenant.",
+  "acceptanceCriteria": [
+    "Move-in date accepts past dates without validation errors",
+    "Billing cycle day (1-28) is validated",
+    "Agreement is linked to exactly one bed"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

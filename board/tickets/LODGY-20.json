@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-20",
+  "epic": "Reporting & Dashboard",
+  "title": "Home dashboard",
+  "description": "Landing screen showing today's collections, overdue invoice count, vacant bed count, and upcoming move-outs.",
+  "acceptanceCriteria": [
+    "All four metrics are visible and correct against seed data",
+    "Dashboard reflects the currently selected hostel"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

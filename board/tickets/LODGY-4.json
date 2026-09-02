@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-4",
+  "epic": "Auth",
+  "title": "Local PIN setup on first launch",
+  "description": "First-run flow where the warden sets a local PIN (or password), stored securely on device.",
+  "acceptanceCriteria": [
+    "On first launch, user is prompted to set a PIN before anything else",
+    "PIN is persisted and not stored in plaintext"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

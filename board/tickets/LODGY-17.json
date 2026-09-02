@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-17",
+  "epic": "Rent & Payments",
+  "title": "Payment recording & invoice status",
+  "description": "Record a payment against an invoice (amount, mode, date, note). Invoice status auto-updates UNPAID -> PARTIAL -> PAID.",
+  "acceptanceCriteria": [
+    "Partial payment correctly reduces outstanding balance and sets status PARTIAL",
+    "Full payment sets status PAID",
+    "Multiple partial payments against one invoice are all retained"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

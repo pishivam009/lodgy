@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-10",
+  "epic": "Property Setup",
+  "title": "Bulk room setup wizard",
+  "description": "Quick-add flow to create N rooms of a given type/price on a floor in one pass, instead of one at a time.",
+  "acceptanceCriteria": [
+    "Warden can specify a count and type and get N rooms created at once",
+    "Each generated room gets correctly numbered and its beds created"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

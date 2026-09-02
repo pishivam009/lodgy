@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-15",
+  "epic": "Rent & Payments",
+  "title": "Monthly invoice auto-generation",
+  "description": "WorkManager job that generates an invoice for every ACTIVE tenancy agreement on its billing cycle day each month.",
+  "acceptanceCriteria": [
+    "Invoice is created automatically on the configured cycle day",
+    "No duplicate invoice is created for the same tenant+period",
+    "Job survives app restarts (WorkManager persistence)"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

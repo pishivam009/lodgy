@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-16",
+  "epic": "Rent & Payments",
+  "title": "Manual / backdated invoice entry",
+  "description": "Let the warden manually add an invoice for a past period, needed to backfill dues history for a tenant onboarded mid-tenancy.",
+  "acceptanceCriteria": [
+    "Invoice can be created for a period earlier than the current month",
+    "Manually added invoices behave identically to auto-generated ones for payment tracking"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

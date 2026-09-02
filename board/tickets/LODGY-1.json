@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-1",
+  "epic": "Project Setup",
+  "title": "Scaffold Android project",
+  "description": "Create the Android Studio project: Kotlin, Jetpack Compose, Hilt, Navigation Compose, Room, WorkManager dependencies wired up.",
+  "acceptanceCriteria": [
+    "Project builds and runs a blank Compose screen on a device/emulator",
+    "Hilt, Room, Navigation, WorkManager dependencies compile"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

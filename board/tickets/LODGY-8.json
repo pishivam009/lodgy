@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-8",
+  "epic": "Property Setup",
+  "title": "Room CRUD within a floor",
+  "description": "Add/edit/delete rooms under a floor: room number, type (single/double/triple), price per bed, amenities.",
+  "acceptanceCriteria": [
+    "Room type, price, and amenities are captured and editable",
+    "Deleting a room is blocked or warned if it has active tenants"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

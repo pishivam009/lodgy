@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-9",
+  "epic": "Property Setup",
+  "title": "Bed generation & status tracking",
+  "description": "Auto-generate the right number of beds for a room based on its type, and track each bed's VACANT/OCCUPIED status independently.",
+  "acceptanceCriteria": [
+    "Creating a DOUBLE room creates exactly 2 beds, TRIPLE creates 3",
+    "Bed status flips correctly on tenant onboarding/checkout"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

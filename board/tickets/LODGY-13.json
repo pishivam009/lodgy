@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-13",
+  "epic": "Tenant Onboarding",
+  "title": "Bed assignment & occupancy flip",
+  "description": "Assigning a tenant to a bed during onboarding flips that bed to OCCUPIED and prevents double-assignment.",
+  "acceptanceCriteria": [
+    "Assigned bed shows OCCUPIED immediately",
+    "An already-occupied bed cannot be selected during onboarding"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

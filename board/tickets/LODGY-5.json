@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-5",
+  "epic": "Auth",
+  "title": "PIN login gate on app open",
+  "description": "Require PIN entry every time the app is opened/resumed.",
+  "acceptanceCriteria": [
+    "App shows a lock screen on cold start requiring correct PIN",
+    "Wrong PIN is rejected with a clear error, no crash"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}

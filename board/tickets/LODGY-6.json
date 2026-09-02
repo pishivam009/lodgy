@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-6",
+  "epic": "Property Setup",
+  "title": "Hostel CRUD + multi-hostel switcher",
+  "description": "Create/edit/list hostels (name, address, contact phone). Dashboard lets the warden switch between hostels.",
+  "acceptanceCriteria": [
+    "Can create, edit, and list multiple hostels",
+    "A hostel switcher is visible and changes the active hostel context"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T12:55:59.648423+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Ticket created from initial DESIGN.md feature breakdown."
+    }
+  ]
+}
