@@ -7,17 +7,33 @@
     "Project builds and runs a blank Compose screen on a device/emulator",
     "Hilt, Room, Navigation, WorkManager dependencies compile"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T00:40:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-02T00:30:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - package com.lodgy.app, minSdk 24, Kotlin 2.0.21 / AGP 8.6.1 / KSP, version catalog. Android SDK not yet installed on the dev machine, so this cannot be build-verified until the user finishes installing Android Studio."
+    },
+    {
+      "timestamp": "2026-09-02T00:40:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built: root settings.gradle.kts/build.gradle.kts + gradle/libs.versions.toml (version catalog), app/build.gradle.kts with Hilt/Room/Navigation-Compose/WorkManager deps wired via KSP, AndroidManifest (allowBackup=false per DESIGN.md's manual-export-only philosophy), LodgyApplication (@HiltAndroidApp), MainActivity (@AndroidEntryPoint, Compose Scaffold showing 'Lodgy'), Material3 theme (Color/Type/Theme.kt), vector-based adaptive app icon (mipmap-anydpi-v26 for API26+, flattened mipmap/ fallback for API24-25). NOT included: gradle-wrapper.jar and gradlew/gradlew.bat (binary/generated - Android Studio will offer to create/repair the wrapper on first import, or run `gradle wrapper --gradle-version 8.9` once Gradle is available). UNVERIFIED: no Android SDK on this machine yet, so this has not actually been built/run - Tester must do the first real build once Android Studio is installed."
     }
   ]
 }
