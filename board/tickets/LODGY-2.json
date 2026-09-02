@@ -8,17 +8,47 @@
     "IDs are UUID strings, not autoincrement",
     "Room compiles and generates a working schema export"
   ],
-  "status": "Todo",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": null,
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T14:10:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-02T13:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - building Room entities/DAOs/database per DESIGN.md section 3: Warden, Hostel, Floor, Room, Bed, Tenant, TenancyAgreement, Invoice, Payment, TenantNote, Expense. UUID string PKs, createdAt/updatedAt epoch millis."
+    },
+    {
+      "timestamp": "2026-09-02T13:20:00+00:00",
+      "actor": "Developer",
+      "action": "comment",
+      "note": "Scope note: DESIGN.md section 3's code sketch omits updatedAt on Warden, Payment, and Expense, but the prose right above it says every entity carries createdAt/updatedAt, and this ticket's AC says the same. Went with the explicit universal rule (added updatedAt to all 11 entities) rather than the possibly-abbreviated code block. Flagging in case Product Owner intended those three to be createdAt-only."
+    },
+    {
+      "timestamp": "2026-09-02T13:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built all 11 entities (com/lodgy/app/data/entity/*.kt: Warden, Hostel, Floor, Room, Bed, Tenant, TenancyAgreement, Invoice, Payment, TenantNote, Expense) with UUID string @PrimaryKey (default-generated) and createdAt/updatedAt Long epoch-millis on every one, plus the 8 status/category enums (entity/Enums.kt). Added FK constraints + indices on every child->parent reference (e.g. Bed.roomId -> Room.id) matching the design doc's hierarchy. One DAO per entity under data/dao/*.kt with insert/update/delete/getById plus a natural list-by-parent Flow query (e.g. FloorDao.getByHostelId). data/Converters.kt has @TypeConverter pairs for all 8 enums, registered via @TypeConverters(Converters::class) on data/LodgyDatabase.kt (the @Database class, version=1, exportSchema=true, lists all 11 entities + 11 DAO accessors). Wired data/di/DatabaseModule.kt (Hilt @Module, SingletonComponent) providing the LodgyDatabase singleton via Room.databaseBuilder and each DAO, since nothing could otherwise get an instance and every future ticket needs this. Added ksp { arg(\"room.schemaLocation\", ...) } to app/build.gradle.kts so schema export actually runs. Note: the entity class is named Room per DESIGN.md, same simple name as androidx.room.Room (the DB builder) - only DatabaseModule.kt needs both, and it only references androidx.room.Room (never imports the entity), so no import collision in practice; flagging so nobody adds an unqualified androidx.room.Room import next to the entity import in the same file. Verified: `gradlew assembleDebug` -> BUILD SUCCESSFUL (kspDebugKotlin, hiltJavaCompileDebug, dexBuilderDebug all ran clean). Confirmed app/schemas/com.lodgy.app.data.LodgyDatabase/1.json was generated with all 11 tables, each PK 'id' with TEXT (string) affinity - AC #2 and #3 satisfied. No existing test suite yet to run (greenfield). Tester: worth eyeballing the schema JSON's FK/index sections and confirming field names against DESIGN.md section 3 line by line, plus deciding on the updatedAt scope note above."
+    },
+    {
+      "timestamp": "2026-09-02T14:10:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS on all 3 ACs. AC1: diffed every field in all 11 entity files against DESIGN.md section 3 line by line - exact match on Hostel, Floor, Room, Bed, Tenant, TenancyAgreement, Invoice, TenantNote (including nullability: moveOutDate/depositRefundAmount/photoPath/note all correctly nullable). Warden/Payment/Expense carry updatedAt beyond the section-3 code sketch, but that sketch contradicts the section's own prose ('every entity carries createdAt/updatedAt') and this ticket's description says the same verbatim - siding with the explicit universal rule over the abbreviated sketch is correct, not a deviation worth failing on. AC2: confirmed every @PrimaryKey is `val id: String = UUID.randomUUID().toString()`, no autoGenerate anywhere; cross-checked the exported schema JSON - all 11 tables have PK 'id' with TEXT affinity. AC3: ran `gradlew clean assembleDebug` from a cold build (not just incremental) - BUILD SUCCESSFUL, 42/42 tasks executed including kspDebugKotlin; app/schemas/com.lodgy.app.data.LodgyDatabase/1.json regenerated correctly after the clean, all 11 tables present. Also verified FK/index structure in the schema JSON matches DESIGN.md's parent-child hierarchy exactly (hostels->wardens, floors->hostels, rooms->floors, beds->rooms, tenancy_agreements->tenants+beds, invoices->tenancy_agreements, payments->invoices, tenant_notes->tenants, expenses->hostels), each with a supporting index. DatabaseModule's androidx.room.Room / entity Room naming note checked - no actual import collision in the file. No test suite exists yet to run (greenfield, expected at this stage)."
     }
   ]
 }
