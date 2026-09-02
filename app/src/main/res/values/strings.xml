@@ -123,4 +123,9 @@
     <string name="checkout_refund">Deposit refund</string>
     <string name="checkout_confirm">Confirm Checkout</string>
     <string name="currency_amount">₹%1$.0f</string>
+
+    <string name="tenant_contact_call">Call</string>
+    <string name="tenant_contact_whatsapp">WhatsApp</string>
+    <string name="tenant_contact_sms">SMS</string>
+    <string name="tenant_contact_whatsapp_unavailable">WhatsApp isn\'t available on this device</string>
 </resources>

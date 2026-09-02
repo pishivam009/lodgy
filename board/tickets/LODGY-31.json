@@ -12,17 +12,33 @@
     "If WhatsApp is not installed on the device, the WhatsApp button fails gracefully (e.g. disabled state or a clear message) instead of crashing",
     "Buttons remain accessible on a vacated tenant's profile too, not just active tenants"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T00:20:00+00:00",
-  "updatedAt": "2026-09-02T00:20:00+00:00",
+  "updatedAt": "2026-09-03T09:30:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T00:20:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added per explicit user request: general Call/WhatsApp/SMS quick-contact on tenant profile, tap-to-open only, nothing auto-sent/auto-dialed. Deliberately kept separate from LODGY-18/LODGY-19 (invoice-specific payment reminders) rather than merged, since scope and pre-filled content differ."
+    },
+    {
+      "timestamp": "2026-09-03T09:15:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. TenantProfileScreen already exists (built as part of LODGY-11); adding the three buttons there, no new screen needed."
+    },
+    {
+      "timestamp": "2026-09-03T09:30:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Added contact/ContactIntents.kt (dial via ACTION_DIAL, WhatsApp via a wa.me/<digits-only> ACTION_VIEW, SMS via smsto: ACTION_VIEW - none require CALL_PHONE/SEND_SMS, verified nothing was added to AndroidManifest for this). Added a Call/WhatsApp/SMS row to TenantProfileScreen, positioned right under the name/status (matches the wireframe), wrapped in runCatching so a missing handler can't crash the screen; WhatsApp specifically shows a Toast if ActivityNotFoundException is thrown (in practice an https:// wa.me link almost always resolves to a browser even without WhatsApp installed, so this is a defensive fallback for the rare device with no browser either, not the common case). The row isn't gated on tenant.status at all, so it's equally present for VACATED tenants - satisfies AC7 by construction rather than a special case. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass (especially confirming ACTION_DIAL doesn't auto-dial, and the wa.me link opens correctly) still queued."
     }
   ]
 }

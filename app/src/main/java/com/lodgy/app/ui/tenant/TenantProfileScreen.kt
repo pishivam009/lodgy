@@ -1,6 +1,9 @@
 package com.lodgy.app.ui.tenant
 
+import android.content.ActivityNotFoundException
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,12 +26,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.lodgy.app.R
+import com.lodgy.app.contact.ContactIntents
 import com.lodgy.app.data.entity.TenantStatus
 import com.lodgy.app.ui.icons.CommonIcons
 
@@ -92,6 +98,8 @@ fun TenantProfileScreen(
                 color = MaterialTheme.colorScheme.primary,
             )
 
+            ContactButtonsRow(phone = current.phone)
+
             Card(
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 shape = RoundedCornerShape(14.dp),
@@ -125,5 +133,43 @@ private fun DetailRow(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun ContactButtonsRow(phone: String) {
+    val context = LocalContext.current
+    val whatsAppUnavailable = stringResource(R.string.tenant_contact_whatsapp_unavailable)
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+    ) {
+        ContactButton(ContactIcons.Call, stringResource(R.string.tenant_contact_call), Modifier.weight(1f)) {
+            runCatching { context.startActivity(ContactIntents.dial(phone)) }
+        }
+        ContactButton(ContactIcons.WhatsApp, stringResource(R.string.tenant_contact_whatsapp), Modifier.weight(1f)) {
+            runCatching { context.startActivity(ContactIntents.whatsApp(phone)) }
+                .onFailure { if (it is ActivityNotFoundException) Toast.makeText(context, whatsAppUnavailable, Toast.LENGTH_SHORT).show() }
+        }
+        ContactButton(ContactIcons.Sms, stringResource(R.string.tenant_contact_sms), Modifier.weight(1f)) {
+            runCatching { context.startActivity(ContactIntents.sms(phone)) }
+        }
+    }
+}
+
+@Composable
+private fun ContactButton(icon: ImageVector, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(icon, contentDescription = null)
+        Text(label, style = MaterialTheme.typography.labelSmall)
     }
 }
