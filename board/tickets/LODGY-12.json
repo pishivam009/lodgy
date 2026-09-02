@@ -8,17 +8,33 @@
     "Billing cycle day (1-28) is validated",
     "Agreement is linked to exactly one bed"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T08:30:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T08:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting LODGY-12 and LODGY-13 together - AC3 here ('linked to exactly one bed') and LODGY-13's whole premise (assigning during onboarding flips the bed) are two halves of one atomic save, and DESIGN.md's onboarding flow is one continuous wizard (pick bed -> profile -> agreement) anyway. Building: vacant-bed picker (scoped to the currently active hostel, only ever lists VACANT beds so an occupied one is structurally unselectable) -> wired as the real 'Add Tenant' entry point ahead of LODGY-11's profile form -> agreement form -> save creates the TenancyAgreement and flips the bed to OCCUPIED in one action. Editing an existing tenant's profile still skips the bed picker entirely."
+    },
+    {
+      "timestamp": "2026-09-03T08:30:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Full wizard wired: Tenants tab '+' -> BedPickerScreen (grouped by floor, only VACANT beds ever queried) -> TenantFormScreen (bedId carried as a nav arg) -> on save, TenantFormScreen now reports back the saved tenant's id (fixed a gap where it only reported 'done', not which tenant) -> AgreementFormScreen (rent/deposit/billing-day/move-in-date) -> save creates the TenancyAgreement AND calls bedRepository.setOccupied in the same action, then pops the whole wizard stack back to the Tenants tab. AC1: move-in date uses Material3's DatePicker with no selectableDates restriction, so past dates are accepted with no validation error. AC2: billingCycleDay is a numeric field validated to 1-28 inline (error state + helper text), Save disabled until valid. AC3: TenancyAgreement.bedId is a required non-null field on the entity already (LODGY-2), and this screen is only reachable with a bedId in hand. Editing an existing tenant (from the profile screen) still bypasses the picker entirely and goes straight to the plain form. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass (especially clicking through the full 4-screen wizard) still queued behind the emulator boot."
     }
   ]
 }

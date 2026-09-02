@@ -100,4 +100,17 @@
     <string name="tenant_field_emergency_name">Name</string>
     <string name="tenant_field_emergency_phone">Phone</string>
     <string name="tenant_form_save">Save</string>
+
+    <string name="bed_picker_title">Pick a Vacant Bed</string>
+    <string name="bed_picker_no_hostel">Add a hostel first (Property tab) before onboarding a tenant.</string>
+    <string name="bed_picker_empty">No vacant beds in this hostel right now.</string>
+    <string name="bed_picker_option">Room %1$s · Bed %2$s</string>
+
+    <string name="agreement_form_title">Agreement Terms</string>
+    <string name="agreement_field_rent">Agreed rent / month</string>
+    <string name="agreement_field_deposit">Advance deposit</string>
+    <string name="agreement_field_billing_day">Billing cycle day</string>
+    <string name="agreement_field_billing_day_hint">1–28, so it stays valid every month</string>
+    <string name="agreement_field_move_in_date">Move-in date</string>
+    <string name="agreement_form_save">Save &amp; Move In</string>
 </resources>

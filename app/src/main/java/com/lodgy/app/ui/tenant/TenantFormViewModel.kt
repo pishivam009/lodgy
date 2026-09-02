@@ -26,6 +26,7 @@ data class TenantFormUiState(
     val emergencyContactName: String = "",
     val emergencyContactPhone: String = "",
     val saved: Boolean = false,
+    val savedTenantId: String? = null,
 ) {
     val canSave: Boolean get() = name.isNotBlank() && phone.isNotBlank()
 }
@@ -87,7 +88,7 @@ class TenantFormViewModel @Inject constructor(
         if (!state.canSave) return
         viewModelScope.launch {
             val existing = existingTenant
-            if (existing != null) {
+            val savedId = if (existing != null) {
                 tenantRepository.update(
                     existing,
                     state.name,
@@ -97,6 +98,7 @@ class TenantFormViewModel @Inject constructor(
                     state.emergencyContactName,
                     state.emergencyContactPhone,
                 )
+                existing.id
             } else {
                 tenantRepository.create(
                     state.name,
@@ -105,9 +107,9 @@ class TenantFormViewModel @Inject constructor(
                     state.idProofPhotoPath,
                     state.emergencyContactName,
                     state.emergencyContactPhone,
-                )
+                ).id
             }
-            _uiState.update { it.copy(saved = true) }
+            _uiState.update { it.copy(saved = true, savedTenantId = savedId) }
         }
     }
 }

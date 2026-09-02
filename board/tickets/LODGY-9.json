@@ -32,6 +32,12 @@
       "actor": "Developer",
       "action": "comment",
       "note": "AC1 done and build-verified: RoomFormViewModel.save() now calls bedRepository.generateForRoom(room.id, bedCountFor(type)) right after creating a room (1/2/3 beds for SINGLE/DOUBLE/TRIPLE), and a new BedGridScreen (matching the wireframe) shows each room's beds with VACANT/OCCUPIED status, wired from RoomListScreen's onOpenBeds. AC2's mechanism (BedRepository.setOccupied/setVacant) exists but has no caller yet - deliberately leaving this ticket in In Progress rather than Testing, since 'the flip works on onboarding/checkout' can't honestly be claimed ready for test until LODGY-13/14 actually call it. Will move to Testing once those land and the flip can be exercised end to end. `gradlew assembleDebug` -> BUILD SUCCESSFUL in the meantime."
+    },
+    {
+      "timestamp": "2026-09-03T08:30:00+00:00",
+      "actor": "Developer",
+      "action": "comment",
+      "note": "Onboarding half of AC2 is now real: LODGY-13's AgreementFormViewModel calls bedRepository.setOccupied on save. Checkout half still pending LODGY-14. Staying In Progress until that lands too, then this moves to Testing as a whole."
     }
   ]
 }

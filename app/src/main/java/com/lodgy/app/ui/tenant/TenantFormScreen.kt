@@ -31,14 +31,15 @@ import com.lodgy.app.ui.icons.CommonIcons
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TenantFormScreen(
-    onDone: () -> Unit,
+    onDone: (tenantId: String) -> Unit,
     onBack: () -> Unit,
     viewModel: TenantFormViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.saved) {
-        if (uiState.saved) onDone()
+        val savedId = uiState.savedTenantId
+        if (uiState.saved && savedId != null) onDone(savedId)
     }
 
     Scaffold(

@@ -26,6 +26,8 @@ import com.lodgy.app.ui.property.BedGridScreen
 import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.screens.PlaceholderScreen
+import com.lodgy.app.ui.tenant.AgreementFormScreen
+import com.lodgy.app.ui.tenant.BedPickerScreen
 import com.lodgy.app.ui.tenant.TenantDirectoryScreen
 import com.lodgy.app.ui.tenant.TenantFormScreen
 import com.lodgy.app.ui.tenant.TenantProfileScreen
@@ -36,8 +38,10 @@ private const val FLOOR_FORM_ROUTE = "floor_form"
 private const val ROOM_LIST_ROUTE = "room_list"
 private const val ROOM_FORM_ROUTE = "room_form"
 private const val BED_GRID_ROUTE = "bed_grid"
+private const val BED_PICKER_ROUTE = "bed_picker"
 private const val TENANT_FORM_ROUTE = "tenant_form"
 private const val TENANT_PROFILE_ROUTE = "tenant_profile"
+private const val AGREEMENT_FORM_ROUTE = "agreement_form"
 
 @Composable
 fun LodgyNavHost() {
@@ -83,7 +87,7 @@ fun LodgyNavHost() {
                             onOpenFloors = { hostelId -> navController.navigate("$FLOOR_LIST_ROUTE/$hostelId") },
                         )
                         LodgyDestination.Tenants -> TenantDirectoryScreen(
-                            onAddTenant = { navController.navigate(TENANT_FORM_ROUTE) },
+                            onAddTenant = { navController.navigate(BED_PICKER_ROUTE) },
                             onOpenTenant = { tenant -> navController.navigate("$TENANT_PROFILE_ROUTE/${tenant.id}") },
                         )
                         else -> PlaceholderScreen(title = stringResource(destination.labelRes))
@@ -161,11 +165,21 @@ fun LodgyNavHost() {
             }
 
             composable(
-                route = "$TENANT_FORM_ROUTE?tenantId={tenantId}",
-                arguments = listOf(navArgument("tenantId") { type = NavType.StringType; nullable = true }),
-            ) {
+                route = "$TENANT_FORM_ROUTE?tenantId={tenantId}&bedId={bedId}",
+                arguments = listOf(
+                    navArgument("tenantId") { type = NavType.StringType; nullable = true },
+                    navArgument("bedId") { type = NavType.StringType; nullable = true },
+                ),
+            ) { backStackEntry ->
+                val bedId = backStackEntry.arguments?.getString("bedId")
                 TenantFormScreen(
-                    onDone = { navController.popBackStack() },
+                    onDone = { tenantId ->
+                        if (bedId != null) {
+                            navController.navigate("$AGREEMENT_FORM_ROUTE/$bedId/$tenantId")
+                        } else {
+                            navController.popBackStack()
+                        }
+                    },
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -177,6 +191,26 @@ fun LodgyNavHost() {
                 TenantProfileScreen(
                     onBack = { navController.popBackStack() },
                     onEdit = { tenantId -> navController.navigate("$TENANT_FORM_ROUTE?tenantId=$tenantId") },
+                )
+            }
+
+            composable(BED_PICKER_ROUTE) {
+                BedPickerScreen(
+                    onBack = { navController.popBackStack() },
+                    onBedSelected = { option -> navController.navigate("$TENANT_FORM_ROUTE?bedId=${option.bed.id}") },
+                )
+            }
+
+            composable(
+                route = "$AGREEMENT_FORM_ROUTE/{bedId}/{tenantId}",
+                arguments = listOf(
+                    navArgument("bedId") { type = NavType.StringType },
+                    navArgument("tenantId") { type = NavType.StringType },
+                ),
+            ) {
+                AgreementFormScreen(
+                    onDone = { navController.popBackStack(LodgyDestination.Tenants.route, false) },
+                    onBack = { navController.popBackStack() },
                 )
             }
         }
