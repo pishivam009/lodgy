@@ -8,7 +8,7 @@ __pycache__/
 /local.properties
 /.idea/
 .DS_Store
-/build/
+build/
 /captures/
 .externalNativeBuild/
 .cxx/

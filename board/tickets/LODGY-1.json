@@ -34,6 +34,12 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built: root settings.gradle.kts/build.gradle.kts + gradle/libs.versions.toml (version catalog), app/build.gradle.kts with Hilt/Room/Navigation-Compose/WorkManager deps wired via KSP, AndroidManifest (allowBackup=false per DESIGN.md's manual-export-only philosophy), LodgyApplication (@HiltAndroidApp), MainActivity (@AndroidEntryPoint, Compose Scaffold showing 'Lodgy'), Material3 theme (Color/Type/Theme.kt), vector-based adaptive app icon (mipmap-anydpi-v26 for API26+, flattened mipmap/ fallback for API24-25). NOT included: gradle-wrapper.jar and gradlew/gradlew.bat (binary/generated - Android Studio will offer to create/repair the wrapper on first import, or run `gradle wrapper --gradle-version 8.9` once Gradle is available). UNVERIFIED: no Android SDK on this machine yet, so this has not actually been built/run - Tester must do the first real build once Android Studio is installed."
+    },
+    {
+      "timestamp": "2026-09-02T01:10:00+00:00",
+      "actor": "Tester",
+      "action": "comment",
+      "note": "Android Studio + SDK now installed. Found the dependency versions in the ticket were stale (Gradle 8.9 cannot run on the bundled JDK 25; AGP 9.4.0 removed the separate org.jetbrains.kotlin.android plugin in favor of built-in Kotlin support). Updated to current stable: AGP 9.4.0, Kotlin 2.4.10, KSP 2.3.11, Gradle 9.7.1, Compose BOM 2026.08.00, Hilt 2.60.1, Room 2.8.4, Navigation 2.10.0, WorkManager 2.11.2, compileSdk/targetSdk 37 (matches installed platform). Generated the real Gradle wrapper (was previously missing). `gradlew assembleDebug` now runs BUILD SUCCESSFUL in 4m44s, all 41 tasks executed including kspDebugKotlin, hiltJavaCompileDebug, dexBuilderDebug - AC #2 (Hilt/Room/Navigation/WorkManager compile) is satisfied. app-debug.apk produced. AC #1 not yet fully verified - no device/emulator connected to actually run it and see the Compose screen render. Holding in Testing until that's confirmed."
     }
   ]
 }
