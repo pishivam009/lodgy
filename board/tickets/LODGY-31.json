@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-31",
+  "epic": "Tenant Onboarding",
+  "title": "Call / WhatsApp / SMS quick-contact buttons on tenant profile",
+  "description": "Add three quick-action buttons on the tenant profile screen: Call, WhatsApp, SMS. Each redirects the warden to the respective app pre-filled with the tenant's phone number, then stops - no call is placed, no message is sent, automatically. This is a general contact shortcut for reaching a tenant any time, distinct from the payment-reminder buttons in LODGY-18/LODGY-19 which are tied to a specific unpaid invoice and pre-fill a payment-due message. Implementation: Call uses ACTION_DIAL (not ACTION_CALL, which would dial immediately and require the CALL_PHONE permission), WhatsApp uses a wa.me deep link, SMS uses an smsto: intent - same tap-to-send/tap-to-dial principle as the rest of the app, no new permissions.",
+  "acceptanceCriteria": [
+    "Tenant profile screen shows Call, WhatsApp, and SMS buttons",
+    "Call button opens the device dialer pre-filled with the tenant's number via ACTION_DIAL - does not place the call automatically",
+    "WhatsApp button opens a chat with the tenant's number via a wa.me deep link - does not send any message automatically",
+    "SMS button opens the default messaging app's compose screen pre-filled with the tenant's number - does not send automatically",
+    "No CALL_PHONE or SEND_SMS permission is requested",
+    "If WhatsApp is not installed on the device, the WhatsApp button fails gracefully (e.g. disabled state or a clear message) instead of crashing",
+    "Buttons remain accessible on a vacated tenant's profile too, not just active tenants"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T00:20:00+00:00",
+  "updatedAt": "2026-09-02T00:20:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T00:20:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added per explicit user request: general Call/WhatsApp/SMS quick-contact on tenant profile, tap-to-open only, nothing auto-sent/auto-dialed. Deliberately kept separate from LODGY-18/LODGY-19 (invoice-specific payment reminders) rather than merged, since scope and pre-filled content differ."
+    }
+  ]
+}

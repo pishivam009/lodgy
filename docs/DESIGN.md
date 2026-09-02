@@ -110,6 +110,15 @@ Notes:
 - Pick a vacant bed → capture tenant profile (name, phone, photo, ID proof
   photo, emergency contact) → capture agreement terms (agreed rent, advance,
   billing cycle day, move-in date).
+- Tenant profile screen has quick-contact buttons: Call, WhatsApp, SMS.
+  Each opens the respective app pre-filled with the tenant's number —
+  dialer (`ACTION_DIAL`, not `ACTION_CALL`), WhatsApp chat (`wa.me`), SMS
+  compose (`smsto:`) — and stops there. Nothing is sent or dialed
+  automatically; the warden takes the final action themselves, same
+  tap-to-send principle as the payment reminders in 4.4. This is a general
+  contact shortcut, separate from the reminder buttons in 4.4 which are
+  specifically tied to an unpaid invoice and pre-fill a payment-due
+  message.
 - `moveInDate` can be set in the past — onboarding a tenant who was already
   living there before the warden started using the app is a first-class
   case, not an edge case.
