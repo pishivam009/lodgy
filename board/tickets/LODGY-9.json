@@ -7,17 +7,31 @@
     "Creating a DOUBLE room creates exactly 2 beds, TRIPLE creates 3",
     "Bed status flips correctly on tenant onboarding/checkout"
   ],
-  "status": "Todo",
+  "status": "In Progress",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Developer",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T06:45:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T06:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - bed auto-generation wired into room creation only (not on later type edits; changing a room's type after beds/tenants exist is a reconciliation problem this ticket's AC doesn't cover, flagging rather than guessing). AC2's flip mechanism (BedRepository.setOccupied/setVacant) is this ticket's job per its own wording, but the actual callers are LODGY-13 (onboarding) and LODGY-14 (checkout) - building the mechanism now, wiring the calls when those land."
+    },
+    {
+      "timestamp": "2026-09-03T07:00:00+00:00",
+      "actor": "Developer",
+      "action": "comment",
+      "note": "AC1 done and build-verified: RoomFormViewModel.save() now calls bedRepository.generateForRoom(room.id, bedCountFor(type)) right after creating a room (1/2/3 beds for SINGLE/DOUBLE/TRIPLE), and a new BedGridScreen (matching the wireframe) shows each room's beds with VACANT/OCCUPIED status, wired from RoomListScreen's onOpenBeds. AC2's mechanism (BedRepository.setOccupied/setVacant) exists but has no caller yet - deliberately leaving this ticket in In Progress rather than Testing, since 'the flip works on onboarding/checkout' can't honestly be claimed ready for test until LODGY-13/14 actually call it. Will move to Testing once those land and the flip can be exercised end to end. `gradlew assembleDebug` -> BUILD SUCCESSFUL in the meantime."
     }
   ]
 }

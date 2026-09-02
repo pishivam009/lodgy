@@ -27,22 +27,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.Hostel
-import com.lodgy.app.ui.icons.strokeIcon
-
-private val PlusIcon: ImageVector = strokeIcon("HostelAdd", "M12,5 V19 M5,12 H19")
+import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HostelListScreen(
     onAddHostel: () -> Unit,
     onEditHostel: (String) -> Unit,
+    onOpenFloors: (String) -> Unit,
     viewModel: HostelListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,7 +49,7 @@ fun HostelListScreen(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.hostel_list_title)) }) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddHostel) {
-                Icon(PlusIcon, contentDescription = stringResource(R.string.hostel_add))
+                Icon(CommonIcons.Plus, contentDescription = stringResource(R.string.hostel_add))
             }
         },
     ) { padding ->
@@ -73,7 +71,10 @@ fun HostelListScreen(
                     HostelCard(
                         hostel = hostel,
                         selected = hostel.id == uiState.selectedHostelId,
-                        onSelect = { viewModel.selectHostel(hostel.id) },
+                        onOpen = {
+                            viewModel.selectHostel(hostel.id)
+                            onOpenFloors(hostel.id)
+                        },
                         onEdit = { onEditHostel(hostel.id) },
                     )
                 }
@@ -83,9 +84,9 @@ fun HostelListScreen(
 }
 
 @Composable
-private fun HostelCard(hostel: Hostel, selected: Boolean, onSelect: () -> Unit, onEdit: () -> Unit) {
+private fun HostelCard(hostel: Hostel, selected: Boolean, onOpen: () -> Unit, onEdit: () -> Unit) {
     Card(
-        onClick = onSelect,
+        onClick = onOpen,
         modifier = Modifier.fillMaxWidth(),
         colors = if (selected) {
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)

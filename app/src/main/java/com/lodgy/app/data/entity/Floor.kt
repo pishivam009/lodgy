@@ -13,6 +13,7 @@ import java.util.UUID
             entity = Hostel::class,
             parentColumns = ["id"],
             childColumns = ["hostelId"],
+            onDelete = ForeignKey.CASCADE,
         ),
     ],
     indices = [Index("hostelId")],

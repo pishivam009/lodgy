@@ -7,17 +7,33 @@
     "Floors can be added, edited, and deleted under a hostel",
     "Floors display in the given sort order"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T06:05:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T05:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Also revising LODGY-6's HostelListScreen: tapping a hostel row now drills into its floor list (and sets it active) instead of only selecting it silently - the wireframe's Prop1->Prop3 flow implies drill-down, and without it there was no path to a hostel's floors at all. LODGY-6 is still in Testing, not Done, so amending it here rather than treating it as separately shippable."
+    },
+    {
+      "timestamp": "2026-09-03T06:05:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built data/repository/FloorRepository.kt (getByHostelId, create with auto-incrementing sortOrder, rename, delete, moveUp/moveDown which swap sortOrder with the adjacent floor), ui/property/FloorListViewModel.kt + FloorListScreen.kt (list sorted by sortOrder, up/down/edit/delete icons per row, delete behind a confirm dialog), ui/property/FloorFormViewModel.kt + FloorFormScreen.kt (shared add/edit, one field). Added shared ui/icons/CommonIcons.kt (Back/Plus/Trash/ArrowUp/ArrowDown/Edit) since these repeat across every upcoming CRUD screen - also swapped LODGY-6's screens over to it, removing their one-off duplicate icon vals. Bug fix while here: Floor/Room/Bed's FK constraints from LODGY-2 had no onDelete action, meaning deleting a floor with rooms under it would throw a SQLite FK-constraint exception instead of the cascading delete the UI now promises - added onDelete=CASCADE to the Hostel->Floor->Room->Bed chain (schema version stays at 1, no migration needed since nothing has shipped yet). `gradlew assembleDebug` -> BUILD SUCCESSFUL. Not yet exercised on-device - same slow-emulator situation as LODGY-3 through 6, queued for a combined on-device pass. Tester: the move-up/move-down swap logic and the cascade delete are the two things most worth actually clicking through rather than just reading."
     }
   ]
 }

@@ -13,6 +13,7 @@ import java.util.UUID
             entity = Floor::class,
             parentColumns = ["id"],
             childColumns = ["floorId"],
+            onDelete = ForeignKey.CASCADE,
         ),
     ],
     indices = [Index("floorId")],

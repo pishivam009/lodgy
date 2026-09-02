@@ -26,10 +26,10 @@ import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HostelFormScreen(
+fun FloorFormScreen(
     onDone: () -> Unit,
     onBack: () -> Unit,
-    viewModel: HostelFormViewModel = hiltViewModel(),
+    viewModel: FloorFormViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -41,14 +41,10 @@ fun HostelFormScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        stringResource(if (uiState.isEditing) R.string.hostel_form_title_edit else R.string.hostel_form_title_add),
-                    )
+                    Text(stringResource(if (uiState.isEditing) R.string.floor_form_title_edit else R.string.floor_form_title_add))
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(CommonIcons.Back, contentDescription = null)
-                    }
+                    IconButton(onClick = onBack) { Icon(CommonIcons.Back, contentDescription = null) }
                 },
             )
         },
@@ -58,33 +54,18 @@ fun HostelFormScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             OutlinedTextField(
-                value = uiState.name,
-                onValueChange = viewModel::onNameChange,
-                label = { Text(stringResource(R.string.hostel_field_name)) },
+                value = uiState.label,
+                onValueChange = viewModel::onLabelChange,
+                label = { Text(stringResource(R.string.floor_field_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
-            OutlinedTextField(
-                value = uiState.address,
-                onValueChange = viewModel::onAddressChange,
-                label = { Text(stringResource(R.string.hostel_field_address)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-            )
-            OutlinedTextField(
-                value = uiState.contactPhone,
-                onValueChange = viewModel::onContactPhoneChange,
-                label = { Text(stringResource(R.string.hostel_field_phone)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-
             Button(
                 onClick = viewModel::save,
-                enabled = uiState.name.isNotBlank(),
+                enabled = uiState.label.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(stringResource(R.string.hostel_form_save))
+                Text(stringResource(R.string.floor_form_save))
             }
         }
     }

@@ -18,11 +18,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.lodgy.app.ui.property.FloorFormScreen
+import com.lodgy.app.ui.property.FloorListScreen
 import com.lodgy.app.ui.property.HostelFormScreen
 import com.lodgy.app.ui.property.HostelListScreen
+import com.lodgy.app.ui.property.BedGridScreen
+import com.lodgy.app.ui.property.RoomFormScreen
+import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.screens.PlaceholderScreen
 
 private const val HOSTEL_FORM_ROUTE = "hostel_form"
+private const val FLOOR_LIST_ROUTE = "floor_list"
+private const val FLOOR_FORM_ROUTE = "floor_form"
+private const val ROOM_LIST_ROUTE = "room_list"
+private const val ROOM_FORM_ROUTE = "room_form"
+private const val BED_GRID_ROUTE = "bed_grid"
 
 @Composable
 fun LodgyNavHost() {
@@ -65,6 +75,7 @@ fun LodgyNavHost() {
                         HostelListScreen(
                             onAddHostel = { navController.navigate(HOSTEL_FORM_ROUTE) },
                             onEditHostel = { id -> navController.navigate("$HOSTEL_FORM_ROUTE?hostelId=$id") },
+                            onOpenFloors = { hostelId -> navController.navigate("$FLOOR_LIST_ROUTE/$hostelId") },
                         )
                     } else {
                         PlaceholderScreen(title = stringResource(destination.labelRes))
@@ -80,6 +91,65 @@ fun LodgyNavHost() {
                     onDone = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )
+            }
+
+            composable(
+                route = "$FLOOR_LIST_ROUTE/{hostelId}",
+                arguments = listOf(navArgument("hostelId") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val hostelId = checkNotNull(backStackEntry.arguments?.getString("hostelId"))
+                FloorListScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddFloor = { navController.navigate("$FLOOR_FORM_ROUTE/$hostelId") },
+                    onEditFloor = { floor -> navController.navigate("$FLOOR_FORM_ROUTE/$hostelId?floorId=${floor.id}") },
+                    onOpenRooms = { floor -> navController.navigate("$ROOM_LIST_ROUTE/${floor.id}") },
+                )
+            }
+
+            composable(
+                route = "$FLOOR_FORM_ROUTE/{hostelId}?floorId={floorId}",
+                arguments = listOf(
+                    navArgument("hostelId") { type = NavType.StringType },
+                    navArgument("floorId") { type = NavType.StringType; nullable = true },
+                ),
+            ) {
+                FloorFormScreen(
+                    onDone = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(
+                route = "$ROOM_LIST_ROUTE/{floorId}",
+                arguments = listOf(navArgument("floorId") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val floorId = checkNotNull(backStackEntry.arguments?.getString("floorId"))
+                RoomListScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddRoom = { navController.navigate("$ROOM_FORM_ROUTE/$floorId") },
+                    onEditRoom = { room -> navController.navigate("$ROOM_FORM_ROUTE/$floorId?roomId=${room.id}") },
+                    onOpenBeds = { room -> navController.navigate("$BED_GRID_ROUTE/${room.id}") },
+                )
+            }
+
+            composable(
+                route = "$ROOM_FORM_ROUTE/{floorId}?roomId={roomId}",
+                arguments = listOf(
+                    navArgument("floorId") { type = NavType.StringType },
+                    navArgument("roomId") { type = NavType.StringType; nullable = true },
+                ),
+            ) {
+                RoomFormScreen(
+                    onDone = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(
+                route = "$BED_GRID_ROUTE/{roomId}",
+                arguments = listOf(navArgument("roomId") { type = NavType.StringType }),
+            ) {
+                BedGridScreen(onBack = { navController.popBackStack() })
             }
         }
     }

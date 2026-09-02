@@ -2,11 +2,14 @@ package com.lodgy.app.ui.property
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -18,18 +21,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HostelFormScreen(
+fun RoomFormScreen(
     onDone: () -> Unit,
     onBack: () -> Unit,
-    viewModel: HostelFormViewModel = hiltViewModel(),
+    viewModel: RoomFormViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -40,15 +45,9 @@ fun HostelFormScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        stringResource(if (uiState.isEditing) R.string.hostel_form_title_edit else R.string.hostel_form_title_add),
-                    )
-                },
+                title = { Text(stringResource(if (uiState.isEditing) R.string.room_form_title_edit else R.string.room_form_title_add)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(CommonIcons.Back, contentDescription = null)
-                    }
+                    IconButton(onClick = onBack) { Icon(CommonIcons.Back, contentDescription = null) }
                 },
             )
         },
@@ -58,33 +57,46 @@ fun HostelFormScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             OutlinedTextField(
-                value = uiState.name,
-                onValueChange = viewModel::onNameChange,
-                label = { Text(stringResource(R.string.hostel_field_name)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-            OutlinedTextField(
-                value = uiState.address,
-                onValueChange = viewModel::onAddressChange,
-                label = { Text(stringResource(R.string.hostel_field_address)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-            )
-            OutlinedTextField(
-                value = uiState.contactPhone,
-                onValueChange = viewModel::onContactPhoneChange,
-                label = { Text(stringResource(R.string.hostel_field_phone)) },
+                value = uiState.roomNumber,
+                onValueChange = viewModel::onRoomNumberChange,
+                label = { Text(stringResource(R.string.room_field_number)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
 
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                RoomType.entries.forEach { type ->
+                    FilterChip(
+                        selected = uiState.type == type,
+                        onClick = { viewModel.onTypeChange(type) },
+                        label = { Text(type.name) },
+                    )
+                }
+            }
+
+            OutlinedTextField(
+                value = uiState.pricePerBed,
+                onValueChange = viewModel::onPriceChange,
+                label = { Text(stringResource(R.string.room_field_price)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
+            OutlinedTextField(
+                value = uiState.amenities,
+                onValueChange = viewModel::onAmenitiesChange,
+                label = { Text(stringResource(R.string.room_field_amenities)) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2,
+            )
+
             Button(
                 onClick = viewModel::save,
-                enabled = uiState.name.isNotBlank(),
+                enabled = uiState.canSave,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(stringResource(R.string.hostel_form_save))
+                Text(stringResource(R.string.room_form_save))
             }
         }
     }

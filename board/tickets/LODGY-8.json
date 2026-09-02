@@ -7,17 +7,33 @@
     "Room type, price, and amenities are captured and editable",
     "Deleting a room is blocked or warned if it has active tenants"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T06:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T06:15:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. The 'blocked if active tenants' AC needs Bed data even though bed-generation UI is LODGY-9's job - the Bed entity/DAO already exist from LODGY-2, so adding a minimal BedRepository now (just a hasOccupiedBed check) to satisfy this ticket's AC; LODGY-9 will extend it with actual bed creation/generation. Going with 'blocked' (not just warned) for the active-tenant case - letting a warden delete a room out from under a live tenant seemed like the riskier reading of an explicit either/or in the AC."
+    },
+    {
+      "timestamp": "2026-09-03T06:35:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built data/repository/RoomRepository.kt + BedRepository.kt (hasOccupiedBed check), ui/property/RoomListViewModel.kt + RoomListScreen.kt (room cards with type chip, edit/delete icons, delete routes through requestDelete which checks hasOccupiedBed first and shows a blocking AlertDialog instead of deleting if any bed on the room is OCCUPIED), ui/property/RoomFormViewModel.kt + RoomFormScreen.kt (room number, SINGLE/DOUBLE/TRIPLE filter chips, price-per-bed as a numeric field kept as String state and parsed on save, amenities free text). Wired room_list/{floorId} and room_form/{floorId}?roomId={id} into LodgyNavHost; FloorListScreen's onOpenRooms now actually navigates instead of being a no-op. `gradlew assembleDebug` -> BUILD SUCCESSFUL. AC1 (type/price/amenities captured+editable) and AC2 (blocked with occupied bed) both implemented in code; AC2 specifically can't be exercised end-to-end on-device until LODGY-9 lets a bed actually be marked OCCUPIED (right now hasOccupiedBed always returns false since no beds exist yet) - the check itself is real and will engage correctly once beds do, but flagging that Tester can't fully verify AC2's blocking behavior until LODGY-9/13 land. On-device pass still queued behind the slow emulator boot."
     }
   ]
 }
