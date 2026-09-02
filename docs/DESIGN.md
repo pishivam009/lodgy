@@ -24,6 +24,7 @@ Built for Android-only, native Kotlin.
 | Image storage | App-private internal storage (`filesDir`), path referenced in DB |
 | Backup/restore | SAF (Storage Access Framework) — zip of DB + photos, exported to user-chosen location |
 | Reminders | Android Intents — `wa.me` deep link for WhatsApp, `ACTION_SENDTO`/`smsto:` for SMS — both tap-to-send, no auto-send, no special permissions |
+| Localization | Android resource-based i18n (`values/`, `values-hi/`), Hindi + English, in-app language switcher (not just device locale) |
 
 No network permissions requested at all. No `SEND_SMS` permission (tap-to-send only, per decision).
 
@@ -156,6 +157,29 @@ Notes:
   put it in Google Drive/WhatsApp-to-self/USB manually).
 - Because IDs are UUIDs, a restored DB never collides with a fresh install's
   IDs — this also happens to be what makes a future real sync feasible.
+
+### 4.9 Localization
+- Primary users (wardens) are Hindi-speaking, so Hindi is a first-class
+  language, not an afterthought bolted on later — all UI strings are
+  externalized to resources from the start (`values-hi/strings.xml`),
+  never hardcoded, so no screen has to be retrofitted.
+- In-app language switcher (Settings), independent of device system
+  locale — many phones stay on an English system locale even when the
+  owner prefers Hindi in-app, so relying on device locale alone would
+  under-serve the actual users. Defaults to Hindi on first launch, English
+  selectable.
+- WhatsApp/SMS reminder templates (4.4) are also available in Hindi and
+  English — the reminder goes out under the warden's identity, so the
+  language should match who they're texting, not just the app's own UI
+  language. Warden can pick per-reminder or set a default.
+- Tenant-entered data (names, notes, addresses) is stored exactly as
+  typed, in whatever script/language the warden enters — Compose text
+  fields already support Devanagari input via the system IME, so this
+  needs no special handling. Only the app's own UI chrome (labels,
+  buttons, generated invoice/report text) is translated.
+- Numbers/dates/currency: use locale-aware formatting (`NumberFormat`,
+  date formatters) so amounts and dates render correctly under either
+  language setting.
 
 ## 5. Explicit non-goals for MVP
 - No auto-sent WhatsApp/SMS (tap-to-send only — no paid API, no backend).

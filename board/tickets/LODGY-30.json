@@ -1,0 +1,29 @@
+{
+  "id": "LODGY-30",
+  "epic": "Localization",
+  "title": "Hindi + English language support",
+  "description": "Full app localization: externalize all UI strings to Android resources (values/ + values-hi/) from the start rather than retrofitting later, add an in-app language switcher in Settings (independent of device system locale, defaulting to Hindi on first launch), and provide Hindi/English versions of the WhatsApp/SMS reminder templates from LODGY-18/LODGY-19. Tenant-entered data (names, notes, addresses) is stored as-typed and is never translated - only the app's own UI chrome and generated text (invoices, reports, reminder templates) are localized. Numbers/dates/currency use locale-aware formatting. See docs/DESIGN.md section 4.9.",
+  "acceptanceCriteria": [
+    "No user-facing string in the app is hardcoded outside of string resources",
+    "Every screen renders correctly in both Hindi and English with no missing/fallback strings",
+    "In-app language switcher in Settings changes the UI language immediately without requiring a reinstall, independent of the device's system locale",
+    "First launch defaults to Hindi",
+    "WhatsApp and SMS reminder templates (LODGY-18, LODGY-19) are available in both Hindi and English, selectable by the warden",
+    "Devanagari script renders correctly (no tofu/missing glyphs) across all screens, including generated invoices/reports",
+    "Amounts and dates display using locale-aware formatting under both language settings",
+    "Tenant-entered free text (names, notes) displays exactly as typed regardless of the app's UI language setting"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": null,
+  "createdAt": "2026-09-02T00:00:00+00:00",
+  "updatedAt": "2026-09-02T00:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-02T00:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added per explicit user requirement: primary users (wardens) are Hindi-based. Should land early since retrofitting string externalization across an already-built UI is expensive - flagging as High priority even though it doesn't block LODGY-1/LODGY-2."
+    }
+  ]
+}
