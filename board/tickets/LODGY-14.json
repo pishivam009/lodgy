@@ -8,17 +8,33 @@
     "Bed becomes VACANT immediately after checkout",
     "Tenant's history remains viewable after checkout (status VACATED, not deleted)"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T09:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T08:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Scope note: the wireframe (Rent5_Checkout) has an optional 'reason' field alongside the damage deduction amount, but TenancyAgreement has no column to persist it (DESIGN.md section 3 schema is authoritative) - dropping that field rather than inventing a schema change; a future note-taking ticket (LODGY-24) could log a DAMAGE-type TenantNote instead, but that's out of this ticket's scope. Not coercing a negative refund to zero if deductions exceed the deposit - showing the real computed number is more honest than hiding an over-deduction."
+    },
+    {
+      "timestamp": "2026-09-03T09:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Added TenancyAgreementRepository.getActiveByTenantId/close and TenantRepository.setVacated. Built CheckoutViewModel/CheckoutScreen (move-out date via Material3 DatePicker, deposit shown against a damage-deduction field, live-computed refund), reachable from a 'Checkout tenant' action on TenantProfileScreen (only shown while status==ACTIVE). confirmCheckout() does all three writes in one coroutine: closes the agreement (moveOutDate, depositRefundAmount, status=CLOSED), calls bedRepository.setVacant, and sets the tenant's own status to VACATED - then pops back to the Tenants tab. AC1: move-out date is a required field defaulting to today (DatePicker, no restriction), deposit vs deduction vs computed refund all shown together. AC2: setVacant runs synchronously in the same save, and BedGridScreen reads a live Flow so it reflects VACANT immediately on next view - same reasoning as LODGY-13. AC3: checkout never deletes the Tenant row, only flips status - TenantProfileScreen and the directory's VACATED chip both keep working afterward. This also closes LODGY-9's AC2 in full (onboarding half from LODGY-13, checkout half from this) - moving that ticket to Testing too. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued."
     }
   ]
 }

@@ -113,4 +113,14 @@
     <string name="agreement_field_billing_day_hint">1–28, so it stays valid every month</string>
     <string name="agreement_field_move_in_date">Move-in date</string>
     <string name="agreement_form_save">Save &amp; Move In</string>
+
+    <string name="tenant_checkout_action">Checkout tenant</string>
+    <string name="checkout_title">Checkout %1$s</string>
+    <string name="checkout_no_agreement">This tenant has no active tenancy to check out of.</string>
+    <string name="checkout_field_move_out_date">Move-out date</string>
+    <string name="checkout_deposit">Advance deposit</string>
+    <string name="checkout_field_damage_deduction">Damage deduction</string>
+    <string name="checkout_refund">Deposit refund</string>
+    <string name="checkout_confirm">Confirm Checkout</string>
+    <string name="currency_amount">₹%1$.0f</string>
 </resources>

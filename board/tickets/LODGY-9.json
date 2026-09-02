@@ -7,11 +7,11 @@
     "Creating a DOUBLE room creates exactly 2 beds, TRIPLE creates 3",
     "Bed status flips correctly on tenant onboarding/checkout"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T06:45:00+00:00",
+  "updatedAt": "2026-09-03T09:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -38,6 +38,14 @@
       "actor": "Developer",
       "action": "comment",
       "note": "Onboarding half of AC2 is now real: LODGY-13's AgreementFormViewModel calls bedRepository.setOccupied on save. Checkout half still pending LODGY-14. Staying In Progress until that lands too, then this moves to Testing as a whole."
+    },
+    {
+      "timestamp": "2026-09-03T09:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Checkout half of AC2 now real too: LODGY-14's CheckoutViewModel calls bedRepository.setVacant on confirm. Both AC1 (bed auto-generation) and AC2 (flip on onboarding via LODGY-13, flip on checkout via LODGY-14) are fully implemented and build-verified. Moving to Testing - recommend testing this alongside LODGY-13/14 on-device since the whole onboard->checkout->re-onboard cycle is what actually exercises this ticket's AC end to end."
     }
   ]
 }

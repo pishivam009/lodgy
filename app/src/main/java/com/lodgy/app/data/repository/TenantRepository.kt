@@ -58,4 +58,8 @@ class TenantRepository @Inject constructor(private val tenantDao: TenantDao) {
             ),
         )
     }
+
+    suspend fun setVacated(tenant: Tenant) {
+        tenantDao.update(tenant.copy(status = TenantStatus.VACATED, updatedAt = System.currentTimeMillis()))
+    }
 }

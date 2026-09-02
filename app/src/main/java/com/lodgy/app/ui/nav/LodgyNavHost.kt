@@ -28,6 +28,7 @@ import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.screens.PlaceholderScreen
 import com.lodgy.app.ui.tenant.AgreementFormScreen
 import com.lodgy.app.ui.tenant.BedPickerScreen
+import com.lodgy.app.ui.tenant.CheckoutScreen
 import com.lodgy.app.ui.tenant.TenantDirectoryScreen
 import com.lodgy.app.ui.tenant.TenantFormScreen
 import com.lodgy.app.ui.tenant.TenantProfileScreen
@@ -42,6 +43,7 @@ private const val BED_PICKER_ROUTE = "bed_picker"
 private const val TENANT_FORM_ROUTE = "tenant_form"
 private const val TENANT_PROFILE_ROUTE = "tenant_profile"
 private const val AGREEMENT_FORM_ROUTE = "agreement_form"
+private const val CHECKOUT_ROUTE = "checkout"
 
 @Composable
 fun LodgyNavHost() {
@@ -191,6 +193,17 @@ fun LodgyNavHost() {
                 TenantProfileScreen(
                     onBack = { navController.popBackStack() },
                     onEdit = { tenantId -> navController.navigate("$TENANT_FORM_ROUTE?tenantId=$tenantId") },
+                    onCheckout = { tenantId -> navController.navigate("$CHECKOUT_ROUTE/$tenantId") },
+                )
+            }
+
+            composable(
+                route = "$CHECKOUT_ROUTE/{tenantId}",
+                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+            ) {
+                CheckoutScreen(
+                    onDone = { navController.popBackStack(LodgyDestination.Tenants.route, false) },
+                    onBack = { navController.popBackStack() },
                 )
             }
 

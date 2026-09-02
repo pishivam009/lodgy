@@ -37,6 +37,7 @@ import com.lodgy.app.ui.icons.CommonIcons
 fun TenantProfileScreen(
     onBack: () -> Unit,
     onEdit: (String) -> Unit,
+    onCheckout: (String) -> Unit,
     viewModel: TenantProfileViewModel = hiltViewModel(),
 ) {
     val tenant by viewModel.tenant.collectAsStateWithLifecycle()
@@ -98,6 +99,21 @@ fun TenantProfileScreen(
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     DetailRow(stringResource(R.string.tenant_field_phone), current.phone)
                     DetailRow(stringResource(R.string.tenant_detail_emergency), "${current.emergencyContactName} (${current.emergencyContactPhone})")
+                }
+            }
+
+            if (current.status == TenantStatus.ACTIVE) {
+                Card(
+                    onClick = { onCheckout(current.id) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.tenant_checkout_action),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(16.dp),
+                    )
                 }
             }
         }
