@@ -23,6 +23,9 @@ interface TenantDao {
     @Query("SELECT * FROM tenants WHERE id = :id")
     suspend fun getById(id: String): Tenant?
 
+    @Query("SELECT * FROM tenants WHERE id = :id")
+    fun getByIdFlow(id: String): Flow<Tenant?>
+
     @Query("SELECT * FROM tenants")
     fun getAll(): Flow<List<Tenant>>
 }

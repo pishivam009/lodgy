@@ -77,4 +77,27 @@
     <string name="bed_label">Bed %1$s</string>
     <string name="bed_status_occupied">OCCUPIED</string>
     <string name="bed_status_vacant">VACANT</string>
+
+    <string name="photo_take">Take Photo</string>
+    <string name="photo_choose">Choose Photo</string>
+
+    <string name="tenant_directory_title">Tenants</string>
+    <string name="tenant_directory_empty">No tenants yet. Tap + to onboard your first one.</string>
+    <string name="tenant_search_hint">Search by name or phone</string>
+    <string name="tenant_add">Add tenant</string>
+    <string name="tenant_edit">Edit tenant</string>
+    <string name="tenant_status_active">ACTIVE</string>
+    <string name="tenant_status_vacated">VACATED</string>
+    <string name="tenant_profile_title">Tenant Profile</string>
+    <string name="tenant_detail_emergency">Emergency contact</string>
+    <string name="tenant_form_title_add">Tenant Profile</string>
+    <string name="tenant_form_title_edit">Edit Tenant</string>
+    <string name="tenant_field_photo">Photo</string>
+    <string name="tenant_field_id_proof">ID Proof</string>
+    <string name="tenant_field_name">Full name</string>
+    <string name="tenant_field_phone">Phone number</string>
+    <string name="tenant_emergency_contact_section">Emergency contact</string>
+    <string name="tenant_field_emergency_name">Name</string>
+    <string name="tenant_field_emergency_phone">Phone</string>
+    <string name="tenant_form_save">Save</string>
 </resources>

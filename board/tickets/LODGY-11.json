@@ -7,17 +7,33 @@
     "Photo and ID proof photo are captured via camera or gallery and stored locally",
     "All fields are editable after creation"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T07:45:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T07:15:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Tenant has no bed/room reference at the schema level (that link lives on TenancyAgreement, LODGY-12/13's job), so profile capture is genuinely standalone - building it that way. Also building the Tenant directory list (Tenants tab) and a basic profile view screen, since neither exists anywhere else in the backlog and there's no path to a tenant's profile without them; LODGY-31 will add the quick-contact buttons onto the profile view this creates."
+    },
+    {
+      "timestamp": "2026-09-03T07:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built media/PhotoStorage.kt (creates a FileProvider camera-output Uri in cacheDir, persists any picked/captured image into filesDir/photos/<uuid>.jpg on IO dispatcher - satisfies DESIGN.md's app-private-storage requirement), ui/tenant/PhotoPickerField.kt (reusable: 'Take Photo' launches the system camera via ActivityResultContracts.TakePicture into a FileProvider Uri, 'Choose Photo' launches the Android Photo Picker via PickVisualMedia - neither needs a runtime permission), data/repository/TenantRepository.kt, and the full Tenant flow: TenantDirectoryScreen (search + list, wired as the Tenants tab), TenantFormScreen (photo + ID proof pickers, name/phone/emergency contact, shared add/edit), TenantProfileScreen (view + edit entry point for LODGY-31 to extend). Added coil3 (coil-compose) for image loading since AsyncImage from a file path is needed in three places now and will be needed again for notes photos later. Manifest: added a FileProvider + res/xml/file_paths.xml for the camera Uri. Bug caught before shipping: TenantProfileViewModel originally fetched the tenant once with getById, which would go stale after editing since popping back to a retained NavBackStackEntry doesn't re-run init - added TenantDao.getByIdFlow/TenantRepository.observeById and switched to that instead. `gradlew assembleDebug` -> BUILD SUCCESSFUL. Not yet exercised on-device (camera/gallery flows especially need real interaction, not just a code read) - still queued behind the slow emulator boot, now well over an hour."
     }
   ]
 }
