@@ -25,6 +25,7 @@ Built for Android-only, native Kotlin.
 | Backup/restore | SAF (Storage Access Framework) — zip of DB + photos, exported to user-chosen location |
 | Reminders | Android Intents — `wa.me` deep link for WhatsApp, `ACTION_SENDTO`/`smsto:` for SMS — both tap-to-send, no auto-send, no special permissions |
 | Localization | Android resource-based i18n (`values/`, `values-hi/`), Hindi + English, in-app language switcher (not just device locale) |
+| Auth | Local PIN (hashed, e.g. via `BCrypt`/`Argon2`) as baseline, AndroidX `BiometricPrompt` (fingerprint/face) as an optional faster unlock |
 
 No network permissions requested at all. No `SEND_SMS` permission (tap-to-send only, per decision).
 
@@ -93,6 +94,11 @@ Notes:
 
 ### 4.1 Auth
 - Local PIN (or password) set on first launch, required on app open.
+- Optional biometric unlock (fingerprint/face, via AndroidX `BiometricPrompt`)
+  as a faster alternative to typing the PIN each time. PIN remains the
+  required baseline — biometrics can fail, get un-enrolled, or simply not
+  exist on cheaper devices, so it's always an addition to the PIN, never a
+  replacement for it.
 - No account/server involved — this just gates the app on the device.
 
 ### 4.2 Property setup (static data, filled once, editable later)

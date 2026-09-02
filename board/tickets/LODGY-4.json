@@ -2,22 +2,30 @@
   "id": "LODGY-4",
   "epic": "Auth",
   "title": "Local PIN setup on first launch",
-  "description": "First-run flow where the warden sets a local PIN (or password), stored securely on device.",
+  "description": "First-run flow where the warden sets a local PIN (or password), stored securely on device (hashed, not plaintext). If the device supports biometrics, offer an opt-in toggle to also enable fingerprint/face unlock (LODGY-5 handles the actual unlock gate) - the PIN is always set regardless, since biometrics are an addition, not a replacement.",
   "acceptanceCriteria": [
     "On first launch, user is prompted to set a PIN before anything else",
-    "PIN is persisted and not stored in plaintext"
+    "PIN is persisted and not stored in plaintext",
+    "If the device has an enrolled fingerprint/face, the setup flow offers an opt-in toggle to enable biometric unlock",
+    "Declining or lacking biometric hardware does not block setup - PIN alone is always sufficient"
   ],
   "status": "Todo",
   "priority": "High",
   "assigneeRole": null,
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-02T00:10:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-02T00:10:00+00:00",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Added biometric enrollment opt-in per explicit user request for phone biometric/fingerprint login support. PIN remains mandatory baseline."
     }
   ]
 }
