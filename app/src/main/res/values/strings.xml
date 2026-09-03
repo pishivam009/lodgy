@@ -144,4 +144,16 @@
     <string name="record_payment_paid_on">Paid on</string>
     <string name="record_payment_note">Note (optional)</string>
     <string name="record_payment_save">Save Payment</string>
+
+    <string name="manual_invoice_add">Add invoice</string>
+    <string name="manual_invoice_pick_tenant_title">Backfill Invoice For</string>
+    <string name="manual_invoice_no_active_tenants">No active tenants to backfill an invoice for.</string>
+    <string name="manual_invoice_title">Add Invoice</string>
+    <string name="manual_invoice_no_agreement">%1$s has no active tenancy agreement.</string>
+    <string name="manual_invoice_field_month">Month</string>
+    <string name="manual_invoice_field_year">Year</string>
+    <string name="manual_invoice_duplicate_error">An invoice already exists for this period</string>
+    <string name="manual_invoice_field_amount">Amount due</string>
+    <string name="manual_invoice_field_due_date">Due date</string>
+    <string name="manual_invoice_save">Create Invoice</string>
 </resources>

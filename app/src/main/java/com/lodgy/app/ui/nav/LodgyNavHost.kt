@@ -26,6 +26,8 @@ import com.lodgy.app.ui.property.BedGridScreen
 import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
+import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
+import com.lodgy.app.ui.payment.ManualInvoiceTenantPickerScreen
 import com.lodgy.app.ui.payment.RecordPaymentScreen
 import com.lodgy.app.ui.screens.PlaceholderScreen
 import com.lodgy.app.ui.tenant.AgreementFormScreen
@@ -47,6 +49,8 @@ private const val TENANT_PROFILE_ROUTE = "tenant_profile"
 private const val AGREEMENT_FORM_ROUTE = "agreement_form"
 private const val CHECKOUT_ROUTE = "checkout"
 private const val RECORD_PAYMENT_ROUTE = "record_payment"
+private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_picker"
+private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
 
 @Composable
 fun LodgyNavHost() {
@@ -97,6 +101,7 @@ fun LodgyNavHost() {
                         )
                         LodgyDestination.Payments -> InvoiceListScreen(
                             onRecordPayment = { invoice -> navController.navigate("$RECORD_PAYMENT_ROUTE/${invoice.id}") },
+                            onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
                         )
                         else -> PlaceholderScreen(title = stringResource(destination.labelRes))
                     }
@@ -239,6 +244,23 @@ fun LodgyNavHost() {
             ) {
                 RecordPaymentScreen(
                     onDone = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(MANUAL_INVOICE_TENANT_PICKER_ROUTE) {
+                ManualInvoiceTenantPickerScreen(
+                    onBack = { navController.popBackStack() },
+                    onTenantSelected = { tenant -> navController.navigate("$MANUAL_INVOICE_FORM_ROUTE/${tenant.id}") },
+                )
+            }
+
+            composable(
+                route = "$MANUAL_INVOICE_FORM_ROUTE/{tenantId}",
+                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+            ) {
+                ManualInvoiceFormScreen(
+                    onDone = { navController.popBackStack(LodgyDestination.Payments.route, false) },
                     onBack = { navController.popBackStack() },
                 )
             }

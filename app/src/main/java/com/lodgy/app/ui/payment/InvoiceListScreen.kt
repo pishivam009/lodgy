@@ -12,6 +12,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
@@ -29,17 +31,24 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.Invoice
 import com.lodgy.app.data.entity.InvoiceStatus
+import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InvoiceListScreen(
     onRecordPayment: (Invoice) -> Unit,
+    onAddManualInvoice: () -> Unit,
     viewModel: InvoiceListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.invoice_list_title)) }) },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAddManualInvoice) {
+                Icon(CommonIcons.Plus, contentDescription = stringResource(R.string.manual_invoice_add))
+            }
+        },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             Row(

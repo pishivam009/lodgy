@@ -7,17 +7,33 @@
     "Invoice can be created for a period earlier than the current month",
     "Manually added invoices behave identically to auto-generated ones for payment tracking"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T11:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T10:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Entry point: FAB on the Payments tab (InvoiceListScreen) -> a small active-tenant picker -> the manual invoice form, amount pre-filled from the tenant's agreedRent but editable. Reusing InvoiceRepository.existsForPeriod (built for LODGY-15's auto-generator) to block a duplicate for the same tenant+period here too, since AC2 asks manual invoices to behave identically to auto-generated ones."
+    },
+    {
+      "timestamp": "2026-09-03T11:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built ManualInvoiceTenantPickerScreen (active tenants only) and ManualInvoiceFormScreen (month/year as validated numeric fields like billingCycleDay elsewhere, amount pre-filled from the tenant's active agreement's agreedRent but editable, due date via DatePicker with no restriction - AC1's 'earlier than current month' works because nothing constrains the month/year fields to the present or future). Save calls the exact same InvoiceRepository.create() the LODGY-15 worker uses, so a manually-created invoice is byte-for-byte the same shape (UNPAID status, same columns) and shows up in the same InvoiceListScreen, can be paid via the same RecordPaymentScreen - satisfies AC2 by sharing the implementation rather than parallel code paths. Wired a FAB on InvoiceListScreen (Payments tab) as the entry point. `gradlew assembleDebug` -> BUILD SUCCESSFUL."
     }
   ]
 }
