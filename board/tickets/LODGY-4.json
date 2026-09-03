@@ -9,11 +9,11 @@
     "If the device has an enrolled fingerprint/face, the setup flow offers an opt-in toggle to enable biometric unlock",
     "Declining or lacking biometric hardware does not block setup - PIN alone is always sufficient"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T04:20:00+00:00",
+  "updatedAt": "2026-09-03T14:30:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "Todo",
       "to": "In Progress",
       "note": "Starting - first-run PIN setup screen + optional biometric opt-in, gating LodgyNavHost behind an AppRoot check for whether a Warden row exists yet. PIN hashed via bcrypt (jbcrypt), biometric enrollment checked via androidx.biometric BiometricManager, biometric-enabled preference stored in DataStore (not the Warden table - it's a device preference, not warden identity data). Scope call: fixing PIN length at 4 digits (auto-advancing enter->confirm->save) since DESIGN.md/the ticket don't fix a length and a variable 4-6 flow needs an explicit confirm control the wireframe didn't show - flagging in case Product Owner wants variable length later."
+    },
+    {
+      "timestamp": "2026-09-03T14:30:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Board-hygiene fix: PinSetupScreen/PinSetupViewModel (ui/auth/) were fully built in the same pass as the In Progress note but the ticket was never advanced. Re-verified all four AC by reading the code just now: AppRootViewModel shows PinSetupScreen whenever wardenRepository.getWarden() == null, before LodgyNavHost ever composes (AC1). PinSetupViewModel.persistAndFinish() calls PinHasher.hash(pin) (bcrypt via jbcrypt) before wardenRepository.createWarden - no plaintext PIN ever reaches storage (AC2). The BIOMETRIC step is only entered when biometricAvailability.isAvailable() is true post-confirm (AC3); when unavailable, advancePastConfirm() persists immediately and skips straight to DONE, so lacking/declining biometrics never blocks setup (AC4). `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still blocked by the emulator/adb issue noted throughout this session - worth confirming the biometric toggle actually enrolls against a real fingerprint sensor once a device/emulator is available."
     }
   ]
 }

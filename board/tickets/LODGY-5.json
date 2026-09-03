@@ -10,11 +10,11 @@
     "Biometric hardware failure, no enrolled biometrics, or repeated failed attempts falls back to PIN gracefully rather than locking the warden out",
     "If biometric unlock was never enabled, the app behaves exactly as PIN-only"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T04:40:00+00:00",
+  "updatedAt": "2026-09-03T14:30:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "Todo",
       "to": "In Progress",
       "note": "Starting - extends AppRootViewModel's state machine with Locked/Unlocked, gated by a ProcessLifecycleOwner observer (re-locks on whole-app onStop, not per-Activity onPause, so a biometric system dialog or a share sheet doesn't spuriously re-lock). MainActivity needs to become a FragmentActivity (still Compose-native, FragmentActivity extends androidx.activity.ComponentActivity) since BiometricPrompt 1.1.0's constructor requires one."
+    },
+    {
+      "timestamp": "2026-09-03T14:30:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Board-hygiene fix: PinLockScreen/PinLockViewModel (ui/auth/) were fully built alongside the In Progress note but the ticket was never advanced. Re-verified all five AC by reading the code just now: AppRootViewModel.onStop() forces state back to Locked on every app backgrounding, and AppRoot shows PinLockScreen whenever state == Locked, so cold start/resume always gates (AC1). PinLockViewModel.verify() checks PinHasher.verify() and on mismatch clears enteredDigits and sets error = R.string.pin_lock_incorrect_error with no throw path (AC2). PinLockScreen's LaunchedEffect(uiState.biometricEnabled) auto-invokes BiometricPrompt.authenticate() only when biometricEnabled is true, and PromptInfo sets a negative button labeled pin_lock_use_pin that's always visible alongside the PIN keypad underneath (AC3). The AuthenticationCallback treats every onAuthenticationError code identically (lockout, cancel, no hardware, too many attempts) as a silent no-op, leaving the PIN keypad as the only active path - never stranding the warden (AC4). When biometricEnabled is false the LaunchedEffect returns immediately and PinLockScreen behaves as pure PIN entry (AC5). `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still blocked by the emulator/adb issue noted throughout this session - worth exercising real biometric lockout/cancellation on a device to confirm the fallback feels right, not just that the code path exists."
     }
   ]
 }
