@@ -28,4 +28,7 @@ interface TenancyAgreementDao {
 
     @Query("SELECT * FROM tenancy_agreements WHERE status = 'ACTIVE'")
     suspend fun getAllActive(): List<TenancyAgreement>
+
+    @Query("SELECT * FROM tenancy_agreements")
+    suspend fun getAll(): List<TenancyAgreement>
 }

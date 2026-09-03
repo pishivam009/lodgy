@@ -94,7 +94,7 @@ class MonthlyReportViewModel @Inject constructor(
             (bedsInHostel.count { it.status == BedStatus.OCCUPIED } * 100) / bedsInHostel.size
         }
 
-        val agreementIds = tenancyAgreementRepository.getAllActive()
+        val agreementIds = tenancyAgreementRepository.getAll()
             .filter { it.bedId in bedIdsInHostel }
             .map { it.id }
             .toSet()

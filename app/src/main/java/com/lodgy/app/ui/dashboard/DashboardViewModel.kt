@@ -52,9 +52,12 @@ class DashboardViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    private var currentHostelId: String? = null
+
     init {
         viewModelScope.launch {
             hostelPreferences.selectedHostelId.collect { hostelId ->
+                currentHostelId = hostelId
                 if (hostelId == null) {
                     _uiState.update { it.copy(loading = false, hasActiveHostel = false) }
                 } else {
@@ -62,6 +65,14 @@ class DashboardViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    /** Bottom-nav keeps this ViewModel alive across tab switches, so metrics computed from
+     *  one-shot fetches go stale the moment something changes elsewhere (a checkout, a payment)
+     *  without the selected hostel itself changing. Call this when the screen re-enters view. */
+    fun refresh() {
+        val hostelId = currentHostelId ?: return
+        viewModelScope.launch { loadMetrics(hostelId) }
     }
 
     private suspend fun loadMetrics(hostelId: String) {
@@ -73,7 +84,7 @@ class DashboardViewModel @Inject constructor(
         val bedIdsInHostel = bedsInHostel.map { it.id }.toSet()
         val vacantBedCount = bedsInHostel.count { it.status == BedStatus.VACANT }
 
-        val agreementsInHostel = tenancyAgreementRepository.getAllActive()
+        val agreementsInHostel = tenancyAgreementRepository.getAll()
             .filter { it.bedId in bedIdsInHostel }
         val agreementIds = agreementsInHostel.map { it.id }.toSet()
 

@@ -25,6 +25,7 @@ import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
 import com.lodgy.app.testutil.MainDispatcherRule
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -85,7 +86,7 @@ class DashboardViewModelTest {
         val movingSoon = TenancyAgreement(id = "a1", tenantId = "t1", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = nextWeek, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
         val movingTomorrow = TenancyAgreement(id = "a2", tenantId = "t2", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = tomorrow, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
         val alreadyClosed = TenancyAgreement(id = "a3", tenantId = "t3", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = yesterday, depositRefundAmount = null, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)
-        coEvery { tenancyAgreementRepository.getAllActive() } returns listOf(movingSoon, movingTomorrow, alreadyClosed)
+        coEvery { tenancyAgreementRepository.getAll() } returns listOf(movingSoon, movingTomorrow, alreadyClosed)
 
         coEvery { tenantRepository.getById("t1") } returns Tenant(id = "t1", name = "Later Tenant", phone = "1", photoPath = null, idProofPhotoPath = null, emergencyContactName = "", emergencyContactPhone = "", status = TenantStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
         coEvery { tenantRepository.getById("t2") } returns Tenant(id = "t2", name = "Soon Tenant", phone = "2", photoPath = null, idProofPhotoPath = null, emergencyContactName = "", emergencyContactPhone = "", status = TenantStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
@@ -106,5 +107,49 @@ class DashboardViewModelTest {
         assertEquals(1, state.overdueInvoiceCount)
         assertEquals(5000.0, state.todaysCollections, 0.0001)
         assertEquals(listOf("Soon Tenant", "Later Tenant"), state.upcomingMoveOuts.map { it.tenantName })
+    }
+
+    @Test
+    fun `a checked-out tenant's invoices and payments still count toward the metrics`() {
+        val now = System.currentTimeMillis()
+        val yesterday = now - TimeUnit.DAYS.toMillis(1)
+
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        val floor = Floor(id = "f1", hostelId = "h1", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(floor))
+        val room = Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.SINGLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        every { roomRepository.getByFloorId("f1") } returns flowOf(listOf(room))
+        val bed = Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)
+        every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(bed))
+
+        val closedAgreement = TenancyAgreement(id = "a1", tenantId = "t1", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = now, depositRefundAmount = 0.0, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)
+        coEvery { tenancyAgreementRepository.getAll() } returns listOf(closedAgreement)
+
+        val overdueInvoice = Invoice(id = "i1", tenancyAgreementId = "a1", periodMonth = 7, periodYear = 2026, amountDue = 5000.0, dueDate = yesterday, status = InvoiceStatus.UNPAID, createdAt = 0L, updatedAt = 0L)
+        every { invoiceRepository.getAll() } returns flowOf(listOf(overdueInvoice))
+
+        val paidToday = Payment(id = "p1", invoiceId = "i1", amount = 2000.0, paymentMode = PaymentMode.CASH, paidOn = now, note = null, createdAt = 0L, updatedAt = 0L)
+        coEvery { paymentRepository.getAll() } returns listOf(paidToday)
+
+        val state = viewModel().uiState.value
+
+        assertEquals(1, state.overdueInvoiceCount)
+        assertEquals(2000.0, state.todaysCollections, 0.0001)
+    }
+
+    @Test
+    fun `refresh re-fetches metrics for the currently selected hostel`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        every { floorRepository.getByHostelId("h1") } returns flowOf(emptyList())
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
+        every { invoiceRepository.getAll() } returns flowOf(emptyList())
+        coEvery { paymentRepository.getAll() } returns emptyList()
+
+        val viewModel = viewModel()
+        viewModel.refresh()
+
+        coVerify(exactly = 2) { hostelRepository.getById("h1") }
     }
 }

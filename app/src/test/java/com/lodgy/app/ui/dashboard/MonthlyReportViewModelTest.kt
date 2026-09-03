@@ -88,7 +88,7 @@ class MonthlyReportViewModelTest {
 
         val agreement = TenancyAgreement(id = "a1", tenantId = "t1", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = null, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
         val unrelatedAgreement = TenancyAgreement(id = "a2", tenantId = "t2", bedId = "other-bed", agreedRent = 1000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = null, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
-        coEvery { tenancyAgreementRepository.getAllActive() } returns listOf(agreement, unrelatedAgreement)
+        coEvery { tenancyAgreementRepository.getAll() } returns listOf(agreement, unrelatedAgreement)
 
         val invoiceThisPeriod = Invoice(id = "i1", tenancyAgreementId = "a1", periodMonth = currentMonth, periodYear = currentYear, amountDue = 5000.0, dueDate = 0L, status = InvoiceStatus.PARTIAL, createdAt = 0L, updatedAt = 0L)
         val invoiceOtherPeriod = Invoice(id = "i2", tenancyAgreementId = "a1", periodMonth = currentMonth - 1, periodYear = currentYear, amountDue = 5000.0, dueDate = 0L, status = InvoiceStatus.UNPAID, createdAt = 0L, updatedAt = 0L)
@@ -117,7 +117,7 @@ class MonthlyReportViewModelTest {
         every { hostelPreferences.selectedHostelId } returns flowOf("h1")
         coEvery { hostelRepository.getById("h1") } returns null
         every { floorRepository.getByHostelId("h1") } returns flowOf(emptyList())
-        coEvery { tenancyAgreementRepository.getAllActive() } returns emptyList()
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
         every { invoiceRepository.getAll() } returns flowOf(emptyList())
         coEvery { paymentRepository.getAll() } returns emptyList()
         every { expenseRepository.getByHostelId("h1") } returns flowOf(emptyList())
@@ -135,7 +135,7 @@ class MonthlyReportViewModelTest {
         every { hostelPreferences.selectedHostelId } returns flowOf("h1")
         coEvery { hostelRepository.getById("h1") } returns null
         every { floorRepository.getByHostelId("h1") } returns flowOf(emptyList())
-        coEvery { tenancyAgreementRepository.getAllActive() } returns emptyList()
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
         every { invoiceRepository.getAll() } returns flowOf(emptyList())
         coEvery { paymentRepository.getAll() } returns emptyList()
         every { expenseRepository.getByHostelId("h1") } returns flowOf(emptyList())
@@ -144,5 +144,34 @@ class MonthlyReportViewModelTest {
 
         assertEquals(0, state.occupancyPercent)
         assertFalse(state.loading)
+    }
+
+    @Test
+    fun `a checked-out tenant's invoice and payment still count for the period they occurred in`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        val floor = Floor(id = "f1", hostelId = "h1", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(floor))
+        val room = Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.SINGLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        every { roomRepository.getByFloorId("f1") } returns flowOf(listOf(room))
+        val bed = Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)
+        every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(bed))
+
+        val closedAgreement = TenancyAgreement(id = "a1", tenantId = "t1", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = 0L, depositRefundAmount = 0.0, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)
+        coEvery { tenancyAgreementRepository.getAll() } returns listOf(closedAgreement)
+
+        val invoice = Invoice(id = "i1", tenancyAgreementId = "a1", periodMonth = 7, periodYear = 2026, amountDue = 5000.0, dueDate = 0L, status = InvoiceStatus.PAID, createdAt = 0L, updatedAt = 0L)
+        every { invoiceRepository.getAll() } returns flowOf(listOf(invoice))
+
+        val payment = Payment(id = "p1", invoiceId = "i1", amount = 5000.0, paymentMode = PaymentMode.CASH, paidOn = 0L, note = null, createdAt = 0L, updatedAt = 0L)
+        coEvery { paymentRepository.getAll() } returns listOf(payment)
+        every { expenseRepository.getByHostelId("h1") } returns flowOf(emptyList())
+
+        val viewModel = viewModel()
+        viewModel.onMonthChange(7)
+        viewModel.onYearChange(2026)
+
+        assertEquals(5000.0, viewModel.uiState.value.totalCollected, 0.0001)
+        assertEquals(0.0, viewModel.uiState.value.totalDues, 0.0001)
     }
 }

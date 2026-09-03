@@ -12,6 +12,10 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
 
     suspend fun getAllActive(): List<TenancyAgreement> = dao.getAllActive()
 
+    /** Includes closed agreements - historical reporting needs a checked-out tenant's past
+     *  invoices/payments to still count. [getAllActive] would silently drop them. */
+    suspend fun getAll(): List<TenancyAgreement> = dao.getAll()
+
     suspend fun getById(id: String): TenancyAgreement? = dao.getById(id)
 
     suspend fun close(agreement: TenancyAgreement, moveOutDate: Long, depositRefundAmount: Double) {
