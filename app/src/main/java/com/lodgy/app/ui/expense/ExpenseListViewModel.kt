@@ -3,6 +3,7 @@ package com.lodgy.app.ui.expense
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.entity.Expense
+import com.lodgy.app.data.entity.ExpenseCategory
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.HostelRepository
@@ -17,14 +18,29 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+enum class ExpenseSort { DATE, AMOUNT }
+
 data class ExpenseListUiState(
     val loading: Boolean = true,
     val hasActiveHostel: Boolean = false,
     val hostelId: String? = null,
     val hostelName: String = "",
     val expenses: List<Expense> = emptyList(),
+    /** null means every category. */
+    val category: ExpenseCategory? = null,
+    val sort: ExpenseSort = ExpenseSort.DATE,
 ) {
-    val total: Double get() = expenses.sumOf { it.amount }
+    val visibleExpenses: List<Expense>
+        get() {
+            val byCategory = if (category == null) expenses else expenses.filter { it.category == category }
+            return when (sort) {
+                ExpenseSort.DATE -> byCategory.sortedByDescending { it.incurredOn }
+                ExpenseSort.AMOUNT -> byCategory.sortedByDescending { it.amount }
+            }
+        }
+
+    /** Follows the filter: the number under a "Repair only" list is the repair total. */
+    val total: Double get() = visibleExpenses.sumOf { it.amount }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -64,4 +80,8 @@ class ExpenseListViewModel @Inject constructor(
             }
         }
     }
+
+    fun onCategoryChange(category: ExpenseCategory?) = _uiState.update { it.copy(category = category) }
+
+    fun onSortChange(sort: ExpenseSort) = _uiState.update { it.copy(sort = sort) }
 }

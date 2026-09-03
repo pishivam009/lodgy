@@ -28,6 +28,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.Expense
+import com.lodgy.app.data.entity.ExpenseCategory
+import com.lodgy.app.ui.common.FilterChipRow
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 import java.text.SimpleDateFormat
@@ -81,10 +83,34 @@ fun ExpenseListScreen(
                 }
             }
 
-            if (!uiState.loading && uiState.expenses.isEmpty()) {
+            FilterChipRow(
+                options = listOf(null) + ExpenseCategory.entries,
+                selected = uiState.category,
+                onSelect = viewModel::onCategoryChange,
+                label = { it?.label() ?: stringResource(R.string.expense_filter_all_categories) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            )
+
+            FilterChipRow(
+                options = ExpenseSort.entries,
+                selected = uiState.sort,
+                onSelect = viewModel::onSortChange,
+                label = {
+                    stringResource(
+                        if (it == ExpenseSort.DATE) R.string.expense_sort_date else R.string.expense_sort_amount,
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                leadingLabel = stringResource(R.string.filter_sort_by),
+            )
+
+            val visible = uiState.visibleExpenses
+            if (!uiState.loading && visible.isEmpty()) {
                 Box(modifier = Modifier.fillMaxWidth().padding(32.dp)) {
                     Text(
-                        stringResource(R.string.expense_list_empty),
+                        stringResource(
+                            if (uiState.expenses.isEmpty()) R.string.expense_list_empty else R.string.filter_no_match,
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -94,7 +120,7 @@ fun ExpenseListScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(uiState.expenses, key = Expense::id) { expense ->
+                    items(visible, key = Expense::id) { expense ->
                         ExpenseRow(expense = expense, onClick = { onEditExpense(expense) })
                     }
                 }

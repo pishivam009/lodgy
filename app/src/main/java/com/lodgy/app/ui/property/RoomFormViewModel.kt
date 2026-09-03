@@ -22,6 +22,7 @@ data class RoomFormUiState(
     val pricePerBed: String = "",
     val amenities: String = "",
     val saved: Boolean = false,
+    val showTypeChangeConfirm: Boolean = false,
 ) {
     val canSave: Boolean get() = roomNumber.isNotBlank() && pricePerBed.toDoubleOrNull() != null
 }
@@ -65,18 +66,37 @@ class RoomFormViewModel @Inject constructor(
 
     fun save() {
         val state = _uiState.value
-        val price = state.pricePerBed.toDoubleOrNull() ?: return
-        if (state.roomNumber.isBlank()) return
+        if (!state.canSave) return
         viewModelScope.launch {
             val existing = existingRoom
-            if (existing != null) {
-                roomRepository.update(existing, state.roomNumber, state.type, price, state.amenities)
+            if (existing != null && state.type != existing.type && bedRepository.hasOccupiedBed(existing.id)) {
+                _uiState.update { it.copy(showTypeChangeConfirm = true) }
             } else {
-                val room = roomRepository.create(floorId, state.roomNumber, state.type, price, state.amenities)
-                bedRepository.generateForRoom(room.id, bedCountFor(state.type))
+                persist()
             }
-            _uiState.update { it.copy(saved = true) }
         }
+    }
+
+    fun confirmTypeChange() {
+        _uiState.update { it.copy(showTypeChangeConfirm = false) }
+        viewModelScope.launch { persist() }
+    }
+
+    fun dismissTypeChangeConfirm() {
+        _uiState.update { it.copy(showTypeChangeConfirm = false) }
+    }
+
+    private suspend fun persist() {
+        val state = _uiState.value
+        val price = state.pricePerBed.toDoubleOrNull() ?: return
+        val existing = existingRoom
+        if (existing != null) {
+            roomRepository.update(existing, state.roomNumber, state.type, price, state.amenities)
+        } else {
+            val room = roomRepository.create(floorId, state.roomNumber, state.type, price, state.amenities)
+            bedRepository.generateForRoom(room.id, bedCountFor(state.type))
+        }
+        _uiState.update { it.copy(saved = true) }
     }
 
     private fun bedCountFor(type: RoomType): Int = when (type) {

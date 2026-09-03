@@ -25,4 +25,48 @@ interface BedDao {
 
     @Query("SELECT * FROM beds WHERE roomId = :roomId")
     fun getByRoomId(roomId: String): Flow<List<Bed>>
+
+    @Query(
+        "SELECT rooms.roomNumber AS roomNumber, beds.label AS bedLabel FROM beds " +
+            "INNER JOIN rooms ON rooms.id = beds.roomId WHERE beds.id = :bedId",
+    )
+    suspend fun getLocation(bedId: String): BedLocation?
+
+    @Query(
+        "SELECT beds.roomId AS roomId, COUNT(*) AS totalBeds, " +
+            "SUM(CASE WHEN beds.status = 'OCCUPIED' THEN 1 ELSE 0 END) AS occupiedBeds " +
+            "FROM beds INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "WHERE rooms.floorId = :floorId GROUP BY beds.roomId",
+    )
+    fun observeOccupancyByFloor(floorId: String): Flow<List<RoomOccupancy>>
+
+    /** LEFT JOINs so a floor with no rooms (or rooms with no beds yet) still reports 0/0
+     *  rather than vanishing from the floor list's summary. */
+    @Query(
+        "SELECT floors.id AS floorId, COUNT(beds.id) AS totalBeds, " +
+            "SUM(CASE WHEN beds.status = 'OCCUPIED' THEN 1 ELSE 0 END) AS occupiedBeds " +
+            "FROM floors LEFT JOIN rooms ON rooms.floorId = floors.id " +
+            "LEFT JOIN beds ON beds.roomId = rooms.id " +
+            "WHERE floors.hostelId = :hostelId GROUP BY floors.id",
+    )
+    fun observeOccupancyByHostel(hostelId: String): Flow<List<FloorOccupancy>>
+
+    @Query(
+        "SELECT beds.roomId AS roomId, COUNT(*) AS totalBeds, " +
+            "SUM(CASE WHEN beds.status = 'OCCUPIED' THEN 1 ELSE 0 END) AS occupiedBeds " +
+            "FROM beds INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "INNER JOIN floors ON floors.id = rooms.floorId " +
+            "WHERE floors.hostelId = :hostelId GROUP BY beds.roomId",
+    )
+    fun observeRoomOccupancyByHostel(hostelId: String): Flow<List<RoomOccupancy>>
+
+    @Query(
+        "SELECT beds.id AS bedId, beds.label AS bedLabel, rooms.roomNumber AS roomNumber, " +
+            "rooms.pricePerBed AS pricePerBed, floors.label AS floorLabel " +
+            "FROM beds INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "INNER JOIN floors ON floors.id = rooms.floorId " +
+            "WHERE floors.hostelId = :hostelId AND beds.status = 'VACANT' " +
+            "ORDER BY floors.sortOrder, rooms.roomNumber, beds.label",
+    )
+    suspend fun getVacantBedsByHostel(hostelId: String): List<VacantBedRow>
 }

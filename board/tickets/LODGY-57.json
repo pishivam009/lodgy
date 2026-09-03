@@ -10,17 +10,33 @@
     "Changing a Room's type while it has an occupied bed shows a confirmation before applying",
     "Routine non-destructive edits (renaming a hostel, editing a phone number, etc.) are explicitly NOT changed - no new confirmation added where there's nothing destructive happening"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T16:29:22+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    },
+    {
+      "timestamp": "2026-09-03T16:24:32+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - reproduced the bug: RoomListViewModel.requestDelete() calls roomRepository.delete() immediately for a vacant room, no prompt. Adding a confirmation step there plus a type-change confirmation in RoomFormViewModel; auditing Floor/Note delete paths against the NoteFormScreen pattern."
+    },
+    {
+      "timestamp": "2026-09-03T16:29:22+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed. (1) Room delete: RoomListViewModel.requestDelete() no longer deletes - it sets pendingDeleteRoom; new confirmDelete()/dismissPendingDelete(). RoomListScreen shows a Delete/Cancel AlertDialog; the occupied-bed hard block is unchanged and still takes precedence. (2) Room type change: RoomFormViewModel.save() now checks type-changed + hasOccupiedBed and raises showTypeChangeConfirm instead of persisting; confirmTypeChange()/dismissTypeChangeConfirm() added, save path refactored into a private persist(). Dialog in RoomFormScreen. (3) Floor delete: AUDITED, NO CODE CHANGE NEEDED - FloorListScreen already has the pendingDelete AlertDialog and floor_delete_body already states 'and any rooms/beds under it will be removed'. The ticket description called FloorListViewModel.delete() unguarded, which is true at the VM level but the screen gates it. (4) Note delete: untouched, used as the pattern. (5) No confirmations added to routine edits. New strings in values/ and values-hi/. Tests: 7 new/updated ViewModel tests (RoomListViewModelTest, RoomFormViewModelTest); full testDebugUnitTest suite + assembleDebug green. FLAG FOR PO: deleting a floor still cascades to rooms/beds with NO occupied-bed check, unlike room delete which hard-blocks. Out of this ticket's ACs so I did not add it - worth its own ticket if wardens can lose an active tenancy that way."
     }
   ]
 }

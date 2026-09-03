@@ -7,6 +7,7 @@ import com.lodgy.app.contact.ReminderLanguage
 import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.Bed
 import com.lodgy.app.data.entity.BedStatus
+import com.lodgy.app.data.entity.Credit
 import com.lodgy.app.data.entity.Floor
 import com.lodgy.app.data.entity.Hostel
 import com.lodgy.app.data.entity.Invoice
@@ -17,6 +18,7 @@ import com.lodgy.app.data.entity.Tenant
 import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.entity.TenantStatus
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.data.repository.InvoiceRepository
@@ -45,8 +47,9 @@ class ReminderViewModelTest {
     private val roomRepository: RoomRepository = mockk()
     private val floorRepository: FloorRepository = mockk()
     private val hostelRepository: HostelRepository = mockk()
+    private val creditRepository: CreditRepository = mockk()
 
-    private fun viewModel(): ReminderViewModel {
+    private fun viewModel(credits: List<Credit> = emptyList()): ReminderViewModel {
         every { context.getString(any(), *anyVararg()) } returns "built message"
 
         val invoice = Invoice(id = "inv-1", tenancyAgreementId = "a1", periodMonth = 9, periodYear = 2026, amountDue = 5000.0, dueDate = 100L, status = InvoiceStatus.UNPAID, createdAt = 0L, updatedAt = 0L)
@@ -64,10 +67,12 @@ class ReminderViewModelTest {
         coEvery { roomRepository.getById("r1") } returns room
         coEvery { floorRepository.getById("f1") } returns floor
         coEvery { hostelRepository.getById("h1") } returns hostel
+        coEvery { creditRepository.getByInvoiceId("inv-1") } returns credits
 
         return ReminderViewModel(
-            context, invoiceRepository, tenancyAgreementRepository, tenantRepository, bedRepository,
-            roomRepository, floorRepository, hostelRepository, SavedStateHandle(mapOf("invoiceId" to "inv-1")),
+            context, invoiceRepository, creditRepository, tenancyAgreementRepository, tenantRepository,
+            bedRepository, roomRepository, floorRepository, hostelRepository,
+            SavedStateHandle(mapOf("invoiceId" to "inv-1")),
         )
     }
 

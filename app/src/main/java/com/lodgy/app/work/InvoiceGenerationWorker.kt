@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.InvoiceRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import dagger.assisted.Assisted
@@ -16,6 +17,7 @@ class InvoiceGenerationWorker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val tenancyAgreementRepository: TenancyAgreementRepository,
     private val invoiceRepository: InvoiceRepository,
+    private val creditRepository: CreditRepository,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -29,7 +31,10 @@ class InvoiceGenerationWorker @AssistedInject constructor(
             .filter { it.billingCycleDay == dayOfMonth }
             .forEach { agreement ->
                 if (!invoiceRepository.existsForPeriod(agreement.id, periodMonth, periodYear)) {
-                    invoiceRepository.create(agreement.id, periodMonth, periodYear, agreement.agreedRent, dueDate)
+                    val invoice = invoiceRepository.create(
+                        agreement.id, periodMonth, periodYear, agreement.agreedRent, dueDate,
+                    )
+                    creditRepository.applyPendingTo(agreement.tenantId, invoice.id)
                 }
             }
 

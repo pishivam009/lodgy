@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.lodgy.app.ui.property.AllRoomsScreen
 import com.lodgy.app.ui.property.BulkRoomFormScreen
 import com.lodgy.app.ui.property.FloorFormScreen
 import com.lodgy.app.ui.property.FloorListScreen
@@ -35,6 +36,7 @@ import com.lodgy.app.ui.expense.ExpenseListScreen
 import com.lodgy.app.ui.more.MoreScreen
 import com.lodgy.app.ui.note.NoteFormScreen
 import com.lodgy.app.ui.note.NotesTimelineScreen
+import com.lodgy.app.ui.payment.CreditFormScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
 import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
 import com.lodgy.app.ui.payment.ManualInvoiceTenantPickerScreen
@@ -46,6 +48,7 @@ import com.lodgy.app.ui.tenant.CheckoutScreen
 import com.lodgy.app.ui.tenant.TenantDirectoryScreen
 import com.lodgy.app.ui.tenant.TenantFormScreen
 import com.lodgy.app.ui.tenant.TenantProfileScreen
+import com.lodgy.app.ui.tenant.TransferScreen
 
 private const val HOSTEL_FORM_ROUTE = "hostel_form"
 private const val FLOOR_LIST_ROUTE = "floor_list"
@@ -53,12 +56,15 @@ private const val FLOOR_FORM_ROUTE = "floor_form"
 private const val ROOM_LIST_ROUTE = "room_list"
 private const val ROOM_FORM_ROUTE = "room_form"
 private const val BULK_ROOM_FORM_ROUTE = "bulk_room_form"
+private const val ALL_ROOMS_ROUTE = "all_rooms"
 private const val BED_GRID_ROUTE = "bed_grid"
 private const val BED_PICKER_ROUTE = "bed_picker"
 private const val TENANT_FORM_ROUTE = "tenant_form"
 private const val TENANT_PROFILE_ROUTE = "tenant_profile"
 private const val AGREEMENT_FORM_ROUTE = "agreement_form"
 private const val CHECKOUT_ROUTE = "checkout"
+private const val TRANSFER_ROUTE = "transfer"
+private const val CREDIT_FORM_ROUTE = "credit_form"
 private const val RECORD_PAYMENT_ROUTE = "record_payment"
 private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_picker"
 private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
@@ -105,9 +111,19 @@ fun LodgyNavHost() {
             navController = navController,
             startDestination = LodgyDestination.Home.route,
             modifier = Modifier.padding(innerPadding),
+            enterTransition = pushEnter,
+            exitTransition = pushExit,
+            popEnterTransition = popEnter,
+            popExitTransition = popExit,
         ) {
             LodgyDestination.entries.forEach { destination ->
-                composable(destination.route) {
+                composable(
+                    route = destination.route,
+                    enterTransition = tabEnter,
+                    exitTransition = tabExit,
+                    popEnterTransition = tabEnter,
+                    popExitTransition = tabExit,
+                ) {
                     when (destination) {
                         LodgyDestination.Property -> HostelListScreen(
                             onAddHostel = { navController.navigate(HOSTEL_FORM_ROUTE) },
@@ -155,6 +171,7 @@ fun LodgyNavHost() {
                     onAddFloor = { navController.navigate("$FLOOR_FORM_ROUTE/$hostelId") },
                     onEditFloor = { floor -> navController.navigate("$FLOOR_FORM_ROUTE/$hostelId?floorId=${floor.id}") },
                     onOpenRooms = { floor -> navController.navigate("$ROOM_LIST_ROUTE/${floor.id}") },
+                    onOpenAllRooms = { navController.navigate("$ALL_ROOMS_ROUTE/$hostelId") },
                 )
             }
 
@@ -182,6 +199,16 @@ fun LodgyNavHost() {
                     onBulkAddRooms = { navController.navigate("$BULK_ROOM_FORM_ROUTE/$floorId") },
                     onEditRoom = { room -> navController.navigate("$ROOM_FORM_ROUTE/$floorId?roomId=${room.id}") },
                     onOpenBeds = { room -> navController.navigate("$BED_GRID_ROUTE/${room.id}") },
+                )
+            }
+
+            composable(
+                route = "$ALL_ROOMS_ROUTE/{hostelId}",
+                arguments = listOf(navArgument("hostelId") { type = NavType.StringType }),
+            ) {
+                AllRoomsScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenRoom = { roomId -> navController.navigate("$BED_GRID_ROUTE/$roomId") },
                 )
             }
 
@@ -243,6 +270,8 @@ fun LodgyNavHost() {
                     onBack = { navController.popBackStack() },
                     onEdit = { tenantId -> navController.navigate("$TENANT_FORM_ROUTE?tenantId=$tenantId") },
                     onCheckout = { tenantId -> navController.navigate("$CHECKOUT_ROUTE/$tenantId") },
+                    onTransfer = { tenantId -> navController.navigate("$TRANSFER_ROUTE/$tenantId") },
+                    onRecordCredit = { tenantId -> navController.navigate("$CREDIT_FORM_ROUTE/$tenantId") },
                     onOpenNotes = { tenantId -> navController.navigate("$NOTES_TIMELINE_ROUTE/$tenantId") },
                 )
             }
@@ -269,6 +298,26 @@ fun LodgyNavHost() {
                 NoteFormScreen(
                     onDone = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(
+                route = "$CREDIT_FORM_ROUTE/{tenantId}",
+                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+            ) {
+                CreditFormScreen(
+                    onBack = { navController.popBackStack() },
+                    onDone = { navController.popBackStack() },
+                )
+            }
+
+            composable(
+                route = "$TRANSFER_ROUTE/{tenantId}",
+                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+            ) {
+                TransferScreen(
+                    onBack = { navController.popBackStack() },
+                    onDone = { navController.popBackStack() },
                 )
             }
 

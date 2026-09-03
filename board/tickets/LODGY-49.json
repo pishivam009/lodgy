@@ -8,17 +8,33 @@
     "Home dashboard's 'Upcoming move-outs' tile (LODGY-20) now genuinely populates from real data",
     "The planned date does not auto-checkout the tenant - checkout (LODGY-14) remains an explicit separate action on or after that date"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T18:01:30+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T17:58:37+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - a notice/planned move-out date recorded on the ACTIVE agreement so the dashboard's Upcoming move-outs tile finally has a data source, with checkout left as a separate explicit action."
+    },
+    {
+      "timestamp": "2026-09-03T18:01:30+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Notice/planned move-out now exists, so LODGY-20's Upcoming move-outs tile has a real data source. TenancyAgreementRepository.setPlannedMoveOut() writes moveOutDate on the agreement and changes nothing else - status stays ACTIVE, the bed stays OCCUPIED, no deposit settlement - which is exactly the shape the dashboard query already looked for (ACTIVE + moveOutDate in the future), so that tile needed no change to start populating. Passing null withdraws the notice. Surfaced on TenantProfileScreen for active tenants only, as a 'Notice given' card with a date picker (same Material DatePickerDialog pattern as the note and expense forms), a Withdraw notice action once a date is set, and a line stating plainly that recording notice does not check the tenant out. TenantProfileViewModel only reports moveOutDate as a pending notice when the latest agreement is ACTIVE - on a CLOSED one that field is the historical checkout date, not a notice. TenantProfileViewModelTest covers all four cases including that close() is never called. testDebugUnitTest green."
     }
   ]
 }

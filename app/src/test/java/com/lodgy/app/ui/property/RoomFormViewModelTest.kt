@@ -106,6 +106,69 @@ class RoomFormViewModelTest {
     }
 
     @Test
+    fun `changing the type of a room with an occupied bed asks for confirmation first`() {
+        val room = Room(id = "r1", floorId = "floor-1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3500.0, amenities = "AC", createdAt = 0L, updatedAt = 0L)
+        coEvery { roomRepository.getById("r1") } returns room
+        coEvery { bedRepository.hasOccupiedBed("r1") } returns true
+
+        val viewModel = viewModel("r1")
+        viewModel.onTypeChange(RoomType.TRIPLE)
+        viewModel.save()
+
+        assertTrue(viewModel.uiState.value.showTypeChangeConfirm)
+        assertFalse(viewModel.uiState.value.saved)
+        coVerify(exactly = 0) { roomRepository.update(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `confirmTypeChange applies the pending type change`() {
+        val room = Room(id = "r1", floorId = "floor-1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3500.0, amenities = "AC", createdAt = 0L, updatedAt = 0L)
+        coEvery { roomRepository.getById("r1") } returns room
+        coEvery { bedRepository.hasOccupiedBed("r1") } returns true
+        coEvery { roomRepository.update(room, "101", RoomType.TRIPLE, 3500.0, "AC") } returns Unit
+
+        val viewModel = viewModel("r1")
+        viewModel.onTypeChange(RoomType.TRIPLE)
+        viewModel.save()
+        viewModel.confirmTypeChange()
+
+        coVerify { roomRepository.update(room, "101", RoomType.TRIPLE, 3500.0, "AC") }
+        assertFalse(viewModel.uiState.value.showTypeChangeConfirm)
+        assertTrue(viewModel.uiState.value.saved)
+    }
+
+    @Test
+    fun `dismissTypeChangeConfirm abandons the save`() {
+        val room = Room(id = "r1", floorId = "floor-1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3500.0, amenities = "AC", createdAt = 0L, updatedAt = 0L)
+        coEvery { roomRepository.getById("r1") } returns room
+        coEvery { bedRepository.hasOccupiedBed("r1") } returns true
+
+        val viewModel = viewModel("r1")
+        viewModel.onTypeChange(RoomType.TRIPLE)
+        viewModel.save()
+        viewModel.dismissTypeChangeConfirm()
+
+        assertFalse(viewModel.uiState.value.showTypeChangeConfirm)
+        assertFalse(viewModel.uiState.value.saved)
+        coVerify(exactly = 0) { roomRepository.update(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `changing the type of a room with no occupied bed saves without a prompt`() {
+        val room = Room(id = "r1", floorId = "floor-1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3500.0, amenities = "AC", createdAt = 0L, updatedAt = 0L)
+        coEvery { roomRepository.getById("r1") } returns room
+        coEvery { bedRepository.hasOccupiedBed("r1") } returns false
+        coEvery { roomRepository.update(room, "101", RoomType.SINGLE, 3500.0, "AC") } returns Unit
+
+        val viewModel = viewModel("r1")
+        viewModel.onTypeChange(RoomType.SINGLE)
+        viewModel.save()
+
+        assertFalse(viewModel.uiState.value.showTypeChangeConfirm)
+        coVerify { roomRepository.update(room, "101", RoomType.SINGLE, 3500.0, "AC") }
+    }
+
+    @Test
     fun `save is a no-op when the room number is blank`() {
         val viewModel = viewModel()
         viewModel.onPriceChange("3000")

@@ -7,11 +7,11 @@
     "Tenant directory can filter to Active-only (hide vacated) and sort by name or room",
     "Filter/sort state resets sensibly and doesn't silently hide data the warden forgot was filtered"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T17:41:01+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -24,6 +24,22 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Narrowed to Tenant directory only - this was scoped too broadly as one ticket spanning four different screens. Room/Bed filtering is now LODGY-53, Invoice date filter+sort is LODGY-54, Expense filter+sort is LODGY-55."
+    },
+    {
+      "timestamp": "2026-09-03T17:38:27+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - filter (All/Active) and sort (Name/Room) on the tenant directory. Defaulting the filter to Active-only since that is the complaint, but pairing it with a permanent 'N vacated hidden' line so AC 2 holds - the default helps without anything disappearing silently."
+    },
+    {
+      "timestamp": "2026-09-03T17:41:01+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Tenant directory now has a filter (Active only / All, defaulting to Active only) and a sort (Name / Room). AC 2 is handled by never hiding anything silently: both chip rows are always on screen showing the live selection, and whenever the filter drops rows the list is preceded by 'N vacated tenant(s) hidden by this filter', so the default can be the helpful one without a warden losing track of it. Room sort uses roomSortKey(), which orders numeric rooms numerically ('204' before '1005' - a plain string sort gets this backwards), then text-labelled rooms like 'G-2', then tenants with no room at all; name sort is case-insensitive. Added the shared ui/common/FilterChipRow.kt (horizontally scrolling so a long option set never clips) which LODGY-53/54/55 will reuse. TenantDirectoryViewModelTest covers the default filter and its hidden count, switching to ALL, case-insensitive name sort, and the three-way room ordering. testDebugUnitTest green."
     }
   ]
 }

@@ -33,10 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.data.entity.Credit
 import com.lodgy.app.data.entity.NoteType
 import com.lodgy.app.data.entity.TenantNote
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
+import com.lodgy.app.ui.theme.LodgyStatus
+import com.lodgy.app.ui.theme.StatusLevel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -72,7 +75,7 @@ fun NotesTimelineScreen(
             }
         },
     ) { padding ->
-        if (uiState.notes.isEmpty()) {
+        if (uiState.entries.isEmpty()) {
             if (!uiState.loading) {
                 Box(modifier = Modifier.padding(padding).fillMaxWidth().padding(32.dp)) {
                     Text(
@@ -88,9 +91,47 @@ fun NotesTimelineScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(padding),
             ) {
-                items(uiState.notes, key = TenantNote::id) { note ->
-                    NoteRow(note = note, onClick = { onOpenNote(note) })
+                items(uiState.entries, key = { entryKey(it) }) { entry ->
+                    when (entry) {
+                        is TimelineEntry.NoteEntry ->
+                            NoteRow(note = entry.note, onClick = { onOpenNote(entry.note) })
+                        is TimelineEntry.CreditEntry -> CreditRow(entry.credit)
+                    }
                 }
+            }
+        }
+    }
+}
+
+private fun entryKey(entry: TimelineEntry): String = when (entry) {
+    is TimelineEntry.NoteEntry -> "note-${entry.note.id}"
+    is TimelineEntry.CreditEntry -> "credit-${entry.credit.id}"
+}
+
+/** Read-only: a credit is edited where it was recorded, not from the timeline. */
+@Composable
+private fun CreditRow(credit: Credit) {
+    val dateFormat = remember(credit.id) { SimpleDateFormat("d MMM yyyy", Locale.getDefault()) }
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.padding(14.dp).fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            Box(
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(LodgyStatus.colors[StatusLevel.GOOD].accent),
+            )
+            Column(modifier = Modifier.padding(start = 12.dp)) {
+                Text(
+                    dateFormat.format(Date(credit.createdAt)),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    stringResource(R.string.credit_timeline_entry, credit.amount, credit.reason),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
             }
         }
     }

@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.entity.Bed
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.RoomRepository
+import com.lodgy.app.ui.common.BedFilter
+import com.lodgy.app.ui.common.matches
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +20,10 @@ data class BedGridUiState(
     val roomNumber: String = "",
     val roomType: String = "",
     val beds: List<Bed> = emptyList(),
-)
+    val filter: BedFilter = BedFilter.ALL,
+) {
+    val filteredBeds: List<Bed> get() = beds.filter { filter.matches(it.status) }
+}
 
 @HiltViewModel
 class BedGridViewModel @Inject constructor(
@@ -43,4 +48,6 @@ class BedGridViewModel @Inject constructor(
             }
         }
     }
+
+    fun onFilterChange(filter: BedFilter) = _uiState.update { it.copy(filter = filter) }
 }

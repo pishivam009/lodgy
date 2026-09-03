@@ -77,8 +77,25 @@ fun RecordPaymentScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column {
+                        uiState.location?.let {
+                            Text(it.label(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                        }
                         Text(uiState.tenantName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(stringResource(R.string.currency_amount, uiState.amountDue), style = MaterialTheme.typography.titleMedium)
+                        if (uiState.creditTotal > 0.0) {
+                            Text(
+                                stringResource(
+                                    R.string.credit_line_item,
+                                    stringResource(R.string.currency_amount, uiState.creditTotal),
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                stringResource(R.string.invoice_after_credit, uiState.effectiveDue),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
                     }
                     Column {
                         Text(stringResource(R.string.record_payment_already_paid), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

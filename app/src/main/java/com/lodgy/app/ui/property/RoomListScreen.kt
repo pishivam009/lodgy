@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.Room
+import com.lodgy.app.ui.common.FilterChipRow
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 import com.lodgy.app.ui.icons.strokeIcon
@@ -78,30 +79,64 @@ fun RoomListScreen(
             }
         },
     ) { padding ->
-        if (uiState.rooms.isEmpty()) {
-            Box(modifier = Modifier.padding(padding).fillMaxWidth().padding(32.dp)) {
-                Text(
-                    stringResource(R.string.room_list_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(padding),
-            ) {
-                items(uiState.rooms, key = Room::id) { room ->
-                    RoomRow(
-                        room = room,
-                        onOpen = { onOpenBeds(room) },
-                        onEdit = { onEditRoom(room) },
-                        onDelete = { viewModel.requestDelete(room) },
+        Column(modifier = Modifier.padding(padding)) {
+            FilterChipRow(
+                options = RoomFilter.entries,
+                selected = uiState.filter,
+                onSelect = viewModel::onFilterChange,
+                label = {
+                    stringResource(
+                        when (it) {
+                            RoomFilter.ALL -> R.string.room_filter_all
+                            RoomFilter.HAS_SPACE -> R.string.room_filter_has_space
+                            RoomFilter.FULL -> R.string.room_filter_full
+                        },
                     )
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+
+            val visible = uiState.filteredItems
+            if (visible.isEmpty()) {
+                Box(modifier = Modifier.fillMaxWidth().padding(32.dp)) {
+                    Text(
+                        stringResource(
+                            if (uiState.items.isEmpty()) R.string.room_list_empty else R.string.filter_no_match,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(visible, key = { it.room.id }) { item ->
+                        RoomRow(
+                            item = item,
+                            onOpen = { onOpenBeds(item.room) },
+                            onEdit = { onEditRoom(item.room) },
+                            onDelete = { viewModel.requestDelete(item.room) },
+                        )
+                    }
                 }
             }
         }
+    }
+
+    uiState.pendingDeleteRoom?.let { room ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissPendingDelete,
+            title = { Text(stringResource(R.string.room_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.room_delete_confirm_body, room.roomNumber)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmDelete) { Text(stringResource(R.string.room_delete_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissPendingDelete) { Text(stringResource(R.string.cancel)) }
+            },
+        )
     }
 
     uiState.blockedDeleteRoom?.let { room ->
@@ -117,7 +152,8 @@ fun RoomListScreen(
 }
 
 @Composable
-private fun RoomRow(room: Room, onOpen: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun RoomRow(item: RoomListItem, onOpen: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+    val room = item.room
     Card(onClick = onOpen, modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
@@ -130,6 +166,11 @@ private fun RoomRow(room: Room, onOpen: () -> Unit, onEdit: () -> Unit, onDelete
                 )
                 Text(
                     stringResource(R.string.room_price_per_bed, room.pricePerBed),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    stringResource(R.string.room_bed_summary, item.vacantBeds, item.totalBeds),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

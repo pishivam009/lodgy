@@ -7,17 +7,33 @@
     "Expense list can filter by category",
     "Expense list can sort by date or amount"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T17:52:20+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    },
+    {
+      "timestamp": "2026-09-03T17:49:54+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - category filter and date/amount sort on the expense list, reusing FilterChipRow."
+    },
+    {
+      "timestamp": "2026-09-03T17:52:20+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Expense list gained a category filter (an 'All' chip plus one per ExpenseCategory, reusing the existing .label() so the names stay translated) and a date/amount sort, both via the shared FilterChipRow. The header total now sums the visible rows rather than every expense - under a 'Repair only' list the number a warden reads is the repair total, and the active chip is right above it so there is no ambiguity about what is being totalled. An empty filtered result says 'Nothing matches this filter' instead of the no-expenses-yet message. ExpenseListViewModelTest covers the filter narrowing both list and total, clearing back to All, and both sort orders. testDebugUnitTest green."
     }
   ]
 }

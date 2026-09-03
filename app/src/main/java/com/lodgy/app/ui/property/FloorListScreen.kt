@@ -43,6 +43,7 @@ fun FloorListScreen(
     onAddFloor: () -> Unit,
     onEditFloor: (Floor) -> Unit,
     onOpenRooms: (Floor) -> Unit,
+    onOpenAllRooms: () -> Unit,
     viewModel: FloorListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -57,6 +58,9 @@ fun FloorListScreen(
                 } },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(CommonIcons.Back, contentDescription = null) }
+                },
+                actions = {
+                    TextButton(onClick = onOpenAllRooms) { Text(stringResource(R.string.all_rooms_action)) }
                 },
             )
         },
@@ -80,14 +84,14 @@ fun FloorListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(padding),
             ) {
-                items(uiState.floors, key = Floor::id) { floor ->
+                items(uiState.items, key = { it.floor.id }) { item ->
                     FloorRow(
-                        floor = floor,
-                        onOpen = { onOpenRooms(floor) },
-                        onEdit = { onEditFloor(floor) },
-                        onMoveUp = { viewModel.moveUp(floor) },
-                        onMoveDown = { viewModel.moveDown(floor) },
-                        onDelete = { pendingDelete = floor },
+                        item = item,
+                        onOpen = { onOpenRooms(item.floor) },
+                        onEdit = { onEditFloor(item.floor) },
+                        onMoveUp = { viewModel.moveUp(item.floor) },
+                        onMoveDown = { viewModel.moveDown(item.floor) },
+                        onDelete = { pendingDelete = item.floor },
                     )
                 }
             }
@@ -113,7 +117,7 @@ fun FloorListScreen(
 
 @Composable
 private fun FloorRow(
-    floor: Floor,
+    item: FloorListItem,
     onOpen: () -> Unit,
     onEdit: () -> Unit,
     onMoveUp: () -> Unit,
@@ -125,7 +129,14 @@ private fun FloorRow(
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(floor.label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(item.floor.label, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(R.string.floor_bed_summary, item.vacantBeds, item.occupiedBeds),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             IconButton(onClick = onMoveUp) { Icon(CommonIcons.ArrowUp, contentDescription = stringResource(R.string.floor_move_up)) }
             IconButton(onClick = onMoveDown) { Icon(CommonIcons.ArrowDown, contentDescription = stringResource(R.string.floor_move_down)) }
             IconButton(onClick = onEdit) { Icon(CommonIcons.Edit, contentDescription = stringResource(R.string.floor_edit)) }

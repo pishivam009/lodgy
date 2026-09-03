@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -15,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -100,5 +102,21 @@ fun RoomFormScreen(
                 Text(stringResource(R.string.room_form_save))
             }
         }
+    }
+
+    if (uiState.showTypeChangeConfirm) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissTypeChangeConfirm,
+            title = { Text(stringResource(R.string.room_type_change_confirm_title)) },
+            text = { Text(stringResource(R.string.room_type_change_confirm_body)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmTypeChange) {
+                    Text(stringResource(R.string.room_type_change_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissTypeChangeConfirm) { Text(stringResource(R.string.cancel)) }
+            },
+        )
     }
 }

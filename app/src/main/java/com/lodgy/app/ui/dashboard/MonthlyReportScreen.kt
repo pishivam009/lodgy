@@ -52,6 +52,7 @@ private fun buildReportCsv(context: Context, uiState: MonthlyReportUiState): Str
         append(row(context.getString(R.string.manual_invoice_field_year), uiState.year.toString()))
         append(row(context.getString(R.string.monthly_report_collected), amount(uiState.totalCollected)))
         append(row(context.getString(R.string.monthly_report_dues), amount(uiState.totalDues)))
+        append(row(context.getString(R.string.monthly_report_credits), amount(uiState.totalCredits)))
         append(row(context.getString(R.string.monthly_report_occupancy), "${uiState.occupancyPercent}%"))
         append(row(context.getString(R.string.monthly_report_csv_total_expense), amount(uiState.totalExpense)))
         append(row(context.getString(R.string.monthly_report_net_income), amount(uiState.netIncome)))
@@ -135,6 +136,7 @@ fun MonthlyReportScreen(onBack: () -> Unit, viewModel: MonthlyReportViewModel = 
             val tiles = listOf(
                 ReportTile(stringResource(R.string.currency_amount, uiState.totalCollected), R.string.monthly_report_collected, true),
                 ReportTile(stringResource(R.string.currency_amount, uiState.totalDues), R.string.monthly_report_dues, false),
+                ReportTile(stringResource(R.string.currency_amount, uiState.totalCredits), R.string.monthly_report_credits, null),
                 ReportTile("${uiState.occupancyPercent}%", R.string.monthly_report_occupancy, null),
                 ReportTile(
                     stringResource(R.string.currency_amount, uiState.netIncome),

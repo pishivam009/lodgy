@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.entity.BedStatus
 import com.lodgy.app.data.entity.InvoiceStatus
+import com.lodgy.app.data.effectiveAmountDue
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.HostelRepository
@@ -33,6 +35,7 @@ data class MonthlyReportUiState(
     val totalDues: Double = 0.0,
     val occupancyPercent: Int = 0,
     val totalExpense: Double = 0.0,
+    val totalCredits: Double = 0.0,
 ) {
     val netIncome: Double get() = totalCollected - totalExpense
 }
@@ -48,6 +51,7 @@ class MonthlyReportViewModel @Inject constructor(
     private val invoiceRepository: InvoiceRepository,
     private val paymentRepository: PaymentRepository,
     private val expenseRepository: ExpenseRepository,
+    private val creditRepository: CreditRepository,
 ) : ViewModel() {
 
     private var hostelId: String? = null
@@ -108,9 +112,26 @@ class MonthlyReportViewModel @Inject constructor(
             .filter { it.invoiceId in invoiceIdsForPeriod }
             .sumOf { it.amount }
 
+        // Summed from the invoice and credit rows themselves - no pre-adjusted total is cached
+        // anywhere, so a credit recorded after the fact is reflected the next time this is read.
+        val creditsByInvoice = creditRepository.getAllOnce()
+            .filter { it.invoiceId in invoiceIdsForPeriod }
+            .groupBy { it.invoiceId }
+        val totalCredits = invoicesForPeriod.sumOf { invoice ->
+            invoice.amountDue - effectiveAmountDue(
+                invoice.amountDue,
+                creditsByInvoice[invoice.id].orEmpty().sumOf { it.amount },
+            )
+        }
         val totalDues = invoicesForPeriod
             .filter { it.status != InvoiceStatus.PAID }
-            .sumOf { invoice -> invoice.amountDue - allPayments.filter { it.invoiceId == invoice.id }.sumOf { it.amount } }
+            .sumOf { invoice ->
+                val due = effectiveAmountDue(
+                    invoice.amountDue,
+                    creditsByInvoice[invoice.id].orEmpty().sumOf { it.amount },
+                )
+                (due - allPayments.filter { it.invoiceId == invoice.id }.sumOf { it.amount }).coerceAtLeast(0.0)
+            }
 
         val totalExpense = expenseRepository.getByHostelId(id).first()
             .filter { expense ->
@@ -125,6 +146,7 @@ class MonthlyReportViewModel @Inject constructor(
                 occupancyPercent = occupancyPercent,
                 totalCollected = totalCollected,
                 totalDues = totalDues,
+                totalCredits = totalCredits,
                 totalExpense = totalExpense,
             )
         }

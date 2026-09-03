@@ -10,6 +10,7 @@ import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.RoomRepository
 import com.lodgy.app.testutil.MainDispatcherRule
+import com.lodgy.app.ui.common.BedFilter
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -43,7 +44,7 @@ class VacantViewViewModelTest {
     }
 
     @Test
-    fun `only vacant beds are listed, sorted by bed label, grouped under their room and floor`() {
+    fun `the default filter shows only vacant beds, sorted by bed label, under their room and floor`() {
         val floor1 = Floor(id = "f1", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
         val room1 = Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
         val bedB = Bed(id = "b2", roomId = "r1", label = "B", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)
@@ -59,9 +60,35 @@ class VacantViewViewModelTest {
 
         assertFalse(state.loading)
         assertTrue(state.hasActiveHostel)
-        assertEquals(listOf("B", "C"), state.items.map { it.bedLabel })
+        assertEquals(listOf("A", "B", "C"), state.items.map { it.bedLabel })
+        assertEquals(listOf("B", "C"), state.filteredItems.map { it.bedLabel })
         assertEquals("101", state.items.first().roomNumber)
         assertEquals("Ground", state.items.first().floorLabel)
+    }
+
+    @Test
+    fun `the status filter switches the same list between vacant, occupied and all`() {
+        val floor1 = Floor(id = "f1", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        val room1 = Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(floor1))
+        every { roomRepository.getByFloorId("f1") } returns flowOf(listOf(room1))
+        every { bedRepository.getByRoomId("r1") } returns flowOf(
+            listOf(
+                Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L),
+                Bed(id = "b2", roomId = "r1", label = "B", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L),
+            ),
+        )
+
+        val viewModel = viewModel()
+
+        assertEquals(listOf("B"), viewModel.uiState.value.filteredItems.map { it.bedLabel })
+
+        viewModel.onStatusFilterChange(BedFilter.OCCUPIED)
+        assertEquals(listOf("A"), viewModel.uiState.value.filteredItems.map { it.bedLabel })
+
+        viewModel.onStatusFilterChange(BedFilter.ALL)
+        assertEquals(listOf("A", "B"), viewModel.uiState.value.filteredItems.map { it.bedLabel })
     }
 
     @Test
@@ -85,8 +112,8 @@ class VacantViewViewModelTest {
 
         val itemsField = VacantViewUiState(
             items = listOf(
-                VacantBedItem("f1", "Ground", "101", RoomType.SINGLE, "A"),
-                VacantBedItem("f2", "First", "201", RoomType.SINGLE, "A"),
+                VacantBedItem("f1", "Ground", "101", RoomType.SINGLE, "A", BedStatus.VACANT),
+                VacantBedItem("f2", "First", "201", RoomType.SINGLE, "A", BedStatus.VACANT),
             ),
         )
         assertEquals(2, itemsField.filteredItems.size)

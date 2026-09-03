@@ -9,17 +9,33 @@
     "No status is ever conveyed by icon or color alone without a text label still available somewhere (for accessibility/screen readers and for anyone unfamiliar with the icon set) - this reduces reliance on translated text, it doesn't remove the translation entirely",
     "Icon set is consistent with the app's existing stroke-icon style (ui/icons/CommonIcons.kt)"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T22:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T17:33:30+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T22:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added alongside the LODGY-36 color-coding rework: pairing icons with the new RAG colors so status reads at a glance and doesn't lean entirely on translated text."
+    },
+    {
+      "timestamp": "2026-09-03T17:31:21+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - adding a per-state stroke icon in ui/icons/StatusIcons.kt and threading it through the StatusBadge LODGY-36 just introduced, so icon and RAG colour arrive together at every call site and the text label stays present rather than being replaced."
+    },
+    {
+      "timestamp": "2026-09-03T17:33:30+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Added ui/icons/StatusIcons.kt (BedVacant/BedOccupied/Check/Half/Alert/Exit, all built with the existing strokeIcon helper so they match the app's stroke set) and a matching .icon extension next to LODGY-36's .level, so a state's colour and symbol are decided in the same place. StatusBadge now takes the icon, draws it ahead of the text, and passes the label as the icon's contentDescription - the text is never removed, so screen readers and anyone unfamiliar with the symbol still get it, and no status is icon- or colour-only. Converted: invoice status chips, tenant status badges (directory + profile), VacantViewScreen rows, and BedGridScreen tiles where the label is demoted to labelSmall beside a leading icon. StatusLevelTest extended to assert each state has a distinct icon. testDebugUnitTest green."
     }
   ]
 }

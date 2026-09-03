@@ -7,10 +7,11 @@ object AppLocale {
     const val HINDI = "hi"
     const val ENGLISH = "en"
 
-    /** Warden-facing users default to Hindi; only applies the first time, before any explicit choice exists. */
+    /** Only applies the first time, before any explicit choice exists - an install that already
+     *  stored a choice keeps it, including Hindi picked under the old default. */
     fun applyDefaultIfUnset() {
         if (AppCompatDelegate.getApplicationLocales().isEmpty) {
-            set(HINDI)
+            set(ENGLISH)
         }
     }
 
@@ -20,6 +21,6 @@ object AppLocale {
 
     fun current(): String {
         val locales = AppCompatDelegate.getApplicationLocales()
-        return if (locales.isEmpty) HINDI else locales[0]?.language ?: HINDI
+        return if (locales.isEmpty) ENGLISH else locales[0]?.language ?: ENGLISH
     }
 }

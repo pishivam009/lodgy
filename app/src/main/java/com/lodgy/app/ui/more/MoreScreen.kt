@@ -28,10 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.activity.ComponentActivity
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lodgy.app.BuildConfig
 import com.lodgy.app.R
+import com.lodgy.app.data.prefs.ThemeMode
 import com.lodgy.app.locale.AppLocale
+import com.lodgy.app.ui.theme.ThemeViewModel
 import com.lodgy.app.ui.icons.CommonIcons
 import com.lodgy.app.ui.icons.strokeIcon
 
@@ -48,6 +54,12 @@ private val BackupIcon: ImageVector = strokeIcon(
     "M4,19 H20",
 )
 
+private val ThemeIcon: ImageVector = strokeIcon(
+    "MoreTheme",
+    "M12,3 A9,9 0 1,0 12,21 A9,9 0 1,0 12,3 Z",
+    "M12,3 A9,9 0 0,1 12,21 Z",
+)
+
 private val LanguageIcon: ImageVector = strokeIcon(
     "MoreLanguage",
     "M12,3 A9,9 0 1,0 12,21 A9,9 0 1,0 12,3 Z",
@@ -59,12 +71,19 @@ private data class MoreMenuItem(val labelRes: Int, val icon: ImageVector, val on
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoreScreen(onOpenExpenses: () -> Unit, onOpenBackup: () -> Unit) {
+fun MoreScreen(
+    onOpenExpenses: () -> Unit,
+    onOpenBackup: () -> Unit,
+    themeViewModel: ThemeViewModel = hiltViewModel(),
+) {
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
+    val themeMode by themeViewModel.themeMode.collectAsStateWithLifecycle()
 
     val menuItems = listOf(
         MoreMenuItem(R.string.more_expenses, ExpenseIcon, onOpenExpenses),
         MoreMenuItem(R.string.more_backup, BackupIcon, onOpenBackup),
+        MoreMenuItem(R.string.more_theme, ThemeIcon, { showThemeDialog = true }),
         MoreMenuItem(R.string.more_language, LanguageIcon, { showLanguageDialog = true }),
     )
 
@@ -76,12 +95,59 @@ fun MoreScreen(onOpenExpenses: () -> Unit, onOpenBackup: () -> Unit) {
             modifier = Modifier.fillMaxWidth().padding(padding),
         ) {
             items(menuItems) { menuItem -> MoreRow(menuItem) }
+            item {
+                Text(
+                    stringResource(R.string.more_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 
     if (showLanguageDialog) {
         LanguagePickerDialog(onDismiss = { showLanguageDialog = false })
     }
+
+    if (showThemeDialog) {
+        ThemePickerDialog(
+            selected = themeMode,
+            onSelect = themeViewModel::setThemeMode,
+            onDismiss = { showThemeDialog = false },
+        )
+    }
+}
+
+/** Applies on tap rather than on a confirm button - the whole screen repaints underneath the
+ *  dialog, which is the only preview of the choice worth having. */
+@Composable
+private fun ThemePickerDialog(selected: ThemeMode, onSelect: (ThemeMode) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.theme_picker_title)) },
+        text = {
+            Column {
+                ThemeMode.entries.forEach { mode ->
+                    OptionRow(
+                        label = stringResource(
+                            when (mode) {
+                                ThemeMode.LIGHT -> R.string.theme_light
+                                ThemeMode.DARK -> R.string.theme_dark
+                                ThemeMode.SYSTEM -> R.string.theme_system
+                            },
+                        ),
+                        selected = selected == mode,
+                        onClick = { onSelect(mode) },
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.ok)) }
+        },
+    )
 }
 
 @Composable
@@ -94,12 +160,12 @@ private fun LanguagePickerDialog(onDismiss: () -> Unit) {
         title = { Text(stringResource(R.string.language_picker_title)) },
         text = {
             Column {
-                LanguageOptionRow(
+                OptionRow(
                     label = stringResource(R.string.language_hindi),
                     selected = selected == AppLocale.HINDI,
                     onClick = { selected = AppLocale.HINDI },
                 )
-                LanguageOptionRow(
+                OptionRow(
                     label = stringResource(R.string.language_english),
                     selected = selected == AppLocale.ENGLISH,
                     onClick = { selected = AppLocale.ENGLISH },
@@ -120,7 +186,7 @@ private fun LanguagePickerDialog(onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun LanguageOptionRow(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun OptionRow(label: String, selected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,

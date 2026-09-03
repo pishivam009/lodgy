@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColors = lightColorScheme(
@@ -18,8 +19,8 @@ private val LightColors = lightColorScheme(
 
 private val DarkColors = darkColorScheme(
     primary = LodgyPrimaryDark,
-    secondary = LodgySecondary,
-    error = LodgyError,
+    secondary = LodgySecondaryDark,
+    error = LodgyErrorDark,
 )
 
 @Composable
@@ -37,9 +38,11 @@ fun LodgyTheme(
         else -> LightColors
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = LodgyTypography,
-        content = content,
-    )
+    CompositionLocalProvider(LocalStatusColors provides if (darkTheme) DarkStatusColors else LightStatusColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = LodgyTypography,
+            content = content,
+        )
+    }
 }

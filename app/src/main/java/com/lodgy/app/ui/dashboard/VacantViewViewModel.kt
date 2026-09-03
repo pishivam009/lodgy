@@ -9,6 +9,8 @@ import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.RoomRepository
+import com.lodgy.app.ui.common.BedFilter
+import com.lodgy.app.ui.common.matches
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +27,7 @@ data class VacantBedItem(
     val roomNumber: String,
     val roomType: RoomType,
     val bedLabel: String,
+    val status: BedStatus,
 )
 
 data class VacantViewUiState(
@@ -33,9 +36,14 @@ data class VacantViewUiState(
     val floors: List<Floor> = emptyList(),
     val items: List<VacantBedItem> = emptyList(),
     val selectedFloorId: String? = null,
+    /** Defaults to VACANT so the screen still opens as the vacant-beds view it was built as;
+     *  the other two options turn it into a full bed browser without a second screen. */
+    val statusFilter: BedFilter = BedFilter.VACANT,
 ) {
     val filteredItems: List<VacantBedItem>
-        get() = if (selectedFloorId == null) items else items.filter { it.floorId == selectedFloorId }
+        get() = items
+            .filter { selectedFloorId == null || it.floorId == selectedFloorId }
+            .filter { statusFilter.matches(it.status) }
 }
 
 @HiltViewModel
@@ -73,13 +81,16 @@ class VacantViewViewModel @Inject constructor(
             combine(bedFlows) { bedsPerRoom ->
                 bedsPerRoom.flatMapIndexed { index, beds ->
                     val (floor, room) = roomsWithFloor[index]
-                    beds.filter { it.status == BedStatus.VACANT }
-                        .sortedBy { it.label }
-                        .map { bed -> VacantBedItem(floor.id, floor.label, room.roomNumber, room.type, bed.label) }
+                    beds.sortedBy { it.label }
+                        .map { bed ->
+                            VacantBedItem(floor.id, floor.label, room.roomNumber, room.type, bed.label, bed.status)
+                        }
                 }
             }.collect { items -> _uiState.update { it.copy(loading = false, items = items) } }
         }
     }
 
     fun onFloorFilterChange(floorId: String?) = _uiState.update { it.copy(selectedFloorId = floorId) }
+
+    fun onStatusFilterChange(filter: BedFilter) = _uiState.update { it.copy(statusFilter = filter) }
 }

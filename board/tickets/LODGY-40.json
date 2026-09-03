@@ -8,17 +8,33 @@
     "Reachable directly from the hostel screen, not just via each floor",
     "Tapping a room still opens its normal bed grid / edit flow"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T17:56:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T17:52:20+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - a hostel-level All Rooms screen listing every room across every floor with its floor labelled, reachable from the hostel row, reusing the existing room -> bed grid navigation."
+    },
+    {
+      "timestamp": "2026-09-03T17:56:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Added a hostel-level All Rooms screen (ui/property/AllRoomsScreen.kt + AllRoomsViewModel.kt, route all_rooms/{hostelId}). RoomDao.getByHostelIdWithFloor returns rooms joined to their floor already ordered by floor sortOrder then room number, so each row carries its floor label without a per-room lookup, and BedDao.observeRoomOccupancyByHostel supplies the same vacant/total line the floor-scoped room list shows. Reachable from the hostel's own screen - an 'All rooms' action in FloorListScreen's app bar, so no floor has to be opened first. Tapping a room goes to its normal bed grid, the same destination the per-floor list uses. AllRoomsViewModelTest covers the cross-floor listing and bed counts, including a room with no beds yet. testDebugUnitTest green."
     }
   ]
 }

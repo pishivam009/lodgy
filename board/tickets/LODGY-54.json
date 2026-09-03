@@ -8,11 +8,11 @@
     "Invoice list can be sorted by due date or amount",
     "Combining a status filter and a date filter narrows correctly (both apply together, not one replacing the other)"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T17:49:54+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -25,6 +25,22 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Resolved the month/year-vs-date-range ambiguity in favor of month/year, for consistency with the picker pattern already used elsewhere in the app."
+    },
+    {
+      "timestamp": "2026-09-03T17:47:21+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - adding a period filter (numeric month/year fields, same pattern as Manual Invoice and Monthly Report, not a new date-range picker) and a due-date/amount sort alongside the existing status chips, with all three composing rather than replacing each other."
+    },
+    {
+      "timestamp": "2026-09-03T17:49:54+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Invoice list gained a period filter and a sort next to LODGY-17's existing status chips. Period is two numeric month/year fields, the same numeric pattern Manual Invoice (LODGY-16) and Monthly Report (LODGY-22) already use rather than a new date-range picker; both default to blank, meaning 'any period', so opening the tab still shows everything instead of silently narrowing to this month. Sort chips switch between due date (newest first) and amount (largest first). All three compose in InvoiceListUiState.filteredItems - status narrows, then period narrows the result, then the sort applies - so combining a status and a period genuinely intersects rather than one replacing the other. Non-digits are stripped on input so a stray character cannot silently null the filter. InvoiceListUiStateTest covers blank periods, month and year narrowing independently and together, status+period intersecting, and both sort orders. testDebugUnitTest green."
     }
   ]
 }

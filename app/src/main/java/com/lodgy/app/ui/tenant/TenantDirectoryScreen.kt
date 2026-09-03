@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -34,7 +33,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.Tenant
-import com.lodgy.app.data.entity.TenantStatus
+import com.lodgy.app.ui.common.FilterChipRow
+import com.lodgy.app.ui.common.StatusBadge
+import com.lodgy.app.ui.common.icon
+import com.lodgy.app.ui.common.label
+import com.lodgy.app.ui.common.level
 import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +66,41 @@ fun TenantDirectoryScreen(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
             )
 
-            if (uiState.tenants.isEmpty()) {
+            FilterChipRow(
+                options = TenantFilter.entries,
+                selected = uiState.filter,
+                onSelect = viewModel::onFilterChange,
+                label = {
+                    stringResource(
+                        if (it == TenantFilter.ACTIVE) R.string.tenant_filter_active else R.string.tenant_filter_all,
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            )
+
+            FilterChipRow(
+                options = TenantSort.entries,
+                selected = uiState.sort,
+                onSelect = viewModel::onSortChange,
+                label = {
+                    stringResource(
+                        if (it == TenantSort.NAME) R.string.tenant_sort_name else R.string.tenant_sort_room,
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                leadingLabel = stringResource(R.string.filter_sort_by),
+            )
+
+            if (uiState.hiddenByFilter > 0) {
+                Text(
+                    stringResource(R.string.tenant_hidden_by_filter, uiState.hiddenByFilter),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
+
+            if (uiState.items.isEmpty()) {
                 Box(modifier = Modifier.fillMaxWidth().padding(32.dp)) {
                     Text(
                         stringResource(R.string.tenant_directory_empty),
@@ -76,8 +113,8 @@ fun TenantDirectoryScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    items(uiState.tenants, key = Tenant::id) { tenant ->
-                        TenantRow(tenant = tenant, onClick = { onOpenTenant(tenant) })
+                    items(uiState.items, key = { it.tenant.id }) { item ->
+                        TenantRow(item = item, onClick = { onOpenTenant(item.tenant) })
                     }
                 }
             }
@@ -86,7 +123,8 @@ fun TenantDirectoryScreen(
 }
 
 @Composable
-private fun TenantRow(tenant: Tenant, onClick: () -> Unit) {
+private fun TenantRow(item: TenantDirectoryItem, onClick: () -> Unit) {
+    val tenant = item.tenant
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
@@ -110,6 +148,13 @@ private fun TenantRow(tenant: Tenant, onClick: () -> Unit) {
                 }
             }
             Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                if (item.location != null) {
+                    Text(
+                        item.location.label(),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 Text(tenant.name, style = MaterialTheme.typography.titleMedium)
                 Text(
                     tenant.phone,
@@ -117,10 +162,7 @@ private fun TenantRow(tenant: Tenant, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            AssistChip(
-                onClick = onClick,
-                label = { Text(if (tenant.status == TenantStatus.ACTIVE) stringResource(R.string.tenant_status_active) else stringResource(R.string.tenant_status_vacated)) },
-            )
+            StatusBadge(tenant.status.level, tenant.status.icon, tenant.status.label())
         }
     }
 }

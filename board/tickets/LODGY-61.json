@@ -9,17 +9,33 @@
     "Transition is applied consistently across the whole NavHost, not just a few hand-picked screens",
     "Bottom-nav tab switches (Home/Property/Tenants/Payments/More) keep their own distinct feel and are not forced through the same slide (a tab switch is not a stack push)"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T17:37:58+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    },
+    {
+      "timestamp": "2026-09-03T17:37:33+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - setting the slide as NavHost-level defaults so every destination inherits it, then overriding the five bottom-nav destinations with a fade, since a tab switch is a lateral move rather than a push onto the stack."
+    },
+    {
+      "timestamp": "2026-09-03T17:37:58+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Added ui/nav/NavTransitions.kt holding pushEnter/pushExit/popEnter/popExit (280ms horizontal slide; the outgoing screen only travels a quarter width so it reads as sitting underneath the incoming one rather than being shoved off at the same speed) and tabEnter/tabExit (150ms cross-fade). The slides are set on the NavHost itself, so every destination inherits them and nothing gets hand-picked; the five bottom-nav destinations then override with the fade, because a tab switch is a lateral move between siblings rather than a push onto the stack. compileDebugKotlin green - this is animation behaviour with no JVM-testable surface, so it needs an on-device look."
     }
   ]
 }

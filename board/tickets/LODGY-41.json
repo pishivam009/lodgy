@@ -7,17 +7,33 @@
     "Each floor card shows counts like 'X vacant / Y occupied' (beds or rooms, consistent with how VacantViewScreen counts)",
     "Counts update live when a checkout/onboarding changes a bed's status, without needing to leave and reopen the floor list"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T17:58:37+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T17:56:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - feeding BedDao.observeOccupancyByHostel (added in LODGY-53) into the floor list so each card carries live vacant/occupied bed counts."
+    },
+    {
+      "timestamp": "2026-09-03T17:58:37+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Floor cards now show 'N vacant / M occupied'. FloorListViewModel combines the floors flow with BedDao.observeOccupancyByHostel (the LEFT-JOIN version, so a floor with no rooms or no beds yet still reports 0/0 instead of disappearing from the summary), producing a FloorListItem per row. Because both sides are Room Flows, a checkout or onboarding that flips a bed re-emits and the card updates in place - no leaving and reopening the screen. Counts are bed-level to match how VacantViewScreen counts, so the two screens are not silently measuring different things. FloorListViewModelTest covers per-floor counts and the empty-floor case. testDebugUnitTest green."
     }
   ]
 }

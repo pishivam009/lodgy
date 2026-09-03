@@ -4,9 +4,15 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.lodgy.app.data.prefs.ThemeMode
 import com.lodgy.app.locale.AppLocale
 import com.lodgy.app.ui.AppRoot
 import com.lodgy.app.ui.theme.LodgyTheme
+import com.lodgy.app.ui.theme.ThemeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -27,7 +33,14 @@ class MainActivity : AppCompatActivity() {
         AppLocale.applyDefaultIfUnset()
         enableEdgeToEdge()
         setContent {
-            LodgyTheme {
+            val themeMode by hiltViewModel<ThemeViewModel>().themeMode.collectAsStateWithLifecycle()
+            LodgyTheme(
+                darkTheme = when (themeMode) {
+                    ThemeMode.LIGHT -> false
+                    ThemeMode.DARK -> true
+                    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                },
+            ) {
                 AppRoot()
             }
         }

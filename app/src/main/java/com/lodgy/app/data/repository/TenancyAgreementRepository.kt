@@ -12,11 +12,28 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
 
     suspend fun getAllActive(): List<TenancyAgreement> = dao.getAllActive()
 
+    suspend fun getLatestByTenantId(tenantId: String): TenancyAgreement? = dao.getLatestByTenantId(tenantId)
+
     /** Includes closed agreements - historical reporting needs a checked-out tenant's past
      *  invoices/payments to still count. [getAllActive] would silently drop them. */
     suspend fun getAll(): List<TenancyAgreement> = dao.getAll()
 
     suspend fun getById(id: String): TenancyAgreement? = dao.getById(id)
+
+    /** Records notice without ending the tenancy: the agreement stays ACTIVE and the bed stays
+     *  OCCUPIED. Checkout remains a separate, explicit action on or after the date. Passing null
+     *  withdraws the notice. */
+    suspend fun setPlannedMoveOut(agreement: TenancyAgreement, moveOutDate: Long?) {
+        dao.update(agreement.copy(moveOutDate = moveOutDate, updatedAt = System.currentTimeMillis()))
+    }
+
+    /** Moves the tenancy to another bed on the SAME agreement row - no close, no new agreement -
+     *  so invoices and payments keyed to this agreement stay one continuous tenancy. */
+    suspend fun transferBed(agreement: TenancyAgreement, newBedId: String, agreedRent: Double) {
+        dao.update(
+            agreement.copy(bedId = newBedId, agreedRent = agreedRent, updatedAt = System.currentTimeMillis()),
+        )
+    }
 
     suspend fun close(agreement: TenancyAgreement, moveOutDate: Long, depositRefundAmount: Double) {
         dao.update(

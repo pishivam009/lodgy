@@ -7,17 +7,33 @@
     "More tab shows the app's versionName/versionCode somewhere visible (e.g. a footer line)",
     "Value updates automatically per build - not a hardcoded string that goes stale"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T17:31:03+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T17:25:45+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - a footer line under the More tab's menu, sourced from BuildConfig so it tracks the build rather than a literal."
+    },
+    {
+      "timestamp": "2026-09-03T17:31:03+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Enabled android.buildFeatures.buildConfig and added a centred footer line under the More tab's menu reading R.string.more_version with BuildConfig.VERSION_NAME and BuildConfig.VERSION_CODE, so it tracks whatever the build produced rather than a literal that goes stale. Strings added in en and hi. gradlew compileDebugKotlin green."
     }
   ]
 }

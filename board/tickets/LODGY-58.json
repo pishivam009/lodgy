@@ -8,11 +8,11 @@
     "Existing installs that already have an explicit choice stored (Hindi or English) are unaffected - this only changes the unset-default case",
     "Hindi remains fully available and switchable at any time via the existing More -> App language picker"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T17:31:03+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -25,6 +25,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "Rationale confirmed, not just tester convenience: in practice the phone is often set up by someone other than the warden (a son, a shop tech doing the install) who is more comfortable in English than the warden ultimately using the app day-to-day. English-by-default plus an easy, prominent switch to Hindi (LODGY-30) serves both people better than defaulting to the warden's own language and hoping the installer notices the switcher exists."
+    },
+    {
+      "timestamp": "2026-09-03T17:25:28+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - single-value change in AppLocale.applyDefaultIfUnset(), plus the matching current() fallback so an unset locale reads back as the same language it would be applied as."
+    },
+    {
+      "timestamp": "2026-09-03T17:31:03+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "AppLocale.applyDefaultIfUnset() now applies ENGLISH, and current()'s unset fallback matches it so a fresh install reads back the same language it was given. The isEmpty guard is unchanged, so any install that already stored a choice - including Hindi picked under the old default - is untouched; the More -> App language picker still offers both. AppLocaleTest updated for the new default. testDebugUnitTest green."
     }
   ]
 }

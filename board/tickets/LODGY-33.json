@@ -9,17 +9,33 @@
     "Invoice list rows and the payment recording screen show room+bed, not just tenant name",
     "A vacated tenant's historical room+bed still displays (not blanked out after checkout)"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T17:24:58+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T16:30:22+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - adding a shared bed-location lookup (beds JOIN rooms) so room+bed can be surfaced on the tenant directory, tenant profile, invoice list and record-payment screens. Using the tenant's latest agreement (active if any, else most recent closed) so a vacated tenant keeps showing their historical room+bed per AC 4."
+    },
+    {
+      "timestamp": "2026-09-03T17:24:58+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Room+bed now travels with tenant identity everywhere. Added data/dao/BedLocation.kt (roomNumber + bedLabel) resolved in one beds-JOIN-rooms query via BedDao.getLocation/BedRepository.getLocation, and TenancyAgreementDao.getLatestByTenantId (ORDER BY status = 'ACTIVE' DESC, moveInDate DESC) so a vacated tenant still resolves to the bed they last occupied - that's AC 4. Shared ui/common/BedLocationLabel.kt renders it as the single 'Room 204 - Bed B' string (R.string.bed_location, en + hi) so no screen formats it itself. Consumers: TenantDirectoryScreen rows (location above the name, primary colour), TenantProfileScreen (directly under the name near the top), InvoiceListScreen rows, and RecordPaymentScreen's invoice header. Tests: TenantDirectoryViewModelTest and TenantProfileViewModelTest gained location cases (including closed-agreement and no-agreement-at-all); InvoiceListViewModelTest and RecordPaymentViewModelTest assert the enriched location. gradlew testDebugUnitTest green."
     }
   ]
 }

@@ -29,6 +29,14 @@ interface TenancyAgreementDao {
     @Query("SELECT * FROM tenancy_agreements WHERE status = 'ACTIVE'")
     suspend fun getAllActive(): List<TenancyAgreement>
 
+    /** Active agreement if there is one, else the most recent closed one, so a vacated
+     *  tenant still resolves to the room/bed they last occupied. */
+    @Query(
+        "SELECT * FROM tenancy_agreements WHERE tenantId = :tenantId " +
+            "ORDER BY status = 'ACTIVE' DESC, moveInDate DESC LIMIT 1",
+    )
+    suspend fun getLatestByTenantId(tenantId: String): TenancyAgreement?
+
     @Query("SELECT * FROM tenancy_agreements")
     suspend fun getAll(): List<TenancyAgreement>
 }

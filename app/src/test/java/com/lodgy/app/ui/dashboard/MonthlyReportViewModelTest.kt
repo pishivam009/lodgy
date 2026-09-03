@@ -15,7 +15,9 @@ import com.lodgy.app.data.entity.Room
 import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.prefs.HostelPreferences
+import com.lodgy.app.data.entity.Credit
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.HostelRepository
@@ -48,6 +50,7 @@ class MonthlyReportViewModelTest {
     private val invoiceRepository: InvoiceRepository = mockk()
     private val paymentRepository: PaymentRepository = mockk()
     private val expenseRepository: ExpenseRepository = mockk()
+    private val creditRepository: CreditRepository = mockk()
 
     private fun periodMillis(year: Int, month: Int): Long {
         val cal = Calendar.getInstance()
@@ -55,10 +58,14 @@ class MonthlyReportViewModelTest {
         return cal.timeInMillis
     }
 
-    private fun viewModel() = MonthlyReportViewModel(
-        hostelPreferences, hostelRepository, floorRepository, roomRepository, bedRepository,
-        tenancyAgreementRepository, invoiceRepository, paymentRepository, expenseRepository,
-    )
+    private fun viewModel(credits: List<Credit> = emptyList()): MonthlyReportViewModel {
+        coEvery { creditRepository.getAllOnce() } returns credits
+        return MonthlyReportViewModel(
+            hostelPreferences, hostelRepository, floorRepository, roomRepository, bedRepository,
+            tenancyAgreementRepository, invoiceRepository, paymentRepository, expenseRepository,
+            creditRepository,
+        )
+    }
 
     @Test
     fun `no active hostel stops loading with defaults`() {
@@ -173,5 +180,39 @@ class MonthlyReportViewModelTest {
 
         assertEquals(5000.0, viewModel.uiState.value.totalCollected, 0.0001)
         assertEquals(0.0, viewModel.uiState.value.totalDues, 0.0001)
+    }
+
+    @Test
+    fun `dues and the credits total are summed from the credit rows, not a cached figure`() {
+        val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        val floor = Floor(id = "f1", hostelId = "h1", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(floor))
+        val room = Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.SINGLE, pricePerBed = 5000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        every { roomRepository.getByFloorId("f1") } returns flowOf(listOf(room))
+        every { bedRepository.getByRoomId("r1") } returns flowOf(
+            listOf(Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L)),
+        )
+        coEvery { tenancyAgreementRepository.getAll() } returns listOf(
+            TenancyAgreement(id = "a1", tenantId = "t1", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = null, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L),
+        )
+        every { invoiceRepository.getAll() } returns flowOf(
+            listOf(Invoice(id = "i1", tenancyAgreementId = "a1", periodMonth = currentMonth, periodYear = currentYear, amountDue = 5000.0, dueDate = 0L, status = InvoiceStatus.UNPAID, createdAt = 0L, updatedAt = 0L)),
+        )
+        coEvery { paymentRepository.getAll() } returns emptyList()
+        every { expenseRepository.getByHostelId("h1") } returns flowOf(emptyList())
+
+        val state = viewModel(
+            credits = listOf(
+                Credit(id = "c1", tenantId = "t1", invoiceId = "i1", amount = 1200.0, reason = "Plumbing", createdAt = 0L, updatedAt = 0L),
+                Credit(id = "c2", tenantId = "t1", invoiceId = "not-this-period", amount = 900.0, reason = "Other", createdAt = 0L, updatedAt = 0L),
+            ),
+        ).uiState.value
+
+        assertEquals(1200.0, state.totalCredits, 0.0001)
+        assertEquals(3800.0, state.totalDues, 0.0001)
     }
 }

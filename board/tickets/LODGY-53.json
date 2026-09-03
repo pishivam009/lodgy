@@ -7,17 +7,33 @@
     "Room/bed views can filter to vacant-only or occupied-only",
     "Filter state is per-screen and obvious when active (not a silent, easy-to-forget toggle)"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T17:47:07+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    },
+    {
+      "timestamp": "2026-09-03T17:41:53+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - adding bed-occupancy aggregate queries (grouped in SQL rather than combining one Flow per room) so RoomListScreen can filter by whether a room still has space, then a status filter on BedGridScreen and on VacantViewScreen. Reusing LODGY-39's FilterChipRow so the three screens read identically."
+    },
+    {
+      "timestamp": "2026-09-03T17:47:07+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Filters landed on all three bed-facing screens, sharing one BedFilter (ALL/VACANT/OCCUPIED) and matches() in ui/common/StatusBadge.kt plus the BedFilterChips composable, so the chips look and behave identically wherever they appear. BedGridScreen filters its tiles directly. VacantViewScreen now loads every bed rather than pre-filtering to vacant in the query, and defaults its chip to VACANT - the screen opens exactly as before, but the other two options turn it into a full bed browser; its floor-count and empty-state strings were de-hardcoded from 'vacant' accordingly. RoomListScreen needed a different question, since a room has no status of its own: All / Has space / Full, where 'has space' means at least one vacant bed and 'full' means every bed taken. That needs bed counts per room, so BedDao gained observeOccupancyByFloor (a GROUP BY, not one Flow per room - that would re-emit everything on any bed edit and scale with the property) and each row now shows 'N vacant / M beds'. Filter state is per-screen, always visible as a selected chip, and an empty result says 'Nothing matches this filter' rather than reusing the no-data message. Also added observeOccupancyByHostel in the same pass for LODGY-41. Tests: RoomListViewModelTest covers counts, a bed-less room, and the has-space/full split; VacantViewViewModelTest covers the default and both other filter positions. testDebugUnitTest green."
     }
   ]
 }

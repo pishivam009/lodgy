@@ -21,19 +21,19 @@ class AppLocaleTest {
     }
 
     @Test
-    fun `applyDefaultIfUnset sets hindi when no explicit locale has been chosen`() {
+    fun `applyDefaultIfUnset sets english when no explicit locale has been chosen`() {
         mockkStatic(AppCompatDelegate::class)
         mockkStatic(LocaleListCompat::class)
         val emptyList: LocaleListCompat = mockk()
         every { emptyList.isEmpty } returns true
         every { AppCompatDelegate.getApplicationLocales() } returns emptyList
-        val hindiList: LocaleListCompat = mockk()
-        every { LocaleListCompat.forLanguageTags("hi") } returns hindiList
-        every { AppCompatDelegate.setApplicationLocales(hindiList) } returns Unit
+        val englishList: LocaleListCompat = mockk()
+        every { LocaleListCompat.forLanguageTags("en") } returns englishList
+        every { AppCompatDelegate.setApplicationLocales(englishList) } returns Unit
 
         AppLocale.applyDefaultIfUnset()
 
-        verify { AppCompatDelegate.setApplicationLocales(hindiList) }
+        verify { AppCompatDelegate.setApplicationLocales(englishList) }
     }
 
     @Test
@@ -62,13 +62,13 @@ class AppLocaleTest {
     }
 
     @Test
-    fun `current returns hindi when no locale is set`() {
+    fun `current returns english when no locale is set`() {
         mockkStatic(AppCompatDelegate::class)
         val empty: LocaleListCompat = mockk()
         every { empty.isEmpty } returns true
         every { AppCompatDelegate.getApplicationLocales() } returns empty
 
-        assertEquals("hi", AppLocale.current())
+        assertEquals("en", AppLocale.current())
     }
 
     @Test

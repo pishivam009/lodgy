@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.lodgy.app.contact.ReminderChannel
 import com.lodgy.app.contact.ReminderLanguage
 import com.lodgy.app.contact.ReminderMessageBuilder
+import com.lodgy.app.data.effectiveAmountDue
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.data.repository.InvoiceRepository
@@ -35,6 +37,7 @@ data class ReminderUiState(
 class ReminderViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     invoiceRepository: InvoiceRepository,
+    private val creditRepository: CreditRepository,
     tenancyAgreementRepository: TenancyAgreementRepository,
     tenantRepository: TenantRepository,
     bedRepository: BedRepository,
@@ -65,7 +68,10 @@ class ReminderViewModel @Inject constructor(
             val hostel = floor?.let { hostelRepository.getById(it.hostelId) }
 
             tenantName = tenant?.name.orEmpty()
-            amountDue = invoice.amountDue
+            amountDue = effectiveAmountDue(
+                invoice.amountDue,
+                creditRepository.getByInvoiceId(invoiceId).sumOf { it.amount },
+            )
             dueDateMillis = invoice.dueDate
             hostelName = hostel?.name.orEmpty()
 

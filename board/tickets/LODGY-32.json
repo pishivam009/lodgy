@@ -9,11 +9,11 @@
     "Switching applies immediately without restarting the app",
     "Preference persists across app restarts"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T17:37:06+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -26,6 +26,22 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Added an explicit dependency on LODGY-36 (RAG color tokens) - sequence that ticket first so this one adjusts the same tokens instead of the two drifting independently."
+    },
+    {
+      "timestamp": "2026-09-03T17:33:46+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - LODGY-36's tokens are in, so this is a ThemePreferences DataStore (Light/Dark/System), a ThemeViewModel feeding LodgyTheme in MainActivity, and a picker in More. Reading the preference as a Flow so the switch recomposes in place; no activity recreate, unlike the language switcher which has to go through AppCompatDelegate."
+    },
+    {
+      "timestamp": "2026-09-03T17:37:06+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Dark mode landed on top of LODGY-36's tokens. data/prefs/ThemePreferences.kt stores LIGHT/DARK/SYSTEM in its own DataStore (unknown/absent value reads as SYSTEM); ui/theme/ThemeViewModel.kt exposes it as a StateFlow and writes changes back. MainActivity collects it and resolves SYSTEM through isSystemInDarkTheme() before handing darkTheme to LodgyTheme, which already picks DarkStatusColors for the same flag - so dark mode adjusts LODGY-36's RAG tokens rather than defining any of its own. The picker is More -> Appearance; it applies on tap with no confirm and no activity recreate (unlike the language switcher, which has to go through AppCompatDelegate), because both the dialog and MainActivity read the same DataStore flow. Darkened LodgySecondary/LodgyError into DarkColors so the dark scheme is not carrying light-scheme accents. Renamed LanguageOptionRow to OptionRow now that both dialogs use it. ThemeViewModelTest covers stored value, the SYSTEM fallback, and persistence. testDebugUnitTest green."
     }
   ]
 }

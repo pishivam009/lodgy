@@ -1,6 +1,7 @@
 package com.lodgy.app.data.repository
 
 import com.lodgy.app.data.dao.RoomDao
+import com.lodgy.app.data.dao.RoomWithFloor
 import com.lodgy.app.data.entity.Room
 import com.lodgy.app.data.entity.RoomType
 import javax.inject.Inject
@@ -10,6 +11,9 @@ class RoomRepository @Inject constructor(private val roomDao: RoomDao) {
     fun getByFloorId(floorId: String): Flow<List<Room>> = roomDao.getByFloorId(floorId)
 
     suspend fun getById(id: String): Room? = roomDao.getById(id)
+
+    fun getByHostelIdWithFloor(hostelId: String): Flow<List<RoomWithFloor>> =
+        roomDao.getByHostelIdWithFloor(hostelId)
 
     suspend fun create(
         floorId: String,

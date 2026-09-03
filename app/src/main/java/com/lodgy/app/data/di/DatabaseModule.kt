@@ -3,7 +3,9 @@ package com.lodgy.app.data.di
 import android.content.Context
 import androidx.room.Room
 import com.lodgy.app.data.LodgyDatabase
+import com.lodgy.app.data.MIGRATION_1_2
 import com.lodgy.app.data.dao.BedDao
+import com.lodgy.app.data.dao.CreditDao
 import com.lodgy.app.data.dao.ExpenseDao
 import com.lodgy.app.data.dao.FloorDao
 import com.lodgy.app.data.dao.HostelDao
@@ -28,7 +30,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): LodgyDatabase =
-        Room.databaseBuilder(context, LodgyDatabase::class.java, LodgyDatabase.DATABASE_NAME).build()
+        Room.databaseBuilder(context, LodgyDatabase::class.java, LodgyDatabase.DATABASE_NAME)
+            .addMigrations(MIGRATION_1_2)
+            .build()
 
     @Provides
     fun provideWardenDao(db: LodgyDatabase): WardenDao = db.wardenDao()
@@ -62,4 +66,7 @@ object DatabaseModule {
 
     @Provides
     fun provideExpenseDao(db: LodgyDatabase): ExpenseDao = db.expenseDao()
+
+    @Provides
+    fun provideCreditDao(db: LodgyDatabase): CreditDao = db.creditDao()
 }

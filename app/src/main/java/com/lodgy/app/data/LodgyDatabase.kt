@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.lodgy.app.data.dao.BedDao
+import com.lodgy.app.data.dao.CreditDao
 import com.lodgy.app.data.dao.ExpenseDao
 import com.lodgy.app.data.dao.FloorDao
 import com.lodgy.app.data.dao.HostelDao
@@ -15,6 +16,7 @@ import com.lodgy.app.data.dao.TenantDao
 import com.lodgy.app.data.dao.TenantNoteDao
 import com.lodgy.app.data.dao.WardenDao
 import com.lodgy.app.data.entity.Bed
+import com.lodgy.app.data.entity.Credit
 import com.lodgy.app.data.entity.Expense
 import com.lodgy.app.data.entity.Floor
 import com.lodgy.app.data.entity.Hostel
@@ -39,8 +41,9 @@ import com.lodgy.app.data.entity.Warden
         Payment::class,
         TenantNote::class,
         Expense::class,
+        Credit::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -56,6 +59,7 @@ abstract class LodgyDatabase : RoomDatabase() {
     abstract fun paymentDao(): PaymentDao
     abstract fun tenantNoteDao(): TenantNoteDao
     abstract fun expenseDao(): ExpenseDao
+    abstract fun creditDao(): CreditDao
 
     companion object {
         const val DATABASE_NAME = "lodgy.db"

@@ -14,15 +14,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +43,14 @@ import coil3.compose.AsyncImage
 import com.lodgy.app.R
 import com.lodgy.app.contact.ContactIntents
 import com.lodgy.app.data.entity.TenantStatus
+import com.lodgy.app.ui.common.StatusBadge
+import com.lodgy.app.ui.common.icon
+import com.lodgy.app.ui.common.label
+import com.lodgy.app.ui.common.level
 import com.lodgy.app.ui.icons.CommonIcons
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,10 +58,15 @@ fun TenantProfileScreen(
     onBack: () -> Unit,
     onEdit: (String) -> Unit,
     onCheckout: (String) -> Unit,
+    onTransfer: (String) -> Unit,
+    onRecordCredit: (String) -> Unit,
     onOpenNotes: (String) -> Unit,
     viewModel: TenantProfileViewModel = hiltViewModel(),
 ) {
     val tenant by viewModel.tenant.collectAsStateWithLifecycle()
+    val location by viewModel.location.collectAsStateWithLifecycle()
+    val plannedMoveOut by viewModel.plannedMoveOut.collectAsStateWithLifecycle()
+    var showNoticePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -89,15 +108,14 @@ fun TenantProfileScreen(
                 }
             }
             Text(current.name, style = MaterialTheme.typography.titleLarge)
-            Text(
-                if (current.status == TenantStatus.ACTIVE) {
-                    stringResource(R.string.tenant_status_active)
-                } else {
-                    stringResource(R.string.tenant_status_vacated)
-                },
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            location?.let {
+                Text(
+                    it.label(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            StatusBadge(current.status.level, current.status.icon, current.status.label())
 
             ContactButtonsRow(phone = current.phone)
 
@@ -128,6 +146,65 @@ fun TenantProfileScreen(
 
             if (current.status == TenantStatus.ACTIVE) {
                 Card(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(stringResource(R.string.tenant_notice_title), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            plannedMoveOut?.let { noticeDateFormat.format(Date(it)) }
+                                ?: stringResource(R.string.tenant_notice_none),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            stringResource(R.string.tenant_notice_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = { showNoticePicker = true }) {
+                                Text(stringResource(R.string.tenant_notice_set))
+                            }
+                            if (plannedMoveOut != null) {
+                                TextButton(onClick = { viewModel.setPlannedMoveOut(null) }) {
+                                    Text(stringResource(R.string.tenant_notice_clear))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Card(
+                    onClick = { onRecordCredit(current.id) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(stringResource(R.string.credit_action), style = MaterialTheme.typography.titleMedium)
+                        Icon(CommonIcons.ChevronRight, contentDescription = null)
+                    }
+                }
+
+                Card(
+                    onClick = { onTransfer(current.id) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(stringResource(R.string.transfer_action), style = MaterialTheme.typography.titleMedium)
+                        Icon(CommonIcons.ChevronRight, contentDescription = null)
+                    }
+                }
+
+                Card(
                     onClick = { onCheckout(current.id) },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     shape = RoundedCornerShape(14.dp),
@@ -142,7 +219,29 @@ fun TenantProfileScreen(
             }
         }
     }
+
+    if (showNoticePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = plannedMoveOut ?: System.currentTimeMillis(),
+        )
+        DatePickerDialog(
+            onDismissRequest = { showNoticePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let(viewModel::setPlannedMoveOut)
+                    showNoticePicker = false
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNoticePicker = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 }
+
+private val noticeDateFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
 
 @Composable
 private fun DetailRow(label: String, value: String) {

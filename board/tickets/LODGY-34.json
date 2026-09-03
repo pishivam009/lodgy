@@ -11,11 +11,11 @@
     "Rent amount can be updated at transfer time if the new bed/room has a different price - future invoices use the new rent, past invoices are untouched",
     "The transfer is visible in the tenant's notes/timeline as an event, including old room/bed -> new room/bed"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T18:06:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -28,6 +28,22 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Resolved the open design question: the same tenancy agreement continues through a transfer (bedId updated in place), not a checkout+new-agreement. Also explicitly wired to LODGY-9's existing bed-flip mechanism instead of leaving that ambiguous."
+    },
+    {
+      "timestamp": "2026-09-03T18:01:30+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - a transfer action on the tenant profile that updates the existing agreement's bedId in place (no checkout, no second agreement) and flips both beds via BedRepository.setVacant/setOccupied, with an optional rent change and a timeline note recording old -> new."
+    },
+    {
+      "timestamp": "2026-09-03T18:06:02+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Transfer flow built as ui/tenant/TransferScreen.kt + TransferViewModel.kt, reached from a 'Move to another bed' action on the tenant profile (active tenants only), route transfer/{tenantId}. The core of AC 2: TenancyAgreementRepository.transferBed() does dao.update(agreement.copy(bedId = ..., agreedRent = ...)) on the SAME row - there is no close() and no create(), so invoices and payments keyed to that agreement id remain one continuous tenancy, and the tenant record itself is never touched, so notes and history stay put. Bed flips reuse LODGY-9's BedRepository.setOccupied/setVacant, taking the new bed first and only then releasing the old one, so no window exists where the tenancy points at a bed nobody owns; a transfer onto the tenant's current bed is refused outright rather than freeing the bed they are still in. Rent is prefilled from the agreement, re-prices to the target room's pricePerBed when a bed is picked, and stays editable - invoices are immutable snapshots (DESIGN.md 3) so past ones are untouched and only future generation uses the new figure; the field says so. The move writes a GENERAL note naming old -> new location, with the text built in the composable from R.string.transfer_note so it lands in the warden's language rather than whatever the VM happened to have. Vacant options come from a new BedDao.getVacantBedsByHostel (one join, ordered floor/room/bed) rather than the nested per-room loop BedPickerViewModel still uses - the onboarding picker was left alone deliberately, since rewriting it is not this ticket's risk to take. TransferViewModelTest covers loading, no-active-tenancy, re-pricing and override, the same-agreement guarantee (asserting close and create are never called), the timeline note, and the same-bed refusal. testDebugUnitTest green."
     }
   ]
 }
