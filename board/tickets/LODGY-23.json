@@ -6,17 +6,25 @@
   "acceptanceCriteria": [
     "Export produces a readable PDF or CSV with the same numbers as the on-screen report"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T16:20:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T16:20:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "DESIGN.md section 4.6 explicitly marks this 'Phase 2', and it's Low priority, but the AC only asks for 'a readable PDF or CSV' - CSV alone satisfies that in full, so built the smaller of the two rather than deferring: an export icon in MonthlyReportScreen's app bar (only shown once a hostel is active) opens the standard SAF CreateDocument('text/csv') picker; the CSV is built directly from MonthlyReportViewModel's existing uiState (hostel, month, year, totalCollected, totalDues, occupancy%, totalExpense, netIncome) - the exact same numbers already reconciled and shown on screen for LODGY-22, so there's no separate query path that could drift out of sync (AC holds by construction). Row labels reuse existing localized string resources (LODGY-30) so the CSV comes out in whichever language the app is currently set to; amounts are formatted with Locale.US/%.2f deliberately regardless of app language, since a locale-dependent decimal separator would silently corrupt the comma-delimited CSV. No PDF generation was built - not needed to satisfy the AC, and skipping it keeps this appropriately small for a Low-priority, explicitly-Phase-2 item; flagging in case Product Owner specifically wants a PDF later. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still blocked (session-wide emulator limitation, most recently reconfirmed this round) - worth opening the exported CSV in a real spreadsheet app to confirm it parses cleanly."
     }
   ]
 }

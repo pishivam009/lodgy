@@ -254,4 +254,9 @@
     <string name="monthly_report_net_income">आय − खर्च</string>
     <string name="monthly_report_expense_line">इस अवधि का कुल खर्च: ₹%1$.0f</string>
     <string name="dashboard_view_report">मासिक रिपोर्ट</string>
+    <string name="monthly_report_export_action">CSV एक्सपोर्ट करें</string>
+    <string name="monthly_report_export_success">रिपोर्ट एक्सपोर्ट हो गई</string>
+    <string name="monthly_report_export_failed">रिपोर्ट एक्सपोर्ट नहीं हो सकी। फिर कोशिश करें।</string>
+    <string name="monthly_report_csv_hostel">हॉस्टल</string>
+    <string name="monthly_report_csv_total_expense">कुल खर्च</string>
 </resources>

@@ -25,4 +25,10 @@ object CommonIcons {
         "M10,20 V4",
         "M16,20 V14",
     )
+    val Export: ImageVector = strokeIcon(
+        "CommonExport",
+        "M12,3 V15",
+        "M7,8 L12,3 L17,8",
+        "M4,17 V20 H20 V17",
+    )
 }

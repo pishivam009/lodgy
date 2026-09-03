@@ -262,4 +262,9 @@
     <string name="monthly_report_net_income">Income − expense</string>
     <string name="monthly_report_expense_line">Total expenses this period: ₹%1$.0f</string>
     <string name="dashboard_view_report">Monthly Report</string>
+    <string name="monthly_report_export_action">Export CSV</string>
+    <string name="monthly_report_export_success">Report exported</string>
+    <string name="monthly_report_export_failed">Couldn\'t export the report. Try again.</string>
+    <string name="monthly_report_csv_hostel">Hostel</string>
+    <string name="monthly_report_csv_total_expense">Total Expense</string>
 </resources>
