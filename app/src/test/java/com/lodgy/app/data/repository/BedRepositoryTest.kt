@@ -1,0 +1,80 @@
+package com.lodgy.app.data.repository
+
+import com.lodgy.app.data.dao.BedDao
+import com.lodgy.app.data.entity.Bed
+import com.lodgy.app.data.entity.BedStatus
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class BedRepositoryTest {
+
+    private val bedDao: BedDao = mockk()
+    private val repository = BedRepository(bedDao)
+
+    private fun bed(status: BedStatus, id: String = "bed-1") =
+        Bed(id = id, roomId = "room-1", label = "A", status = status, createdAt = 0L, updatedAt = 0L)
+
+    @Test
+    fun `hasOccupiedBed is true when any bed in the room is occupied`() = runTest {
+        every { bedDao.getByRoomId("room-1") } returns flowOf(listOf(bed(BedStatus.VACANT), bed(BedStatus.OCCUPIED)))
+        assertTrue(repository.hasOccupiedBed("room-1"))
+    }
+
+    @Test
+    fun `hasOccupiedBed is false when every bed in the room is vacant`() = runTest {
+        every { bedDao.getByRoomId("room-1") } returns flowOf(listOf(bed(BedStatus.VACANT), bed(BedStatus.VACANT)))
+        assertFalse(repository.hasOccupiedBed("room-1"))
+    }
+
+    @Test
+    fun `generateForRoom creates sequentially lettered vacant beds`() = runTest {
+        val inserted = mutableListOf<Bed>()
+        coEvery { bedDao.insert(capture(inserted)) } returns Unit
+
+        repository.generateForRoom("room-1", 3)
+
+        assertEquals(listOf("A", "B", "C"), inserted.map { it.label })
+        assertTrue(inserted.all { it.roomId == "room-1" && it.status == BedStatus.VACANT })
+    }
+
+    @Test
+    fun `setOccupied flips a vacant bed's status and bumps updatedAt`() = runTest {
+        coEvery { bedDao.getById("bed-1") } returns bed(BedStatus.VACANT).copy(updatedAt = 1L)
+        val updated = slot<Bed>()
+        coEvery { bedDao.update(capture(updated)) } returns Unit
+
+        repository.setOccupied("bed-1")
+
+        assertEquals(BedStatus.OCCUPIED, updated.captured.status)
+        assertTrue(updated.captured.updatedAt >= 1L)
+    }
+
+    @Test
+    fun `setVacant flips an occupied bed's status`() = runTest {
+        coEvery { bedDao.getById("bed-1") } returns bed(BedStatus.OCCUPIED)
+        val updated = slot<Bed>()
+        coEvery { bedDao.update(capture(updated)) } returns Unit
+
+        repository.setVacant("bed-1")
+
+        assertEquals(BedStatus.VACANT, updated.captured.status)
+    }
+
+    @Test
+    fun `setStatus is a no-op when the bed no longer exists`() = runTest {
+        coEvery { bedDao.getById("missing") } returns null
+
+        repository.setOccupied("missing")
+
+        coVerify(exactly = 0) { bedDao.update(any()) }
+    }
+}
