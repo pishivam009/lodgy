@@ -2,23 +2,31 @@
   "id": "LODGY-42",
   "epic": "Rent & Payments",
   "title": "Flag exceptional multi-month/delayed payments for warden review",
-  "description": "Occasionally a tenant delays a month and later pays for two months together in one lump sum. This is a legitimate but exceptional pattern that today just looks like two ordinary payments - the warden has no way to spot it happened, or reconcile it, later.",
+  "description": "Occasionally a tenant delays a month and later pays for two months together in one lump sum. This is a legitimate but exceptional pattern that today just looks like two ordinary payments - the warden has no way to spot it happened, or reconcile it, later. Resolved design question: today a Payment is tied to exactly one Invoice (LODGY-17), so 'one transaction clearing two periods' isn't expressible yet - this needs a real flow to record one payment and apply/split it across multiple invoices at once (not just a same-day-multiple-payments heuristic). Confirmed low priority/rare in practice, so this can wait behind higher-value tickets.",
   "acceptanceCriteria": [
-    "A payment that clears more than one period's dues in a single transaction is flagged/labeled as such on the invoice(s) and payment record",
+    "Warden can record one payment amount and apply it across more than one of a tenant's unpaid/partial invoices in a single action, rather than recording separate payments per invoice",
+    "Each invoice's paid-so-far amount updates correctly from its share of the single payment",
+    "The resulting multi-period payment is flagged/labeled as such on the invoice(s) and payment record",
     "Dashboard or payment list surfaces these flagged multi-period payments so a warden can review them",
     "No change to how a normal single-period payment is recorded or displayed"
   ],
   "status": "Todo",
-  "priority": "Medium",
+  "priority": "Low",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T22:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T22:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Resolved the schema gap flagged in backlog review: build the real one-payment-across-multiple-invoices flow (not a lighter heuristic). Downgraded Medium -> Low since this is rare in practice - fine to sit behind higher-value tickets."
     }
   ]
 }

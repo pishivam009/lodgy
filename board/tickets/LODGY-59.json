@@ -4,7 +4,8 @@
   "title": "Notify warden to advertise long-vacant rooms",
   "description": "Wardens want a nudge to go put up a To-Let board or post an ad when a room/bed has been sitting vacant for a while, rather than only noticing when they happen to check the Vacant view (LODGY-21). Local notification only - no backend, matching this app's offline-first architecture and the existing WorkManager periodic-check pattern already established by LODGY-15's invoice generation worker.",
   "acceptanceCriteria": [
-    "A periodic background check (WorkManager, daily) flags beds that have been VACANT longer than a configurable threshold (e.g. 7 days)",
+    "A periodic background check (WorkManager, daily) flags beds that have been VACANT longer than a threshold the warden sets themselves",
+    "A setting (More tab) lets the warden set/change that vacancy-threshold number of days, defaulting to 7 - this is not a hardcoded constant",
     "Warden receives a local notification naming the hostel/room/bed(s) that have been vacant past the threshold",
     "Notification does not repeat daily for the same still-vacant bed (once per bed until it's occupied again, or a sensible re-notify cadence, not a daily nag)",
     "Runtime POST_NOTIFICATIONS permission (Android 13+) is requested appropriately and the feature degrades gracefully if denied"
@@ -13,13 +14,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T22:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    },
+    {
+      "timestamp": "2026-09-03T22:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Resolved: the vacancy threshold is warden-configurable via a setting, not a hardcoded constant."
     }
   ]
 }

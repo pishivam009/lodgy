@@ -12,13 +12,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T22:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    },
+    {
+      "timestamp": "2026-09-03T22:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "Rationale confirmed, not just tester convenience: in practice the phone is often set up by someone other than the warden (a son, a shop tech doing the install) who is more comfortable in English than the warden ultimately using the app day-to-day. English-by-default plus an easy, prominent switch to Hindi (LODGY-30) serves both people better than defaulting to the warden's own language and hoping the installer notices the switcher exists."
     }
   ]
 }

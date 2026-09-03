@@ -4,7 +4,7 @@
   "title": "Clean up orphaned photo files",
   "description": "Buried finding from LODGY-11/LODGY-28: PhotoStorage persists a picked/captured image to app-private storage immediately, before the tenant form is ever saved. An abandoned pick (form closed without saving, or interrupted) leaves a permanently dangling file that nothing ever cleans up - these accumulate over time and get included in every future backup export (LODGY-28) even though no record references them.",
   "acceptanceCriteria": [
-    "A cleanup routine (e.g. run on app start, or via a maintenance action) identifies photo files under filesDir/photos not referenced by any tenant's photoPath/idProofPhotoPath and deletes them",
+    "A cleanup routine runs automatically on app start (on a background dispatcher, not blocking startup) - no manual maintenance action needed - and identifies photo files under filesDir/photos not referenced by any tenant's photoPath/idProofPhotoPath, then deletes them",
     "Referenced photos are never touched by the cleanup, verified against real tenant records including vacated tenants",
     "Backup export (LODGY-28) no longer includes orphaned files after cleanup has run"
   ],
@@ -12,13 +12,19 @@
   "priority": "Low",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T22:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T22:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Resolved: run automatically on app start, not as a manual action a warden would have to remember to trigger."
     }
   ]
 }

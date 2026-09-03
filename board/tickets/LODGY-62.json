@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-62",
+  "epic": "Appearance",
+  "title": "Replace text status labels with icons where possible",
+  "description": "For quick at-a-glance scanning (and to shrink the amount of text that needs translating/fitting in both Hindi and English per LODGY-30), replace text-only indicators with icon-first representations wherever a clear, unambiguous icon exists - bed vacant/occupied state, invoice status, tenant status. Pairs directly with LODGY-36's RAG color system: icon + color together, never color alone (already the app's convention per LODGY-31/57-style safety patterns), so this isn't about removing text for accessibility's sake, just making text secondary to a symbol that reads the same in either language.",
+  "acceptanceCriteria": [
+    "Bed vacant/occupied indicators (BedGridScreen, VacantViewScreen) lead with an icon, with the RAG color from LODGY-36, text label present but secondary (e.g. smaller, or icon-with-tooltip) rather than the primary way status is conveyed",
+    "Invoice and tenant status badges (Unpaid/Partial/Paid, Active/Vacated) get a consistent icon per state, not just a colored chip with text",
+    "No status is ever conveyed by icon or color alone without a text label still available somewhere (for accessibility/screen readers and for anyone unfamiliar with the icon set) - this reduces reliance on translated text, it doesn't remove the translation entirely",
+    "Icon set is consistent with the app's existing stroke-icon style (ui/icons/CommonIcons.kt)"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T22:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added alongside the LODGY-36 color-coding rework: pairing icons with the new RAG colors so status reads at a glance and doesn't lean entirely on translated text."
+    }
+  ]
+}

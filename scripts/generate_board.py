@@ -16,7 +16,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICKETS_DIR = os.path.join(ROOT, "board", "tickets")
 OUT_PATH = os.path.join(ROOT, "board", "board.html")
 
-STATUSES = ["Todo", "In Progress", "Testing", "Done", "Delivered"]
+STATUSES = ["Todo", "In Progress", "Testing", "Done", "Delivered", "Won't Do"]
 
 
 def ticket_sort_key(t):
@@ -45,7 +45,7 @@ HTML_TEMPLATE = """<!doctype html>
   --bg: #f4f5f7; --panel: #ffffff; --text: #1b1f24; --muted: #5c6470;
   --border: #dfe2e6; --accent: #3b6fd6; --shadow: 0 1px 2px rgba(0,0,0,.08);
   --todo: #8a94a6; --inprogress: #d68b3b; --testing: #a15fd6;
-  --done: #3ba15f; --delivered: #2f855a;
+  --done: #3ba15f; --delivered: #2f855a; --wontdo: #6b7280;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -171,7 +171,8 @@ const TICKETS = __TICKETS_JSON__;
 const STATUSES = __STATUSES_JSON__;
 const COLORS = {
   "Todo": "var(--todo)", "In Progress": "var(--inprogress)",
-  "Testing": "var(--testing)", "Done": "var(--done)", "Delivered": "var(--delivered)"
+  "Testing": "var(--testing)", "Done": "var(--done)", "Delivered": "var(--delivered)",
+  "Won't Do": "var(--wontdo)"
 };
 
 function renderStats() {

@@ -9,17 +9,25 @@
     "Unused dependencies or oversized assets removed or replaced",
     "Cold start time and key screen transitions measured before/after to confirm no regression"
   ],
-  "status": "Todo",
+  "status": "Won't Do",
   "priority": "Low",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T22:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T22:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Won't Do",
+      "note": "Current APK size is already small enough in practice - not worth the effort or the R8/minification regression risk right now. Also removes the size-vs-PDF-library tension this ticket had with LODGY-56/37/45; those are now free to pick whichever PDF approach is simplest to build correctly, not constrained by keeping the APK lean. Revisit only if a real installability complaint shows up."
     }
   ]
 }

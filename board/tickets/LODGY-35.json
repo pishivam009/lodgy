@@ -2,24 +2,31 @@
   "id": "LODGY-35",
   "epic": "Rent & Payments",
   "title": "Rent adjustment/credit for tenant-paid maintenance or repairs",
-  "description": "Tenants sometimes pay out-of-pocket for plumbing, repairs, or maintenance and ask the warden to deduct that amount from their rent instead of reimbursing in cash. There is currently no way to record this - a warden either has to manually shrink the invoice amount (losing the paper trail of why) or track it outside the app.",
+  "description": "Tenants sometimes pay out-of-pocket for plumbing, repairs, or maintenance and ask the warden to deduct that amount from their rent instead of reimbursing in cash. There is currently no way to record this - a warden either has to manually shrink the invoice amount (losing the paper trail of why) or track it outside the app. Resolved design question: this needs a real credit/adjustment entity (its own table, FK'd to tenant + optionally an invoice), not a manual override of Invoice.amountDue - an override would silently disconnect the invoice from LODGY-16/22's 'every number traces to a real record' invariant.",
   "acceptanceCriteria": [
+    "A new Credit/Adjustment entity exists (amount, reason/note, tenant, optional linked invoice, createdAt) - not a mutation of the invoice's own amountDue field",
     "Warden can record a maintenance/repair credit against a specific tenant with an amount and a short note",
-    "The credit is applied to reduce that tenant's next (or a chosen) invoice's amount due, and is visible on the invoice as a labeled line item, not just a smaller total",
+    "The credit is applied to reduce that tenant's next (or a chosen) invoice's effective amount due, and is visible on the invoice as a labeled line item, not just a smaller total",
     "Credit history is visible on the tenant's notes/timeline",
-    "Reports (Monthly Report, CSV export) reflect the adjusted amounts, not the pre-credit amounts"
+    "Reports (Monthly Report, CSV export) reflect the adjusted amounts by summing invoice + credit rows, not by reading a pre-adjusted cached total"
   ],
   "status": "Todo",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T22:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T22:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Resolved the data-model question: build a real Credit/Adjustment table rather than overriding amountDue directly."
     }
   ]
 }

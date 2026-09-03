@@ -2,24 +2,31 @@
   "id": "LODGY-36",
   "epic": "Appearance",
   "title": "Improve color coding for vacant/occupied beds and status labels",
-  "description": "Current vacant/occupied indicators and status badges (invoice Unpaid/Partial/Paid, tenant Active/Vacated, etc.) use similar-looking neutral colors that are hard to tell apart at a glance. Wardens want a clear, consistent, colorblind-safe color language across bed grids, invoice lists, and tenant status badges.",
+  "description": "Current vacant/occupied indicators and status badges (invoice Unpaid/Partial/Paid, tenant Active/Vacated, etc.) use similar-looking neutral colors that are hard to tell apart at a glance. Adopt a standard RAG (Red/Amber/Green) -style status-color system: Red for the bad/urgent state (Occupied-overdue, Unpaid), Amber for in-between (Partial), Green for the good state (Vacant/available, Paid, Active) - a convention wardens and staff will already recognize from outside the app, rather than an invented color language. This is a prerequisite for LODGY-32 (dark mode) - land the token system here first so dark mode adjusts these same tokens rather than the two being built independently and drifting.",
   "acceptanceCriteria": [
-    "Vacant vs Occupied beds use a clearly distinct, consistent color pair across BedGridScreen and VacantViewScreen",
-    "Invoice status badges (Unpaid/Partial/Paid) and tenant status badges (Active/Vacated) use a consistent status-color system app-wide, not per-screen ad hoc colors",
-    "Color choices remain distinguishable for common color-vision deficiencies (not color-alone - pair with icon/label as already done)",
-    "Both light and dark mode (LODGY-32) use appropriately adjusted versions of the same color language"
+    "A single RAG-based status-color token set is defined once and consumed everywhere, not per-screen ad hoc colors",
+    "Vacant vs Occupied beds use the RAG green/red pair consistently across BedGridScreen and VacantViewScreen",
+    "Invoice status badges (Unpaid=red/Partial=amber/Paid=green) and tenant status badges (Active=green/Vacated=neutral) follow the same token set app-wide",
+    "Color choices remain distinguishable for common color-vision deficiencies (not color-alone - pair with icon/label, see LODGY-62)",
+    "LODGY-32 (dark mode) consumes and adjusts these same tokens rather than defining its own"
   ],
   "status": "Todo",
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T22:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T22:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Resolved the color-system ambiguity: use standard RAG (Red/Amber/Green) status coding rather than inventing a bespoke palette. Also made the LODGY-32 sequencing explicit (this lands first, dark mode consumes its tokens) instead of leaving it as two independent tickets that could drift."
     }
   ]
 }
