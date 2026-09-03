@@ -198,6 +198,25 @@
 
     <string name="more_title">More</string>
     <string name="more_expenses">Expenses</string>
+    <string name="more_backup">Backup &amp; Restore</string>
+
+    <string name="backup_title">Backup &amp; Restore</string>
+    <string name="backup_export_title">Export data</string>
+    <string name="backup_export_description">Save a backup of all your hostels, tenants, invoices, and photos to a file you choose - Downloads, an SD card, or a synced folder.</string>
+    <string name="backup_export_action">Export</string>
+    <string name="backup_export_success">Backup saved</string>
+    <string name="backup_export_failed">Couldn\'t save the backup. Try again.</string>
+    <string name="backup_import_title">Restore from backup</string>
+    <string name="backup_import_description">Pick a previously exported backup file to restore your data - useful when moving to a new phone.</string>
+    <string name="backup_import_action">Import</string>
+    <string name="backup_import_invalid">That file doesn\'t look like a Lodgy backup.</string>
+    <string name="backup_import_failed">Couldn\'t read that file. Try again.</string>
+    <string name="backup_import_confirm_title">Replace all data on this device?</string>
+    <string name="backup_import_confirm_body">This restore overwrites all hostels, tenants, invoices, and photos currently on this device with what\'s in the backup. This can\'t be undone.</string>
+    <string name="backup_import_confirm_action">Replace &amp; Restore</string>
+    <string name="backup_restart_title">Restore complete</string>
+    <string name="backup_restart_body">The app needs to restart to load your restored data.</string>
+    <string name="backup_restart_action">Restart</string>
 
     <string name="expense_list_title">Expenses</string>
     <string name="expense_list_empty">No expenses logged yet. Tap + to add one.</string>

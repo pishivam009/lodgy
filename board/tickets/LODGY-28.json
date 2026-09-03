@@ -7,17 +7,33 @@
     "Export produces a single zip file at a user-chosen location",
     "Zip contains both the DB file and all referenced photos"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T15:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T14:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Building alongside LODGY-29 (import) - one BackupManager (backup/BackupManager.kt) covers both directions, matching DESIGN.md 4.8. No new dependency needed, java.util.zip covers zipping. Export flow: PRAGMA wal_checkpoint(FULL) on the live Room db to flush WAL into the main file, then stream lodgy.db plus every file under filesDir/photos/ into a ZipOutputStream written straight to the SAF destination the warden picks via ActivityResultContracts.CreateDocument - no intermediate temp file."
+    },
+    {
+      "timestamp": "2026-09-03T15:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "BackupManager.export() writes a single zip with a `lodgy.db` entry and one `photos/<filename>` entry per photo (AC2). The destination Uri comes from CreateDocument's SAF picker, so it lands wherever the warden picks - Downloads, an SD card, a Drive-synced folder (AC1). Entry point: More tab -> 'Backup & Restore' (ui/backup/BackupScreen.kt, BackupViewModel.kt), reachable via the new BACKUP_ROUTE in LodgyNavHost. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued (session-wide emulator/adb limitation) - worth confirming on a real device that the produced zip actually opens and both entries extract cleanly, and that wal_checkpoint doesn't hiccup under concurrent app usage."
     }
   ]
 }

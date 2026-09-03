@@ -25,6 +25,7 @@ import com.lodgy.app.ui.property.HostelListScreen
 import com.lodgy.app.ui.property.BedGridScreen
 import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
+import com.lodgy.app.ui.backup.BackupScreen
 import com.lodgy.app.ui.dashboard.DashboardScreen
 import com.lodgy.app.ui.dashboard.MonthlyReportScreen
 import com.lodgy.app.ui.dashboard.VacantViewScreen
@@ -66,6 +67,7 @@ private const val EXPENSE_LIST_ROUTE = "expense_list"
 private const val EXPENSE_FORM_ROUTE = "expense_form"
 private const val NOTES_TIMELINE_ROUTE = "notes_timeline"
 private const val NOTE_FORM_ROUTE = "note_form"
+private const val BACKUP_ROUTE = "backup"
 
 @Composable
 fun LodgyNavHost() {
@@ -125,6 +127,7 @@ fun LodgyNavHost() {
                         )
                         LodgyDestination.More -> MoreScreen(
                             onOpenExpenses = { navController.navigate(EXPENSE_LIST_ROUTE) },
+                            onOpenBackup = { navController.navigate(BACKUP_ROUTE) },
                         )
                     }
                 }
@@ -344,6 +347,10 @@ fun LodgyNavHost() {
                     onDone = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )
+            }
+
+            composable(BACKUP_ROUTE) {
+                BackupScreen(onBack = { navController.popBackStack() })
             }
         }
     }

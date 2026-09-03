@@ -30,13 +30,21 @@ private val ExpenseIcon: ImageVector = strokeIcon(
     "M8,6 H14 A3,3 0 0,1 14,12 H10 A3,3 0 0,0 10,18 H16",
 )
 
+private val BackupIcon: ImageVector = strokeIcon(
+    "MoreBackup",
+    "M12,3 V15",
+    "M7,10 L12,15 L17,10",
+    "M4,19 H20",
+)
+
 private data class MoreMenuItem(val labelRes: Int, val icon: ImageVector, val onClick: () -> Unit)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MoreScreen(onOpenExpenses: () -> Unit) {
+fun MoreScreen(onOpenExpenses: () -> Unit, onOpenBackup: () -> Unit) {
     val menuItems = listOf(
         MoreMenuItem(R.string.more_expenses, ExpenseIcon, onOpenExpenses),
+        MoreMenuItem(R.string.more_backup, BackupIcon, onOpenBackup),
     )
 
     Scaffold(

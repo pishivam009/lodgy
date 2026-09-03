@@ -7,17 +7,33 @@
     "Importing a valid export fully restores hostels/tenants/invoices/photos",
     "Importing does not silently merge with existing data - warns before overwrite"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T15:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T14:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Building alongside LODGY-28 (export) - see that ticket's note for the shared BackupManager. Import is two-phase to satisfy AC2 without a scary all-or-nothing risk: stageImport() extracts the picked zip into a cache staging dir and validates it contains a lodgy.db entry WITHOUT touching any live data; only after the warden confirms an explicit overwrite dialog does applyStaged() close the live Room db, replace the db file (and delete stale -wal/-shm siblings) and the photos directory, then require an app restart (Room can't safely swap its connection out from under a running Hilt singleton graph, so restart is the clean way to get a fresh db handle)."
+    },
+    {
+      "timestamp": "2026-09-03T15:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "AC1: applyStaged() replaces the entire db file wholesale (not a table-by-table merge), so every entity - hostels/floors/rooms/beds/tenants/agreements/invoices/payments/notes/expenses - and every photo file comes back together; nothing is cherry-picked. AC2: picking a file only stages+validates it; BackupScreen then shows an AlertDialog ('Replace all data on this device? ... can't be undone') before BackupViewModel.confirmImport() is ever called - declining leaves the current data completely untouched (dismissOverwriteConfirm deletes the staging dir and does nothing else). If the picked file has no lodgy.db entry, ImportResult.NotALodgyBackup surfaces an inline error instead of silently no-oping. After a successful restore, a non-dismissable dialog explains the app will restart, and the restart relaunches via a fresh launch intent + Runtime.exit so the next cold start reads the newly-restored db. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued - this one especially needs a real device pass: export from one install, wipe/reinstall or use a second device, import, and confirm the restored hostel/tenant/photo data actually appears end to end."
     }
   ]
 }
