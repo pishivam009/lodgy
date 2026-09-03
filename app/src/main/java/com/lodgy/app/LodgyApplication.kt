@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.lodgy.app.locale.AppLocale
 import com.lodgy.app.work.scheduleInvoiceGeneration
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -19,6 +20,7 @@ class LodgyApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        AppLocale.applyDefaultIfUnset()
         WorkManager.getInstance(this).scheduleInvoiceGeneration()
     }
 }

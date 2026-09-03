@@ -73,4 +73,5 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.appcompat)
 }

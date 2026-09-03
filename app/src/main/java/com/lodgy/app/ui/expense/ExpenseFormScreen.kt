@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.ExpenseCategory
+import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -78,7 +79,7 @@ fun ExpenseFormScreen(
                         FilterChip(
                             selected = uiState.category == category,
                             onClick = { viewModel.onCategoryChange(category) },
-                            label = { Text(category.name) },
+                            label = { Text(category.label()) },
                         )
                     }
                 }

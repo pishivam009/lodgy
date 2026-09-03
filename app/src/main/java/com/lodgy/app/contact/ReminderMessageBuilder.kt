@@ -1,11 +1,14 @@
 package com.lodgy.app.contact
 
+import android.content.Context
+import com.lodgy.app.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 object ReminderMessageBuilder {
     fun build(
+        context: Context,
         language: ReminderLanguage,
         tenantName: String,
         amountDue: Double,
@@ -15,10 +18,11 @@ object ReminderMessageBuilder {
         val locale = if (language == ReminderLanguage.HINDI) Locale.forLanguageTag("hi") else Locale.ENGLISH
         val date = SimpleDateFormat("d MMMM", locale).format(Date(dueDateMillis))
         val amount = amountDue.toInt()
-        return if (language == ReminderLanguage.HINDI) {
-            "नमस्ते $tenantName जी, आपका ₹$amount किराया बकाया है, due date $date। – $hostelName"
+        val templateRes = if (language == ReminderLanguage.HINDI) {
+            R.string.reminder_template_hi
         } else {
-            "Hi $tenantName, your rent of ₹$amount is due on $date. - $hostelName"
+            R.string.reminder_template_en
         }
+        return context.getString(templateRes, tenantName, amount, date, hostelName)
     }
 }

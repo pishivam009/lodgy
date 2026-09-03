@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -113,7 +114,7 @@ private fun VacantBedRow(item: VacantBedItem) {
                 stringResource(R.string.vacant_view_room_bed, item.roomNumber, item.bedLabel),
                 style = MaterialTheme.typography.titleMedium,
             )
-            AssistChip(onClick = {}, label = { Text(item.roomType.name) })
+            AssistChip(onClick = {}, label = { Text(item.roomType.label()) })
         }
     }
 }

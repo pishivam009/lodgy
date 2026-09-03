@@ -1,5 +1,6 @@
 package com.lodgy.app.ui.payment
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,7 @@ import com.lodgy.app.data.repository.RoomRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +33,7 @@ data class ReminderUiState(
 
 @HiltViewModel
 class ReminderViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     invoiceRepository: InvoiceRepository,
     tenancyAgreementRepository: TenancyAgreementRepository,
     tenantRepository: TenantRepository,
@@ -78,5 +81,5 @@ class ReminderViewModel @Inject constructor(
         _uiState.update { it.copy(language = language, message = buildMessage(language)) }
 
     private fun buildMessage(language: ReminderLanguage): String =
-        ReminderMessageBuilder.build(language, tenantName, amountDue, dueDateMillis, hostelName)
+        ReminderMessageBuilder.build(context, language, tenantName, amountDue, dueDateMillis, hostelName)
 }

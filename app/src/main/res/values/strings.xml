@@ -72,6 +72,9 @@
     <string name="room_field_price">Price per bed</string>
     <string name="room_field_amenities">Amenities</string>
     <string name="room_form_save">Save Room</string>
+    <string name="room_type_single">SINGLE</string>
+    <string name="room_type_double">DOUBLE</string>
+    <string name="room_type_triple">TRIPLE</string>
 
     <string name="bed_grid_title">Room %1$s</string>
     <string name="bed_label">Bed %1$s</string>
@@ -143,6 +146,9 @@
     <string name="note_delete">Delete note</string>
     <string name="note_delete_confirm_title">Delete this note?</string>
     <string name="note_delete_confirm_body">This can\'t be undone.</string>
+    <string name="note_type_complaint">COMPLAINT</string>
+    <string name="note_type_damage">DAMAGE</string>
+    <string name="note_type_general">GENERAL</string>
 
     <string name="invoice_list_title">Invoices</string>
     <string name="invoice_filter_all">All</string>
@@ -159,6 +165,10 @@
     <string name="record_payment_paid_on">Paid on</string>
     <string name="record_payment_note">Note (optional)</string>
     <string name="record_payment_save">Save Payment</string>
+    <string name="payment_mode_cash">CASH</string>
+    <string name="payment_mode_upi">UPI</string>
+    <string name="payment_mode_bank_transfer">BANK TRANSFER</string>
+    <string name="payment_mode_other">OTHER</string>
 
     <string name="manual_invoice_add">Add invoice</string>
     <string name="manual_invoice_pick_tenant_title">Backfill Invoice For</string>
@@ -182,6 +192,8 @@
     <string name="reminder_disclaimer">Opens with this pre-filled — you review and tap send there. Nothing sends automatically.</string>
     <string name="reminder_open_whatsapp">Open WhatsApp</string>
     <string name="reminder_open_sms">Open SMS</string>
+    <string name="reminder_template_hi">नमस्ते %1$s जी, आपका ₹%2$d किराया बकाया है, due date %3$s। – %4$s</string>
+    <string name="reminder_template_en">Hi %1$s, your rent of ₹%2$d is due on %3$s. - %4$s</string>
 
     <string name="dashboard_title">Home</string>
     <string name="dashboard_no_hostel">Add a hostel first (Property tab) to see your dashboard.</string>
@@ -199,6 +211,11 @@
     <string name="more_title">More</string>
     <string name="more_expenses">Expenses</string>
     <string name="more_backup">Backup &amp; Restore</string>
+    <string name="more_language">App language</string>
+
+    <string name="language_picker_title">App language</string>
+    <string name="language_hindi">हिंदी</string>
+    <string name="language_english">English</string>
 
     <string name="backup_title">Backup &amp; Restore</string>
     <string name="backup_export_title">Export data</string>
@@ -230,6 +247,13 @@
     <string name="expense_field_recurring">Recurring monthly</string>
     <string name="expense_field_note">Note (optional)</string>
     <string name="expense_form_save">Save Expense</string>
+    <string name="expense_category_wifi">WIFI</string>
+    <string name="expense_category_water">WATER</string>
+    <string name="expense_category_electricity">ELECTRICITY</string>
+    <string name="expense_category_tax">TAX</string>
+    <string name="expense_category_maintenance">MAINTENANCE</string>
+    <string name="expense_category_repair">REPAIR</string>
+    <string name="expense_category_other">OTHER</string>
 
     <string name="monthly_report_title">Monthly Report</string>
     <string name="monthly_report_collected">Total collected</string>

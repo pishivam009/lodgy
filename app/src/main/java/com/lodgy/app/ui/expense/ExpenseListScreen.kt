@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.Expense
+import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -112,7 +113,7 @@ private fun ExpenseRow(expense: Expense, onClick: () -> Unit) {
         ) {
             Column {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(expense.category.name, style = MaterialTheme.typography.titleMedium)
+                    Text(expense.category.label(), style = MaterialTheme.typography.titleMedium)
                     if (expense.isRecurring) {
                         Text(
                             stringResource(R.string.expense_recurring_badge),

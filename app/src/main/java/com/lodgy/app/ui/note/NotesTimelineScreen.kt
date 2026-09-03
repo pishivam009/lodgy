@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.NoteType
 import com.lodgy.app.data.entity.TenantNote
+import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -109,7 +110,7 @@ private fun NoteRow(note: TenantNote, onClick: () -> Unit) {
             )
             Column(modifier = Modifier.padding(start = 12.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(note.type.name, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(note.type.label(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(dateFormat.format(Date(note.occurredOn)), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Text(note.text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))

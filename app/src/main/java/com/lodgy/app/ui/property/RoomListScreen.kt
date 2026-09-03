@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.Room
+import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -120,7 +121,7 @@ private fun RoomRow(room: Room, onOpen: () -> Unit, onEdit: () -> Unit, onDelete
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            AssistChip(onClick = onOpen, label = { Text(room.type.name) })
+            AssistChip(onClick = onOpen, label = { Text(room.type.label()) })
             IconButton(onClick = onEdit) { Icon(CommonIcons.Edit, contentDescription = stringResource(R.string.room_edit)) }
             IconButton(onClick = onDelete) { Icon(CommonIcons.Trash, contentDescription = stringResource(R.string.room_delete)) }
         }

@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.NoteType
+import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 import com.lodgy.app.ui.tenant.PhotoPickerField
 import java.text.SimpleDateFormat
@@ -85,7 +86,7 @@ fun NoteFormScreen(
                         FilterChip(
                             selected = uiState.type == type,
                             onClick = { viewModel.onTypeChange(type) },
-                            label = { Text(type.name) },
+                            label = { Text(type.label()) },
                         )
                     }
                 }

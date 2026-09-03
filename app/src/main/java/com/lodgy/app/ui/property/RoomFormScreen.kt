@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.RoomType
+import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +70,7 @@ fun RoomFormScreen(
                     FilterChip(
                         selected = uiState.type == type,
                         onClick = { viewModel.onTypeChange(type) },
-                        label = { Text(type.name) },
+                        label = { Text(type.label()) },
                     )
                 }
             }

@@ -13,17 +13,33 @@
     "Amounts and dates display using locale-aware formatting under both language settings",
     "Tenant-entered free text (names, notes) displays exactly as typed regardless of the app's UI language setting"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T00:00:00+00:00",
-  "updatedAt": "2026-09-02T00:00:00+00:00",
+  "updatedAt": "2026-09-03T16:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T00:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added per explicit user requirement: primary users (wardens) are Hindi-based. Should land early since retrofitting string externalization across an already-built UI is expensive - flagging as High priority even though it doesn't block LODGY-1/LODGY-2."
+    },
+    {
+      "timestamp": "2026-09-03T15:30:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Good news first: every screen built this session already externalizes its strings to values/strings.xml as a matter of house style, so AC1 was mostly already true - confirmed by grepping for hardcoded Text(\"...\") literals across ui/ and finding none. The real gap was enum-backed labels rendered via `.name` (RoomType, ExpenseCategory, NoteType, PaymentMode chips/badges across RoomFormScreen, RoomListScreen, VacantViewScreen, ExpenseFormScreen, ExpenseListScreen, NoteFormScreen, NotesTimelineScreen, RecordPaymentScreen) - these were untranslatable raw enum identifiers. Added ui/common/EnumLabels.kt with @Composable .label() extensions backed by new string resources, and swapped every `.name` call site to `.label()`. Also moved the LODGY-18/19 reminder templates out of hardcoded Kotlin strings in ReminderMessageBuilder into reminder_template_hi/reminder_template_en resources (ReminderViewModel now injects Context to resolve them) - these two keys deliberately live ONLY in the base values/strings.xml (not values-hi/), same as reminder_language_hindi/english and the new language_hindi/language_english labels, because they're explicit per-message/per-picker language choices independent of the app's own UI language, not text that should follow the active locale."
+    },
+    {
+      "timestamp": "2026-09-03T16:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Added values-hi/strings.xml with a full Hindi translation of every locale-following string (deliberately excluding app_name and the fixed-language keys above, which correctly fall back to their single defined value regardless of active locale - not a translation gap). For per-app language switching (AC3/AC4): added androidx.appcompat (needed for AppCompatDelegate.setApplicationLocales/LocaleListCompat - the modern per-app-language API that works without the app using an AppCompatActivity theme), declared AppLocalesMetadataHolderService in the manifest so the choice persists across restarts, and added locale/AppLocale.kt (set/current/applyDefaultIfUnset). LodgyApplication.onCreate() calls applyDefaultIfUnset() which sets Hindi only when no explicit choice is stored yet - satisfies AC4 (defaults to Hindi on first launch) without re-forcing Hindi on every subsequent launch. Language switcher: More tab -> 'App language' opens a radio-button dialog (MoreScreen.kt); confirming calls AppLocale.set() then explicitly calls activity.recreate() as a belt-and-suspenders measure alongside AppCompat's own auto-recreate, since MainActivity is a plain FragmentActivity rather than AppCompatActivity and I didn't want to depend on undocumented behavior there - satisfies AC3 (changes immediately, independent of device locale, no reinstall). Scope call: DESIGN.md/the ticket mention a 'Settings' screen for the switcher, but no such screen or nav destination exists anywhere in this app (wireframes and bottom nav only have Property/Tenants/Payments/Home/More) - folded the switcher into the existing More tab instead of building a new top-level Settings destination; flagging in case Product Owner wants a dedicated Settings screen later. AC5 (reminder templates in both languages, warden-selectable) was already fully built by LODGY-18/19 before this ticket started - only the storage location changed here, not the behavior. AC6 (Devanagari rendering) relies on the system font stack picking up Noto Sans Devanagari as a fallback, which is standard on every real Android device/emulator image; nothing app-specific was needed or added. AC7 (locale-aware amounts/dates): audited every date formatter in the app (grep for SimpleDateFormat) - all of them already pass Locale.getDefault() except ReminderMessageBuilder's deliberately-explicit per-language formatting; Locale.getDefault() is kept in sync with the app's per-app locale by AppCompatDelegate itself. Currency amounts go through the currency_amount string resource's %.0f formatting, which uses Western Arabic digits under the 'hi' locale by default (Android/ICU's default numbering system for hi-IN is Latin digits, not Devanagari) - exactly the convention real Hindi-language Indian apps use for money, so no extra digit-formatting workaround was needed. AC8 (tenant free text never translated) holds structurally - tenant names/notes/addresses are stored and rendered as plain Kotlin strings from the DB, never routed through the Android resource system, so there's no code path that could translate them. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still blocked - re-attempted the emulator twice this round (force-killed a wedged qemu/emulator process pair and cleanly relaunched; the guest OS itself never reached a stable boot_completed state within a 4-minute window, and adb cycled between 'device' and 'offline' on a live connection with the same transport). This is the same class of failure documented earlier in the session and not something a further restart is likely to fix. Everything above is verified by code reading, not by running the app - in particular the language-switcher's actual runtime recreate behavior and Devanagari glyph rendering deserve a real device/emulator pass before this ships."
     }
   ]
 }
