@@ -33,12 +33,20 @@ import com.lodgy.app.R
 import com.lodgy.app.data.entity.Room
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
+import com.lodgy.app.ui.icons.strokeIcon
+
+private val BulkAddIcon = strokeIcon(
+    "RoomListBulkAdd",
+    "M4,4 H14 V14 H4 Z",
+    "M10,10 H20 V20 H10 Z",
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoomListScreen(
     onBack: () -> Unit,
     onAddRoom: () -> Unit,
+    onBulkAddRooms: () -> Unit,
     onEditRoom: (Room) -> Unit,
     onOpenBeds: (Room) -> Unit,
     viewModel: RoomListViewModel = hiltViewModel(),
@@ -56,6 +64,11 @@ fun RoomListScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(CommonIcons.Back, contentDescription = null) }
+                },
+                actions = {
+                    IconButton(onClick = onBulkAddRooms) {
+                        Icon(BulkAddIcon, contentDescription = stringResource(R.string.room_bulk_add))
+                    }
                 },
             )
         },

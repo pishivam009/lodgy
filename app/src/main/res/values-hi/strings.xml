@@ -73,6 +73,12 @@
     <string name="room_type_single">सिंगल</string>
     <string name="room_type_double">डबल</string>
     <string name="room_type_triple">ट्रिपल</string>
+    <string name="room_bulk_add">एक साथ कई कमरे जोड़ें</string>
+    <string name="bulk_room_title">एक साथ कई कमरे जोड़ें</string>
+    <string name="bulk_room_field_start_number">शुरुआती कमरा नंबर</string>
+    <string name="bulk_room_field_start_number_hint">कमरों की नंबरिंग यहां से क्रम में होगी, जैसे 101 → 101, 102, 103…</string>
+    <string name="bulk_room_field_count">कमरों की संख्या</string>
+    <string name="bulk_room_save">कमरे बनाएं</string>
 
     <string name="bed_grid_title">कमरा %1$s</string>
     <string name="bed_label">बेड %1$s</string>

@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.lodgy.app.ui.property.BulkRoomFormScreen
 import com.lodgy.app.ui.property.FloorFormScreen
 import com.lodgy.app.ui.property.FloorListScreen
 import com.lodgy.app.ui.property.HostelFormScreen
@@ -51,6 +52,7 @@ private const val FLOOR_LIST_ROUTE = "floor_list"
 private const val FLOOR_FORM_ROUTE = "floor_form"
 private const val ROOM_LIST_ROUTE = "room_list"
 private const val ROOM_FORM_ROUTE = "room_form"
+private const val BULK_ROOM_FORM_ROUTE = "bulk_room_form"
 private const val BED_GRID_ROUTE = "bed_grid"
 private const val BED_PICKER_ROUTE = "bed_picker"
 private const val TENANT_FORM_ROUTE = "tenant_form"
@@ -177,8 +179,19 @@ fun LodgyNavHost() {
                 RoomListScreen(
                     onBack = { navController.popBackStack() },
                     onAddRoom = { navController.navigate("$ROOM_FORM_ROUTE/$floorId") },
+                    onBulkAddRooms = { navController.navigate("$BULK_ROOM_FORM_ROUTE/$floorId") },
                     onEditRoom = { room -> navController.navigate("$ROOM_FORM_ROUTE/$floorId?roomId=${room.id}") },
                     onOpenBeds = { room -> navController.navigate("$BED_GRID_ROUTE/${room.id}") },
+                )
+            }
+
+            composable(
+                route = "$BULK_ROOM_FORM_ROUTE/{floorId}",
+                arguments = listOf(navArgument("floorId") { type = NavType.StringType }),
+            ) {
+                BulkRoomFormScreen(
+                    onDone = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
                 )
             }
 

@@ -75,6 +75,12 @@
     <string name="room_type_single">SINGLE</string>
     <string name="room_type_double">DOUBLE</string>
     <string name="room_type_triple">TRIPLE</string>
+    <string name="room_bulk_add">Bulk add rooms</string>
+    <string name="bulk_room_title">Bulk Add Rooms</string>
+    <string name="bulk_room_field_start_number">Starting room number</string>
+    <string name="bulk_room_field_start_number_hint">Rooms are numbered sequentially from here, e.g. 101 → 101, 102, 103…</string>
+    <string name="bulk_room_field_count">Number of rooms</string>
+    <string name="bulk_room_save">Create Rooms</string>
 
     <string name="bed_grid_title">Room %1$s</string>
     <string name="bed_label">Bed %1$s</string>
