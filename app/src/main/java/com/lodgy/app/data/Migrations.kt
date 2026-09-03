@@ -19,3 +19,21 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_credits_invoiceId` ON `credits` (`invoiceId`)")
     }
 }
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `reconciliation_marks` (" +
+                "`id` TEXT NOT NULL, `hostelId` TEXT NOT NULL, `periodMonth` INTEGER NOT NULL, " +
+                "`periodYear` INTEGER NOT NULL, `note` TEXT, " +
+                "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`id`), " +
+                "FOREIGN KEY(`hostelId`) REFERENCES `hostels`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        )
+        db.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                "`index_reconciliation_marks_hostelId_periodMonth_periodYear` " +
+                "ON `reconciliation_marks` (`hostelId`, `periodMonth`, `periodYear`)",
+        )
+    }
+}

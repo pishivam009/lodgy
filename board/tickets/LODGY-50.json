@@ -8,17 +8,33 @@
     "Setup flow has an explicit confirm step regardless of chosen length",
     "Existing 4-digit PINs from before this change continue to work unchanged"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T18:38:27+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T18:33:51+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - warden-chosen 4-6 digit PIN with an explicit confirm step. The stored bcrypt hash carries no length, so existing 4-digit PINs keep working without any migration; the lock screen just has to stop assuming 4."
+    },
+    {
+      "timestamp": "2026-09-03T18:38:27+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "PIN length is now the warden's choice, 4-6. AuthPreferences gained pinLength (MIN 4 / MAX 6 / DEFAULT 4, clamped on both read and write); the bcrypt hash carries no length of its own, so this preference is the only thing that has to remember, and an install from before this change has no stored value, reads 4, and unlocks exactly as it did - AC 3 needs no migration. Setup: length chips on the ENTER step (locked once the first digit is typed, so the dots can never disagree with what is being entered) and an explicit Continue / Confirm PIN button on both steps, replacing the old auto-advance-at-4-digits. That was forced anyway - with a variable length there is no digit count that reliably means 'done' - and it satisfies AC 2 directly. The chosen length is written on save. The lock screen keeps auto-verifying, but at the stored length rather than a hardcoded 4, and its dots follow it. Tests: PinSetupViewModelTest now drives the explicit submit, and covers the six-digit path with setPinLength persisted, a submit refused on an incomplete PIN, nothing advancing before the button, the length locking after the first digit, and the 4-6 option list; PinLockViewModelTest covers a six-digit unlock only firing on the sixth digit and the legacy four-digit install still unlocking. testDebugUnitTest green (309 tests)."
     }
   ]
 }

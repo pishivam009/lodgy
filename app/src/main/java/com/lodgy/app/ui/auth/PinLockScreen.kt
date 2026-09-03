@@ -91,7 +91,7 @@ fun PinLockScreen(onUnlocked: () -> Unit, viewModel: PinLockViewModel = hiltView
                 modifier = Modifier.padding(top = 28.dp),
             )
 
-            PinDots(length = 4, filledCount = uiState.enteredDigits.length, modifier = Modifier.padding(top = 20.dp))
+            PinDots(length = uiState.pinLength, filledCount = uiState.enteredDigits.length, modifier = Modifier.padding(top = 20.dp))
 
             uiState.error?.let { errorRes ->
                 Text(

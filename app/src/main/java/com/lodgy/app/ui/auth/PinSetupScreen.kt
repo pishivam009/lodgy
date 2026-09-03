@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.ui.common.FilterChipRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +48,8 @@ fun PinSetupScreen(onComplete: () -> Unit, viewModel: PinSetupViewModel = hiltVi
                 uiState = uiState,
                 onDigit = viewModel::onDigit,
                 onBackspace = viewModel::onBackspace,
+                onLengthChange = viewModel::onLengthChange,
+                onSubmit = viewModel::onSubmit,
                 modifier = Modifier.padding(padding),
             )
             PinSetupStep.BIOMETRIC -> BiometricOptInContent(
@@ -65,6 +68,8 @@ private fun PinEntryContent(
     uiState: PinSetupUiState,
     onDigit: (Char) -> Unit,
     onBackspace: () -> Unit,
+    onLengthChange: (Int) -> Unit,
+    onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -98,7 +103,18 @@ private fun PinEntryContent(
                 modifier = Modifier.padding(top = 8.dp, start = 24.dp, end = 24.dp),
             )
 
-            PinDots(length = 4, filledCount = uiState.enteredDigits.length, modifier = Modifier.padding(top = 24.dp))
+            if (uiState.step == PinSetupStep.ENTER) {
+                FilterChipRow(
+                    options = uiState.lengthOptions,
+                    selected = uiState.pinLength,
+                    onSelect = onLengthChange,
+                    label = { stringResource(R.string.pin_setup_length_option, it) },
+                    modifier = Modifier.padding(top = 16.dp),
+                    leadingLabel = stringResource(R.string.pin_setup_length),
+                )
+            }
+
+            PinDots(length = uiState.pinLength, filledCount = uiState.enteredDigits.length, modifier = Modifier.padding(top = 24.dp))
 
             uiState.error?.let { errorRes ->
                 Text(
@@ -110,13 +126,28 @@ private fun PinEntryContent(
             }
         }
 
-        Keypad(
-            onDigit = onDigit,
-            onBackspace = onBackspace,
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 24.dp, vertical = 24.dp),
-        )
+        ) {
+            Keypad(onDigit = onDigit, onBackspace = onBackspace)
+            Button(
+                onClick = onSubmit,
+                enabled = uiState.canSubmit,
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+            ) {
+                Text(
+                    stringResource(
+                        if (uiState.step == PinSetupStep.CONFIRM) {
+                            R.string.pin_setup_confirm_action
+                        } else {
+                            R.string.pin_setup_continue
+                        },
+                    ),
+                )
+            }
+        }
     }
 }
 

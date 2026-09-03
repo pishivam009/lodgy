@@ -16,18 +16,23 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-private const val PIN_LENGTH = 4
-
 enum class PinSetupStep { ENTER, CONFIRM, BIOMETRIC, DONE }
 
 data class PinSetupUiState(
     val step: PinSetupStep = PinSetupStep.ENTER,
+    val pinLength: Int = AuthPreferences.DEFAULT_PIN_LENGTH,
     val enteredDigits: String = "",
     val firstPin: String? = null,
     @param:StringRes val error: Int? = null,
     val biometricAvailable: Boolean = false,
     val biometricEnabled: Boolean = false,
-)
+) {
+    /** Nothing advances on its own any more: with a chosen length there is no digit count that
+     *  reliably means "done", so the warden confirms each step (AC 2). */
+    val canSubmit: Boolean get() = enteredDigits.length == pinLength
+
+    val lengthOptions: List<Int> get() = (AuthPreferences.MIN_PIN_LENGTH..AuthPreferences.MAX_PIN_LENGTH).toList()
+}
 
 @HiltViewModel
 class PinSetupViewModel @Inject constructor(
@@ -41,23 +46,31 @@ class PinSetupViewModel @Inject constructor(
     )
     val uiState: StateFlow<PinSetupUiState> = _uiState.asStateFlow()
 
+    /** Only selectable before any digits are typed, so the dots never disagree with the entry. */
+    fun onLengthChange(length: Int) {
+        val state = _uiState.value
+        if (state.step != PinSetupStep.ENTER || state.enteredDigits.isNotEmpty()) return
+        _uiState.update { it.copy(pinLength = length, error = null) }
+    }
+
     fun onDigit(digit: Char) {
         val state = _uiState.value
         if (state.step != PinSetupStep.ENTER && state.step != PinSetupStep.CONFIRM) return
-        if (state.enteredDigits.length >= PIN_LENGTH) return
+        if (state.enteredDigits.length >= state.pinLength) return
 
-        val next = state.enteredDigits + digit
-        if (next.length < PIN_LENGTH) {
-            _uiState.update { it.copy(enteredDigits = next, error = null) }
-            return
-        }
+        _uiState.update { it.copy(enteredDigits = it.enteredDigits + digit, error = null) }
+    }
+
+    fun onSubmit() {
+        val state = _uiState.value
+        if (!state.canSubmit) return
 
         when (state.step) {
             PinSetupStep.ENTER -> _uiState.update {
-                it.copy(enteredDigits = "", firstPin = next, step = PinSetupStep.CONFIRM, error = null)
+                it.copy(enteredDigits = "", firstPin = state.enteredDigits, step = PinSetupStep.CONFIRM, error = null)
             }
             PinSetupStep.CONFIRM -> {
-                if (next == state.firstPin) {
+                if (state.enteredDigits == state.firstPin) {
                     advancePastConfirm()
                 } else {
                     _uiState.update {
@@ -70,6 +83,7 @@ class PinSetupViewModel @Inject constructor(
                     }
                 }
             }
+            else -> Unit
         }
     }
 
@@ -96,6 +110,7 @@ class PinSetupViewModel @Inject constructor(
     private suspend fun persistAndFinish() {
         val pin = _uiState.value.firstPin ?: return
         wardenRepository.createWarden(PinHasher.hash(pin))
+        authPreferences.setPinLength(pin.length)
         authPreferences.setBiometricEnabled(_uiState.value.biometricEnabled)
         _uiState.update { it.copy(step = PinSetupStep.DONE) }
     }

@@ -16,8 +16,10 @@ import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.entity.Credit
+import com.lodgy.app.data.entity.ReconciliationMark
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.CreditRepository
+import com.lodgy.app.data.repository.ReconciliationRepository
 import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.HostelRepository
@@ -27,11 +29,13 @@ import com.lodgy.app.data.repository.RoomRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.testutil.MainDispatcherRule
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.util.Calendar
@@ -51,6 +55,7 @@ class MonthlyReportViewModelTest {
     private val paymentRepository: PaymentRepository = mockk()
     private val expenseRepository: ExpenseRepository = mockk()
     private val creditRepository: CreditRepository = mockk()
+    private val reconciliationRepository: ReconciliationRepository = mockk()
 
     private fun periodMillis(year: Int, month: Int): Long {
         val cal = Calendar.getInstance()
@@ -58,12 +63,24 @@ class MonthlyReportViewModelTest {
         return cal.timeInMillis
     }
 
-    private fun viewModel(credits: List<Credit> = emptyList()): MonthlyReportViewModel {
+    private fun viewModel(
+        credits: List<Credit> = emptyList(),
+        reconciled: Boolean = false,
+    ): MonthlyReportViewModel {
         coEvery { creditRepository.getAllOnce() } returns credits
+        coEvery { reconciliationRepository.getForPeriod(any(), any(), any()) } returns
+            if (reconciled) {
+                ReconciliationMark(id = "m1", hostelId = "h1", periodMonth = 1, periodYear = 2026, note = null, createdAt = 0L, updatedAt = 0L)
+            } else {
+                null
+            }
+        coEvery { reconciliationRepository.mark(any(), any(), any(), any()) } returns
+            ReconciliationMark(id = "m1", hostelId = "h1", periodMonth = 1, periodYear = 2026, note = null, createdAt = 0L, updatedAt = 0L)
+        coEvery { reconciliationRepository.unmark(any(), any(), any()) } returns Unit
         return MonthlyReportViewModel(
             hostelPreferences, hostelRepository, floorRepository, roomRepository, bedRepository,
             tenancyAgreementRepository, invoiceRepository, paymentRepository, expenseRepository,
-            creditRepository,
+            creditRepository, reconciliationRepository,
         )
     }
 
@@ -214,5 +231,53 @@ class MonthlyReportViewModelTest {
 
         assertEquals(1200.0, state.totalCredits, 0.0001)
         assertEquals(3800.0, state.totalDues, 0.0001)
+    }
+
+    @Test
+    fun `occupancy is flagged as a current-state figure only for a period that has closed`() {
+        val now = Calendar.getInstance()
+        val thisMonth = MonthlyReportUiState(month = now.get(Calendar.MONTH) + 1, year = now.get(Calendar.YEAR))
+
+        assertFalse(thisMonth.occupancyIsCurrentStateOnly)
+        assertTrue(thisMonth.copy(year = now.get(Calendar.YEAR) - 1).occupancyIsCurrentStateOnly)
+        assertTrue(MonthlyReportUiState(month = 1, year = now.get(Calendar.YEAR) - 1).occupancyIsCurrentStateOnly)
+        assertFalse(thisMonth.copy(year = now.get(Calendar.YEAR) + 1).occupancyIsCurrentStateOnly)
+    }
+
+    @Test
+    fun `a period the warden has attested to reads as reconciled`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        every { floorRepository.getByHostelId("h1") } returns flowOf(emptyList())
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
+        every { invoiceRepository.getAll() } returns flowOf(emptyList())
+        coEvery { paymentRepository.getAll() } returns emptyList()
+        every { expenseRepository.getByHostelId("h1") } returns flowOf(emptyList())
+
+        assertTrue(viewModel(reconciled = true).uiState.value.reconciled)
+        assertFalse(viewModel(reconciled = false).uiState.value.reconciled)
+    }
+
+    @Test
+    fun `marking and unmarking a period writes and removes the attestation only`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        every { floorRepository.getByHostelId("h1") } returns flowOf(emptyList())
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
+        every { invoiceRepository.getAll() } returns flowOf(emptyList())
+        coEvery { paymentRepository.getAll() } returns emptyList()
+        every { expenseRepository.getByHostelId("h1") } returns flowOf(emptyList())
+
+        val viewModel = viewModel()
+        val month = viewModel.uiState.value.month
+        val year = viewModel.uiState.value.year
+
+        viewModel.onReconciledChange(true)
+        coVerify { reconciliationRepository.mark("h1", month, year, null) }
+        assertTrue(viewModel.uiState.value.reconciled)
+
+        viewModel.onReconciledChange(false)
+        coVerify { reconciliationRepository.unmark("h1", month, year) }
+        assertFalse(viewModel.uiState.value.reconciled)
     }
 }

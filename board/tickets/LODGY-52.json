@@ -7,17 +7,33 @@
     "Product decision recorded: either (a) implement periodic occupancy snapshots so past-period reports show true historical occupancy, or (b) keep current-state occupancy but label it clearly on the report so it isn't misread as historical",
     "If (a): Monthly Report's occupancy % for a past period reflects that period's actual bed/occupancy state"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T18:44:03+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T18:41:39+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - taking option (b). Reconstructing historical occupancy needs bed-state snapshots the schema does not keep, and inventing them now would add a write on every bed flip to serve a number no one has asked to act on; labelling the figure honestly costs nothing and stops it being misread."
+    },
+    {
+      "timestamp": "2026-09-03T18:44:03+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Took option (b) and implemented it. Reasoning, for the Product Owner to overturn if they disagree: option (a) means writing a bed-state snapshot on every occupancy change forever, plus a backfill that cannot recover the months already gone - real ongoing cost, for a number nobody has yet described acting on. What the report actually had was a precision problem, not a data problem, so it is now labelled honestly instead. MonthlyReportUiState.occupancyIsCurrentStateOnly is true whenever the selected period has already closed; in that case the tile reads 'Occupancy (today)' rather than 'Occupancy', a line under the report explains that occupancy is measured from the beds as they stand today because the app keeps no history of bed occupancy, and the same note is appended to the CSV export so a saved report carries the caveat with it. For the current month the label and figure are unchanged - there the current-state reading is the correct one. MonthlyReportViewModelTest covers the flag across past, current and future periods. testDebugUnitTest green. If the Product Owner wants (a) instead, it should come back as a fresh ticket for periodic bed snapshots - it is a schema change, not an edit to this."
     }
   ]
 }

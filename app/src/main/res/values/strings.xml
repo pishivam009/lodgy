@@ -103,6 +103,14 @@
     <string name="tenant_edit">Edit tenant</string>
     <string name="tenant_status_active">ACTIVE</string>
     <string name="bed_location">Room %1$s · Bed %2$s</string>
+    <string name="pin_setup_length">PIN length</string>
+    <string name="pin_setup_length_option">%1$d digits</string>
+    <string name="pin_setup_confirm_action">Confirm PIN</string>
+    <string name="monthly_report_occupancy_current">Occupancy (today)</string>
+    <string name="monthly_report_occupancy_current_note">Occupancy is measured from the beds as they stand today, not as they stood in this period — the app does not keep a history of bed occupancy.</string>
+    <string name="reconciliation_title">Checked against paper records</string>
+    <string name="reconciliation_done">You marked this month as matching your register.</string>
+    <string name="reconciliation_pending">Not checked against your register yet.</string>
     <string name="packet_title">Printable records</string>
     <string name="packet_action">Printable records (PDF)</string>
     <string name="packet_description">A readable PDF of your tenants, agreements and payment history — something you can print or hand over, unlike the backup zip.</string>

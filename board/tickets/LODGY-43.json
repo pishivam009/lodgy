@@ -8,17 +8,33 @@
     "Reconciled periods are visually distinguished from not-yet-reconciled ones in the Monthly Report / Payments views",
     "This is a manual attestation, not an automated diff against anything - it does not block or alter any data"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T18:50:12+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T18:44:03+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - a per-hostel, per-month reconciliation attestation stored in its own table (DB v3), shown on the Monthly Report and nowhere allowed to alter or gate data."
+    },
+    {
+      "timestamp": "2026-09-03T18:50:12+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Reconciliation is a per-hostel, per-month attestation and nothing more. New ReconciliationMark entity (hostelId + periodMonth + periodYear, unique index on that triple so a period cannot be marked twice, CASCADE on hostel delete, optional note field reserved for later) with its own DAO and ReconciliationRepository; DB to version 3 with MIGRATION_2_3, again diffed against Room's exported schemas/3.json and matching it exactly. Surfaced on the Monthly Report as a 'Checked against paper records' switch, reading either 'You marked this month as matching your register' or 'Not checked against your register yet', and carried into the CSV export so a saved or printed report says whether it was reconciled. AC 3 is the important one and holds by construction: the mark lives in its own table, is written and read only by this switch, and no query anywhere filters, alters or gates on it - nothing is diffed against anything, and turning the switch back off deletes the row, so a mistaken attestation is reversible. MonthlyReportViewModelTest covers reading an existing mark, and that toggling writes then removes it. testDebugUnitTest green."
     }
   ]
 }

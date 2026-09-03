@@ -13,6 +13,7 @@ import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.data.repository.InvoiceRepository
 import com.lodgy.app.data.repository.PaymentRepository
+import com.lodgy.app.data.repository.ReconciliationRepository
 import com.lodgy.app.data.repository.RoomRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,8 +37,21 @@ data class MonthlyReportUiState(
     val occupancyPercent: Int = 0,
     val totalExpense: Double = 0.0,
     val totalCredits: Double = 0.0,
+    /** Warden's attestation that this period was checked against the paper register. */
+    val reconciled: Boolean = false,
 ) {
     val netIncome: Double get() = totalCollected - totalExpense
+
+    /** Occupancy is measured off the hostel's beds as they stand right now - the schema keeps no
+     *  bed-state history to reconstruct a past month from (LODGY-52). Say so when the warden is
+     *  looking at a period that has already closed, rather than letting the figure read as
+     *  historical. */
+    val occupancyIsCurrentStateOnly: Boolean
+        get() {
+            val now = Calendar.getInstance()
+            return year < now.get(Calendar.YEAR) ||
+                (year == now.get(Calendar.YEAR) && month < now.get(Calendar.MONTH) + 1)
+        }
 }
 
 @HiltViewModel
@@ -52,6 +66,7 @@ class MonthlyReportViewModel @Inject constructor(
     private val paymentRepository: PaymentRepository,
     private val expenseRepository: ExpenseRepository,
     private val creditRepository: CreditRepository,
+    private val reconciliationRepository: ReconciliationRepository,
 ) : ViewModel() {
 
     private var hostelId: String? = null
@@ -140,15 +155,32 @@ class MonthlyReportViewModel @Inject constructor(
             }
             .sumOf { it.amount }
 
+        val reconciled = reconciliationRepository.getForPeriod(id, state.month, state.year) != null
+
         _uiState.update {
             it.copy(
                 loading = false,
+                reconciled = reconciled,
                 occupancyPercent = occupancyPercent,
                 totalCollected = totalCollected,
                 totalDues = totalDues,
                 totalCredits = totalCredits,
                 totalExpense = totalExpense,
             )
+        }
+    }
+
+    /** A manual attestation only: nothing is diffed, nothing is locked, and it can be taken back. */
+    fun onReconciledChange(reconciled: Boolean) {
+        val id = hostelId ?: return
+        val state = _uiState.value
+        viewModelScope.launch {
+            if (reconciled) {
+                reconciliationRepository.mark(id, state.month, state.year, note = null)
+            } else {
+                reconciliationRepository.unmark(id, state.month, state.year)
+            }
+            _uiState.update { it.copy(reconciled = reconciled) }
         }
     }
 }

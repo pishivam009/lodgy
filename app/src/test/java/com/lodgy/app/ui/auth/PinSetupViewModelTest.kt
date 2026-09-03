@@ -31,7 +31,11 @@ class PinSetupViewModelTest {
         return PinSetupViewModel(wardenRepository, authPreferences, biometricAvailability)
     }
 
-    private fun enter(viewModel: PinSetupViewModel, pin: String) = pin.forEach(viewModel::onDigit)
+    /** Types the digits then presses the step's confirm button, as the warden does. */
+    private fun enter(viewModel: PinSetupViewModel, pin: String) {
+        pin.forEach(viewModel::onDigit)
+        viewModel.onSubmit()
+    }
 
     @Test
     fun `entering a full pin moves from ENTER to CONFIRM and clears the buffer`() {
@@ -46,12 +50,64 @@ class PinSetupViewModelTest {
     }
 
     @Test
-    fun `digits beyond the pin length are ignored`() {
+    fun `digits beyond the chosen length are ignored`() {
         val viewModel = viewModel()
 
         enter(viewModel, "12345")
 
         assertEquals(PinSetupStep.CONFIRM, viewModel.uiState.value.step)
+        assertEquals("1234", viewModel.uiState.value.firstPin)
+    }
+
+    @Test
+    fun `nothing advances until the confirm button is pressed`() {
+        val viewModel = viewModel()
+
+        "1234".forEach(viewModel::onDigit)
+
+        assertEquals(PinSetupStep.ENTER, viewModel.uiState.value.step)
+        assertTrue(viewModel.uiState.value.canSubmit)
+    }
+
+    @Test
+    fun `an incomplete pin cannot be submitted`() {
+        val viewModel = viewModel()
+
+        "12".forEach(viewModel::onDigit)
+        viewModel.onSubmit()
+
+        assertEquals(PinSetupStep.ENTER, viewModel.uiState.value.step)
+        assertEquals("12", viewModel.uiState.value.enteredDigits)
+    }
+
+    @Test
+    fun `a six-digit pin is accepted and its length is persisted`() {
+        val viewModel = viewModel(biometricAvailable = false)
+        val pinHashSlot = slot<String>()
+        coEvery { wardenRepository.createWarden(capture(pinHashSlot)) } returns Unit
+
+        viewModel.onLengthChange(6)
+        enter(viewModel, "123456")
+        enter(viewModel, "123456")
+
+        assertEquals(PinSetupStep.DONE, viewModel.uiState.value.step)
+        assertTrue(PinHasher.verify("123456", pinHashSlot.captured))
+        coVerify { authPreferences.setPinLength(6) }
+    }
+
+    @Test
+    fun `the length cannot be changed once digits have been typed`() {
+        val viewModel = viewModel()
+
+        viewModel.onDigit('1')
+        viewModel.onLengthChange(6)
+
+        assertEquals(4, viewModel.uiState.value.pinLength)
+    }
+
+    @Test
+    fun `the offered lengths are four to six`() {
+        assertEquals(listOf(4, 5, 6), viewModel().uiState.value.lengthOptions)
     }
 
     @Test
@@ -66,6 +122,7 @@ class PinSetupViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(PinSetupStep.DONE, state.step)
         assertTrue(PinHasher.verify("1234", pinHashSlot.captured))
+        coVerify { authPreferences.setPinLength(4) }
         coVerify { authPreferences.setBiometricEnabled(false) }
     }
 

@@ -101,6 +101,14 @@
     <string name="tenant_edit">किरायेदार बदलें</string>
     <string name="tenant_status_active">सक्रिय</string>
     <string name="bed_location">कमरा %1$s · बेड %2$s</string>
+    <string name="pin_setup_length">पिन की लंबाई</string>
+    <string name="pin_setup_length_option">%1$d अंक</string>
+    <string name="pin_setup_confirm_action">पिन की पुष्टि करें</string>
+    <string name="monthly_report_occupancy_current">ऑक्यूपेंसी (आज)</string>
+    <string name="monthly_report_occupancy_current_note">ऑक्यूपेंसी आज के बेड की स्थिति से निकाली गई है, उस अवधि की स्थिति से नहीं — ऐप बेड की पुरानी स्थिति नहीं रखता।</string>
+    <string name="reconciliation_title">रजिस्टर से मिलान</string>
+    <string name="reconciliation_done">आपने इस महीने को रजिस्टर से मिला हुआ चिह्नित किया है।</string>
+    <string name="reconciliation_pending">अभी रजिस्टर से मिलान नहीं किया गया।</string>
     <string name="packet_title">छपाई योग्य रिकॉर्ड</string>
     <string name="packet_action">छपाई योग्य रिकॉर्ड (PDF)</string>
     <string name="packet_description">आपके किरायेदारों, अनुबंधों और भुगतान इतिहास की पढ़ने योग्य PDF — बैकअप ज़िप से अलग, इसे छापा या किसी को दिया जा सकता है।</string>

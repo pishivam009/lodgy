@@ -25,8 +25,9 @@ class PinLockViewModelTest {
     private val wardenRepository: WardenRepository = mockk()
     private val authPreferences: AuthPreferences = mockk()
 
-    private fun viewModel(biometricEnabled: Boolean = false): PinLockViewModel {
+    private fun viewModel(biometricEnabled: Boolean = false, pinLength: Int = 4): PinLockViewModel {
         every { authPreferences.biometricEnabled } returns flowOf(biometricEnabled)
+        every { authPreferences.pinLength } returns flowOf(pinLength)
         return PinLockViewModel(wardenRepository, authPreferences)
     }
 
@@ -99,6 +100,32 @@ class PinLockViewModelTest {
     fun `onBiometricSuccess unlocks directly`() {
         val viewModel = viewModel()
         viewModel.onBiometricSuccess()
+        assertTrue(viewModel.uiState.value.unlocked)
+    }
+
+    @Test
+    fun `a six-digit pin is only verified once all six digits are in`() {
+        val warden = Warden(id = "w1", pinHash = PinHasher.hash("123456"), name = "Warden", createdAt = 0L, updatedAt = 0L)
+        coEvery { wardenRepository.getWarden() } returns warden
+
+        val viewModel = viewModel(pinLength = 6)
+        enter(viewModel, "1234")
+
+        assertFalse(viewModel.uiState.value.unlocked)
+        assertNull(viewModel.uiState.value.error)
+
+        enter(viewModel, "56")
+        assertTrue(viewModel.uiState.value.unlocked)
+    }
+
+    @Test
+    fun `an install from before configurable length still unlocks on four digits`() {
+        val warden = Warden(id = "w1", pinHash = PinHasher.hash("1234"), name = "Warden", createdAt = 0L, updatedAt = 0L)
+        coEvery { wardenRepository.getWarden() } returns warden
+
+        val viewModel = viewModel(pinLength = AuthPreferences.DEFAULT_PIN_LENGTH)
+        enter(viewModel, "1234")
+
         assertTrue(viewModel.uiState.value.unlocked)
     }
 }

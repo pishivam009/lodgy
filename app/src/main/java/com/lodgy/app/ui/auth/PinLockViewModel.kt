@@ -16,9 +16,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-private const val PIN_LENGTH = 4
-
 data class PinLockUiState(
+    val pinLength: Int = AuthPreferences.DEFAULT_PIN_LENGTH,
     val enteredDigits: String = "",
     @param:StringRes val error: Int? = null,
     val biometricEnabled: Boolean = false,
@@ -37,16 +36,17 @@ class PinLockViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val biometricEnabled = authPreferences.biometricEnabled.first()
-            _uiState.update { it.copy(biometricEnabled = biometricEnabled) }
+            val pinLength = authPreferences.pinLength.first()
+            _uiState.update { it.copy(biometricEnabled = biometricEnabled, pinLength = pinLength) }
         }
     }
 
     fun onDigit(digit: Char) {
         val state = _uiState.value
-        if (state.enteredDigits.length >= PIN_LENGTH) return
+        if (state.enteredDigits.length >= state.pinLength) return
         val next = state.enteredDigits + digit
         _uiState.update { it.copy(enteredDigits = next, error = null) }
-        if (next.length == PIN_LENGTH) verify(next)
+        if (next.length == state.pinLength) verify(next)
     }
 
     fun onBackspace() {

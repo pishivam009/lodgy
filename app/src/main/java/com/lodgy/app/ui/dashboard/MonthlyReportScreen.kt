@@ -21,11 +21,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -53,7 +55,18 @@ private fun buildReportCsv(context: Context, uiState: MonthlyReportUiState): Str
         append(row(context.getString(R.string.monthly_report_collected), amount(uiState.totalCollected)))
         append(row(context.getString(R.string.monthly_report_dues), amount(uiState.totalDues)))
         append(row(context.getString(R.string.monthly_report_credits), amount(uiState.totalCredits)))
+        append(
+            row(
+                context.getString(R.string.reconciliation_title),
+                context.getString(
+                    if (uiState.reconciled) R.string.reconciliation_done else R.string.reconciliation_pending,
+                ),
+            ),
+        )
         append(row(context.getString(R.string.monthly_report_occupancy), "${uiState.occupancyPercent}%"))
+        if (uiState.occupancyIsCurrentStateOnly) {
+            append(row(context.getString(R.string.monthly_report_occupancy), context.getString(R.string.monthly_report_occupancy_current_note)))
+        }
         append(row(context.getString(R.string.monthly_report_csv_total_expense), amount(uiState.totalExpense)))
         append(row(context.getString(R.string.monthly_report_net_income), amount(uiState.netIncome)))
     }
@@ -137,7 +150,15 @@ fun MonthlyReportScreen(onBack: () -> Unit, viewModel: MonthlyReportViewModel = 
                 ReportTile(stringResource(R.string.currency_amount, uiState.totalCollected), R.string.monthly_report_collected, true),
                 ReportTile(stringResource(R.string.currency_amount, uiState.totalDues), R.string.monthly_report_dues, false),
                 ReportTile(stringResource(R.string.currency_amount, uiState.totalCredits), R.string.monthly_report_credits, null),
-                ReportTile("${uiState.occupancyPercent}%", R.string.monthly_report_occupancy, null),
+                ReportTile(
+                    "${uiState.occupancyPercent}%",
+                    if (uiState.occupancyIsCurrentStateOnly) {
+                        R.string.monthly_report_occupancy_current
+                    } else {
+                        R.string.monthly_report_occupancy
+                    },
+                    null,
+                ),
                 ReportTile(
                     stringResource(R.string.currency_amount, uiState.netIncome),
                     R.string.monthly_report_net_income,
@@ -158,6 +179,45 @@ fun MonthlyReportScreen(onBack: () -> Unit, viewModel: MonthlyReportViewModel = 
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.padding(14.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.reconciliation_title),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Text(
+                            stringResource(
+                                if (uiState.reconciled) {
+                                    R.string.reconciliation_done
+                                } else {
+                                    R.string.reconciliation_pending
+                                },
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = uiState.reconciled,
+                        onCheckedChange = viewModel::onReconciledChange,
+                        enabled = uiState.hasActiveHostel,
+                    )
+                }
+            }
+
+            if (uiState.occupancyIsCurrentStateOnly) {
+                Text(
+                    stringResource(R.string.monthly_report_occupancy_current_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

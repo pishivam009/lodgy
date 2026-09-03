@@ -8,11 +8,11 @@
     "Referenced photos are never touched by the cleanup, verified against real tenant records including vacated tenants",
     "Backup export (LODGY-28) no longer includes orphaned files after cleanup has run"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T18:41:39+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -25,6 +25,22 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Resolved: run automatically on app start, not as a manual action a warden would have to remember to trigger."
+    },
+    {
+      "timestamp": "2026-09-03T18:38:27+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - an app-start sweep on a background dispatcher that deletes files under filesDir/photos referenced by no tenant's photoPath or idProofPhotoPath."
+    },
+    {
+      "timestamp": "2026-09-03T18:41:39+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Added media/OrphanPhotoCleaner.kt, run fire-and-forget from LodgyApplication.onCreate() on Dispatchers.IO so startup never waits on a directory listing and a sweep that races a fresh pick simply finds that file referenced on the next launch - no manual action anywhere. It reads every tenant, vacated included (a checked-out tenant's ID proof is still a live reference), collects photoPath and idProofPhotoPath, and deletes anything under filesDir/photos not in that set. Matching is by file name rather than the stored absolute path: LODGY-29's restore copies photos back by name while the DB keeps whatever path the old install wrote, so a full-path comparison would declare a freshly restored library entirely orphaned and delete every photo the warden has - the exact failure this ticket must not introduce. Because the sweep runs before an export, LODGY-28's zip stops carrying dangling files (AC 3). OrphanPhotoCleanerTest runs against a real TemporaryFolder and covers the keep/delete split, ID-proof-only references, vacated tenants, the restored-under-a-different-path case, empty and missing directories, and the no-tenants case. testDebugUnitTest green (322 tests)."
     }
   ]
 }
