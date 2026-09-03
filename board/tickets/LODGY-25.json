@@ -7,17 +7,25 @@
     "Timeline sorts by occurredOn, not createdAt",
     "Editing a note's occurredOn re-sorts it correctly in the timeline"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T14:20:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T14:20:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "Built alongside LODGY-24 (note CRUD) - same screen pair. NotesTimelineScreen (ui/note/NotesTimelineScreen.kt) observes TenantNoteDao.getByTenantId(tenantId), which already queries `ORDER BY occurredOn DESC` - AC1 holds with no new query needed. AC2 ('editing occurredOn re-sorts correctly') holds structurally: the screen collects that Flow reactively via NotesTimelineViewModel, so any occurredOn edit through NoteFormScreen re-triggers the query and the row moves to its new position automatically - there's no separate cached/ordered list that could go stale. Each note renders as a row with a type-colored dot (COMPLAINT amber, DAMAGE red, GENERAL blue) per the wireframe, plus the note text and formatted occurredOn date. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued (see LODGY-24's note on the emulator limitation) - worth confirming visually that adding a note with a backdated occurredOn inserts it in the right timeline position, not just at the top."
     }
   ]
 }

@@ -31,6 +31,8 @@ import com.lodgy.app.ui.dashboard.VacantViewScreen
 import com.lodgy.app.ui.expense.ExpenseFormScreen
 import com.lodgy.app.ui.expense.ExpenseListScreen
 import com.lodgy.app.ui.more.MoreScreen
+import com.lodgy.app.ui.note.NoteFormScreen
+import com.lodgy.app.ui.note.NotesTimelineScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
 import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
 import com.lodgy.app.ui.payment.ManualInvoiceTenantPickerScreen
@@ -62,6 +64,8 @@ private const val VACANT_VIEW_ROUTE = "vacant_view"
 private const val MONTHLY_REPORT_ROUTE = "monthly_report"
 private const val EXPENSE_LIST_ROUTE = "expense_list"
 private const val EXPENSE_FORM_ROUTE = "expense_form"
+private const val NOTES_TIMELINE_ROUTE = "notes_timeline"
+private const val NOTE_FORM_ROUTE = "note_form"
 
 @Composable
 fun LodgyNavHost() {
@@ -223,6 +227,32 @@ fun LodgyNavHost() {
                     onBack = { navController.popBackStack() },
                     onEdit = { tenantId -> navController.navigate("$TENANT_FORM_ROUTE?tenantId=$tenantId") },
                     onCheckout = { tenantId -> navController.navigate("$CHECKOUT_ROUTE/$tenantId") },
+                    onOpenNotes = { tenantId -> navController.navigate("$NOTES_TIMELINE_ROUTE/$tenantId") },
+                )
+            }
+
+            composable(
+                route = "$NOTES_TIMELINE_ROUTE/{tenantId}",
+                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val tenantId = checkNotNull(backStackEntry.arguments?.getString("tenantId"))
+                NotesTimelineScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddNote = { navController.navigate("$NOTE_FORM_ROUTE?tenantId=$tenantId") },
+                    onOpenNote = { note -> navController.navigate("$NOTE_FORM_ROUTE?tenantId=$tenantId&noteId=${note.id}") },
+                )
+            }
+
+            composable(
+                route = "$NOTE_FORM_ROUTE?tenantId={tenantId}&noteId={noteId}",
+                arguments = listOf(
+                    navArgument("tenantId") { type = NavType.StringType },
+                    navArgument("noteId") { type = NavType.StringType; nullable = true },
+                ),
+            ) {
+                NoteFormScreen(
+                    onDone = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
                 )
             }
 

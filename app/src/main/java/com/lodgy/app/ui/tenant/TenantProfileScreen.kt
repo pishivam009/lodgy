@@ -44,6 +44,7 @@ fun TenantProfileScreen(
     onBack: () -> Unit,
     onEdit: (String) -> Unit,
     onCheckout: (String) -> Unit,
+    onOpenNotes: (String) -> Unit,
     viewModel: TenantProfileViewModel = hiltViewModel(),
 ) {
     val tenant by viewModel.tenant.collectAsStateWithLifecycle()
@@ -107,6 +108,21 @@ fun TenantProfileScreen(
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     DetailRow(stringResource(R.string.tenant_field_phone), current.phone)
                     DetailRow(stringResource(R.string.tenant_detail_emergency), "${current.emergencyContactName} (${current.emergencyContactPhone})")
+                }
+            }
+
+            Card(
+                onClick = { onOpenNotes(current.id) },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(stringResource(R.string.tenant_notes_link), style = MaterialTheme.typography.titleMedium)
+                    Icon(CommonIcons.ChevronRight, contentDescription = null)
                 }
             }
 

@@ -128,6 +128,21 @@
     <string name="tenant_contact_whatsapp">WhatsApp</string>
     <string name="tenant_contact_sms">SMS</string>
     <string name="tenant_contact_whatsapp_unavailable">WhatsApp isn\'t available on this device</string>
+    <string name="tenant_notes_link">Notes &amp; timeline</string>
+
+    <string name="notes_timeline_title">Notes &amp; Timeline</string>
+    <string name="notes_timeline_empty">No notes yet. Tap + to log a complaint, damage, or general note.</string>
+    <string name="note_add">Add note</string>
+    <string name="note_form_title_add">Add Note</string>
+    <string name="note_form_title_edit">Edit Note</string>
+    <string name="note_field_type">Type</string>
+    <string name="note_field_text">Note</string>
+    <string name="note_field_occurred_on">Date</string>
+    <string name="note_field_photo">Photo (optional)</string>
+    <string name="note_form_save">Save</string>
+    <string name="note_delete">Delete note</string>
+    <string name="note_delete_confirm_title">Delete this note?</string>
+    <string name="note_delete_confirm_body">This can\'t be undone.</string>
 
     <string name="invoice_list_title">Invoices</string>
     <string name="invoice_filter_all">All</string>
