@@ -10,11 +10,11 @@
     "Dashboard or payment list surfaces these flagged multi-period payments so a warden can review them",
     "No change to how a normal single-period payment is recorded or displayed"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T19:06:08+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -27,6 +27,22 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Resolved the schema gap flagged in backlog review: build the real one-payment-across-multiple-invoices flow (not a lighter heuristic). Downgraded Medium -> Low since this is rare in practice - fine to sit behind higher-value tickets."
+    },
+    {
+      "timestamp": "2026-09-03T18:58:54+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - one lump sum split across several of a tenant's open invoices. Adding a nullable multiPeriodGroupId to Payment (DB v4) so the several rows a single transaction produces stay linked and flaggable, rather than inferring it from same-day heuristics; single-period recording is untouched."
+    },
+    {
+      "timestamp": "2026-09-03T19:06:08+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "One lump sum can now be applied across several of a tenant's open months in a single action. Payment gained a nullable multiPeriodGroupId (DB v4, MIGRATION_3_4 is a plain ADD COLUMN); every row a single transaction writes shares one generated id, which is what makes the payment recognisable afterwards as one lump sum - a real link in the data, not the same-day heuristic the ticket ruled out. data/PaymentAllocation.kt holds the split as a pure function: oldest period first, each month settled in full before the next gets anything, which is how a warden describes it ('this clears August and part of September') and the only split that leaves an unambiguous trail; money beyond every outstanding balance is dropped rather than parked on the last invoice, since the app has no unallocated-balance concept and overpaying one month would make that invoice's own arithmetic wrong. MultiPeriodPaymentScreen (from the tenant profile) lists the open months oldest-first with each one's outstanding figure, prefills the total needed to clear them all, and shows the split live as the amount is edited, so nothing is applied by surprise. Outstanding is computed through effectiveAmountDue(), so a credited month asks for less. On save each invoice gets its own payment row and its own status recalculated from its own share - August PAID and September PARTIAL out of one transaction. Fewer than two open months refuses outright and points the warden at the ordinary flow, so AC 5 holds: single-period recording is untouched, and RecordPaymentViewModel still writes multiPeriodGroupId null by default. Surfaced on the invoice list: any invoice funded by a grouped payment carries a 'Part of a multi-month payment' line. Tests: PaymentAllocationTest for the split (exact, partial, over-payment, already-settled rows, empty cases); MultiPeriodPaymentViewModelTest for ordering and prefill, settled months excluded, the single-month refusal, one shared group id across rows, per-invoice status derivation, credits reducing a month's share, and zero being refused. testDebugUnitTest green (349 tests)."
     }
   ]
 }

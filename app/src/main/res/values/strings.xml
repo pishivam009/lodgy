@@ -111,6 +111,26 @@
     <string name="reconciliation_title">Checked against paper records</string>
     <string name="reconciliation_done">You marked this month as matching your register.</string>
     <string name="reconciliation_pending">Not checked against your register yet.</string>
+    <string name="history_import_title">Import past history</string>
+    <string name="history_import_action">Import</string>
+    <string name="history_import_pick">Choose a CSV file</string>
+    <string name="history_import_description">Optional. If you keep past months in a spreadsheet, bring them in here. Skipping this changes nothing — the app works fine from today onward.</string>
+    <string name="history_import_format">Columns, in this order</string>
+    <string name="history_import_format_example">Example: 9876543210, 8, 2026, 5000, 5000</string>
+    <string name="history_import_summary">%1$d of %2$d row(s) can be imported</string>
+    <string name="history_import_unmatched">%1$d row(s) have a phone number no tenant in the app uses — add those tenants first.</string>
+    <string name="history_import_bad_line">Line %1$d could not be read: %2$s</string>
+    <string name="history_import_read_failed">That file could not be read.</string>
+    <string name="history_import_done">Imported %1$d month(s).</string>
+    <string name="more_history_import">Import past history (CSV)</string>
+    <string name="multi_period_title">One payment, several months</string>
+    <string name="multi_period_action">Pay several months at once</string>
+    <string name="multi_period_save">Record payment</string>
+    <string name="multi_period_split">How it will be applied</string>
+    <string name="multi_period_outstanding">Outstanding across all open months: ₹%1$.0f</string>
+    <string name="multi_period_row_outstanding">Outstanding ₹%1$.0f</string>
+    <string name="multi_period_not_applicable">This tenant has fewer than two open months, so record the payment normally.</string>
+    <string name="multi_period_badge">Part of a multi-month payment</string>
     <string name="packet_title">Printable records</string>
     <string name="packet_action">Printable records (PDF)</string>
     <string name="packet_description">A readable PDF of your tenants, agreements and payment history — something you can print or hand over, unlike the backup zip.</string>
@@ -218,6 +238,8 @@
     <string name="bed_picker_option">Room %1$s · Bed %2$s</string>
 
     <string name="agreement_form_title">Agreement Terms</string>
+    <string name="agreement_field_opening_balance">Dues carried forward (optional)</string>
+    <string name="agreement_field_opening_balance_hint">What this tenant already owed when you started using the app. Leave blank if nothing is outstanding — you do not need to re-enter past months.</string>
     <string name="agreement_field_rent">Agreed rent / month</string>
     <string name="agreement_field_deposit">Advance deposit</string>
     <string name="agreement_field_billing_day">Billing cycle day</string>

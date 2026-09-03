@@ -109,6 +109,26 @@
     <string name="reconciliation_title">रजिस्टर से मिलान</string>
     <string name="reconciliation_done">आपने इस महीने को रजिस्टर से मिला हुआ चिह्नित किया है।</string>
     <string name="reconciliation_pending">अभी रजिस्टर से मिलान नहीं किया गया।</string>
+    <string name="history_import_title">पुराना इतिहास आयात करें</string>
+    <string name="history_import_action">आयात करें</string>
+    <string name="history_import_pick">CSV फ़ाइल चुनें</string>
+    <string name="history_import_description">वैकल्पिक। यदि पुराने महीने किसी स्प्रेडशीट में हैं तो यहाँ लाएँ। छोड़ देने से कुछ नहीं बिगड़ता — ऐप आज से आगे वैसे भी काम करता है।</string>
+    <string name="history_import_format">कॉलम, इसी क्रम में</string>
+    <string name="history_import_format_example">उदाहरण: 9876543210, 8, 2026, 5000, 5000</string>
+    <string name="history_import_summary">%2$d में से %1$d पंक्तियाँ आयात हो सकती हैं</string>
+    <string name="history_import_unmatched">%1$d पंक्तियों का फ़ोन नंबर किसी किरायेदार से मेल नहीं खाता — पहले उन्हें जोड़ें।</string>
+    <string name="history_import_bad_line">पंक्ति %1$d पढ़ी नहीं जा सकी: %2$s</string>
+    <string name="history_import_read_failed">यह फ़ाइल पढ़ी नहीं जा सकी।</string>
+    <string name="history_import_done">%1$d महीने आयात हुए।</string>
+    <string name="more_history_import">पुराना इतिहास आयात करें (CSV)</string>
+    <string name="multi_period_title">एक भुगतान, कई महीने</string>
+    <string name="multi_period_action">कई महीनों का एक साथ भुगतान</string>
+    <string name="multi_period_save">भुगतान दर्ज करें</string>
+    <string name="multi_period_split">यह कैसे लगाया जाएगा</string>
+    <string name="multi_period_outstanding">सभी खुले महीनों का बकाया: ₹%1$.0f</string>
+    <string name="multi_period_row_outstanding">बकाया ₹%1$.0f</string>
+    <string name="multi_period_not_applicable">इस किरायेदार के दो से कम महीने बाकी हैं, इसलिए भुगतान सामान्य तरीके से दर्ज करें।</string>
+    <string name="multi_period_badge">कई महीनों के भुगतान का हिस्सा</string>
     <string name="packet_title">छपाई योग्य रिकॉर्ड</string>
     <string name="packet_action">छपाई योग्य रिकॉर्ड (PDF)</string>
     <string name="packet_description">आपके किरायेदारों, अनुबंधों और भुगतान इतिहास की पढ़ने योग्य PDF — बैकअप ज़िप से अलग, इसे छापा या किसी को दिया जा सकता है।</string>
@@ -216,6 +236,8 @@
     <string name="bed_picker_option">कमरा %1$s · बेड %2$s</string>
 
     <string name="agreement_form_title">किरायेदारी की शर्तें</string>
+    <string name="agreement_field_opening_balance">पुराना बकाया (वैकल्पिक)</string>
+    <string name="agreement_field_opening_balance_hint">ऐप शुरू करते समय इस किरायेदार पर जो बकाया था। कुछ बाकी न हो तो खाली छोड़ें — पुराने महीने दोबारा भरने की ज़रूरत नहीं।</string>
     <string name="agreement_field_rent">तय किराया / महीना</string>
     <string name="agreement_field_deposit">अग्रिम जमा राशि</string>
     <string name="agreement_field_billing_day">बिलिंग साइकिल दिन</string>

@@ -15,7 +15,16 @@ class PaymentRepository @Inject constructor(private val paymentDao: PaymentDao) 
     suspend fun getTotalPaid(invoiceId: String): Double =
         paymentDao.getByInvoiceId(invoiceId).first().sumOf { it.amount }
 
-    suspend fun create(invoiceId: String, amount: Double, mode: PaymentMode, paidOn: Long, note: String?): Payment {
+    fun getMultiPeriod(): Flow<List<Payment>> = paymentDao.getMultiPeriod()
+
+    suspend fun create(
+        invoiceId: String,
+        amount: Double,
+        mode: PaymentMode,
+        paidOn: Long,
+        note: String?,
+        multiPeriodGroupId: String? = null,
+    ): Payment {
         val now = System.currentTimeMillis()
         val payment = Payment(
             invoiceId = invoiceId,
@@ -23,6 +32,7 @@ class PaymentRepository @Inject constructor(private val paymentDao: PaymentDao) 
             paymentMode = mode,
             paidOn = paidOn,
             note = note,
+            multiPeriodGroupId = multiPeriodGroupId,
             createdAt = now,
             updatedAt = now,
         )

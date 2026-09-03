@@ -29,6 +29,7 @@ import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.backup.BackupScreen
 import com.lodgy.app.ui.backup.DataPacketScreen
+import com.lodgy.app.ui.backup.HistoryImportScreen
 import com.lodgy.app.ui.dashboard.DashboardScreen
 import com.lodgy.app.ui.dashboard.MonthlyReportScreen
 import com.lodgy.app.ui.dashboard.VacantViewScreen
@@ -42,6 +43,7 @@ import com.lodgy.app.ui.payment.CreditFormScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
 import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
 import com.lodgy.app.ui.payment.ManualInvoiceTenantPickerScreen
+import com.lodgy.app.ui.payment.MultiPeriodPaymentScreen
 import com.lodgy.app.ui.payment.RecordPaymentScreen
 import com.lodgy.app.ui.payment.ReminderScreen
 import com.lodgy.app.ui.tenant.AgreementFormScreen
@@ -68,6 +70,7 @@ private const val CHECKOUT_ROUTE = "checkout"
 private const val TRANSFER_ROUTE = "transfer"
 private const val CREDIT_FORM_ROUTE = "credit_form"
 private const val ACKNOWLEDGEMENT_ROUTE = "acknowledgement"
+private const val MULTI_PERIOD_PAYMENT_ROUTE = "multi_period_payment"
 private const val RECORD_PAYMENT_ROUTE = "record_payment"
 private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_picker"
 private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
@@ -80,6 +83,7 @@ private const val NOTES_TIMELINE_ROUTE = "notes_timeline"
 private const val NOTE_FORM_ROUTE = "note_form"
 private const val BACKUP_ROUTE = "backup"
 private const val DATA_PACKET_ROUTE = "data_packet"
+private const val HISTORY_IMPORT_ROUTE = "history_import"
 
 @Composable
 fun LodgyNavHost() {
@@ -152,6 +156,7 @@ fun LodgyNavHost() {
                             onOpenExpenses = { navController.navigate(EXPENSE_LIST_ROUTE) },
                             onOpenBackup = { navController.navigate(BACKUP_ROUTE) },
                             onOpenPrintableRecords = { navController.navigate(DATA_PACKET_ROUTE) },
+                            onOpenHistoryImport = { navController.navigate(HISTORY_IMPORT_ROUTE) },
                         )
                     }
                 }
@@ -278,6 +283,7 @@ fun LodgyNavHost() {
                     onCheckout = { tenantId -> navController.navigate("$CHECKOUT_ROUTE/$tenantId") },
                     onTransfer = { tenantId -> navController.navigate("$TRANSFER_ROUTE/$tenantId") },
                     onRecordCredit = { tenantId -> navController.navigate("$CREDIT_FORM_ROUTE/$tenantId") },
+                    onPaySeveralMonths = { tenantId -> navController.navigate("$MULTI_PERIOD_PAYMENT_ROUTE/$tenantId") },
                     onOpenNotes = { tenantId -> navController.navigate("$NOTES_TIMELINE_ROUTE/$tenantId") },
                 )
             }
@@ -304,6 +310,16 @@ fun LodgyNavHost() {
                 NoteFormScreen(
                     onDone = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(
+                route = "$MULTI_PERIOD_PAYMENT_ROUTE/{tenantId}",
+                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+            ) {
+                MultiPeriodPaymentScreen(
+                    onBack = { navController.popBackStack() },
+                    onDone = { navController.popBackStack() },
                 )
             }
 
@@ -430,6 +446,10 @@ fun LodgyNavHost() {
 
             composable(DATA_PACKET_ROUTE) {
                 DataPacketScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(HISTORY_IMPORT_ROUTE) {
+                HistoryImportScreen(onBack = { navController.popBackStack() })
             }
         }
     }

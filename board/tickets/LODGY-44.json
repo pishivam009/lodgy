@@ -8,11 +8,11 @@
     "A bulk import path (e.g. CSV) exists for wardens who do want to bring over structured history, as an alternative to one-by-one manual entry",
     "Skipping historical backfill entirely does not block using the app for new activity going forward"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T18:58:41+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -25,6 +25,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "Explicitly deferred - the opening-balance-vs-reporting-invariant tension flagged in backlog review is real (an opening balance not backed by real invoice/payment rows would drift from what LODGY-22's reports can reconcile) and needs a proper design pass, not a quick call. Will come back to this later; not blocking anything else in the meantime."
+    },
+    {
+      "timestamp": "2026-09-03T18:50:32+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - two paths, neither mandatory: an optional dues-carried-forward field at move-in that produces one real opening invoice instead of a re-typed ledger, and a CSV import for wardens who do want structured history."
+    },
+    {
+      "timestamp": "2026-09-03T18:58:41+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Two independent backfill paths, both optional. (1) Opening balance: the agreement form gained a 'Dues carried forward (optional)' field with a hint saying plainly that past months need not be re-entered. A non-zero value writes ONE real invoice rather than a number stashed on the agreement, so carried-forward dues flow through the invoice list, reports, reminders and receipts exactly like any other due and can be paid off normally. It is dated the month BEFORE move-in - InvoiceGenerationWorker only ever creates invoices from the current month forward, so that period can never collide with one it generates; a January move-in correctly rolls back to December of the previous year. (2) CSV import: backup/HistoryCsv.kt parses 'phone,month,year,amount_due,amount_paid' - forgiving about blank lines, an optional header and stray spaces, strict about values, and reporting each unreadable line by number instead of dropping it silently, because a warden typing years into a spreadsheet will get some of it wrong and needs to know which lines. More -> Import past history (CSV) shows how many rows are importable, how many carry a phone number no tenant uses, and the first few bad lines before anything is written. Each matched row becomes a real invoice plus, where money was paid, a real payment, with the status derived - so imported history is indistinguishable from history entered at the time. existsForPeriod guards every write, so re-running an import cannot double-bill. AC 3 holds by construction: both paths are opt-in and nothing anywhere requires them. Tests: HistoryCsvTest for the parser (headers, blank lines, bad columns, non-numeric amounts, impossible months/years, negatives, blank phone, empty file); HistoryImportViewModelTest for the matched/unmatched split, unreadable files, PAID/PARTIAL/UNPAID derivation, the re-run guard, and unknown tenants never being written; AgreementFormViewModelTest for the blank, zero, unparseable and January opening-balance cases. testDebugUnitTest green (343 tests)."
     }
   ]
 }

@@ -28,4 +28,7 @@ interface PaymentDao {
 
     @Query("SELECT * FROM payments")
     suspend fun getAll(): List<Payment>
+
+    @Query("SELECT * FROM payments WHERE multiPeriodGroupId IS NOT NULL")
+    fun getMultiPeriod(): Flow<List<Payment>>
 }

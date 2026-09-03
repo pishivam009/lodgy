@@ -105,6 +105,16 @@ fun AgreementFormScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            OutlinedTextField(
+                value = uiState.openingBalance,
+                onValueChange = viewModel::onOpeningBalanceChange,
+                label = { Text(stringResource(R.string.agreement_field_opening_balance)) },
+                supportingText = { Text(stringResource(R.string.agreement_field_opening_balance_hint)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
             Button(
                 onClick = viewModel::save,
                 enabled = uiState.canSave,

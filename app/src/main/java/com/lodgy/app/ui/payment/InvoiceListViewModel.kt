@@ -17,6 +17,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,6 +32,9 @@ data class InvoiceListItem(
     val location: BedLocation?,
     val totalPaid: Double,
     val creditTotal: Double = 0.0,
+    /** True when some of this invoice's money arrived as part of one lump sum covering several
+     *  months - the exceptional pattern LODGY-42 exists to make visible. */
+    val partOfMultiPeriodPayment: Boolean = false,
 ) {
     val effectiveDue: Double get() = effectiveAmountDue(invoice.amountDue, creditTotal)
 }
@@ -97,13 +101,15 @@ class InvoiceListViewModel @Inject constructor(
     private suspend fun enrich(invoice: Invoice): InvoiceListItem {
         val agreement = tenancyAgreementRepository.getById(invoice.tenancyAgreementId)
         val tenant = agreement?.let { tenantRepository.getById(it.tenantId) }
-        val totalPaid = paymentRepository.getTotalPaid(invoice.id)
+        val payments = paymentRepository.getByInvoiceId(invoice.id).first()
+        val totalPaid = payments.sumOf { it.amount }
         return InvoiceListItem(
             invoice = invoice,
             tenantName = tenant?.name.orEmpty(),
             location = agreement?.let { bedRepository.getLocation(it.bedId) },
             totalPaid = totalPaid,
             creditTotal = creditRepository.getByInvoiceId(invoice.id).sumOf { it.amount },
+            partOfMultiPeriodPayment = payments.any { it.multiPeriodGroupId != null },
         )
     }
 }

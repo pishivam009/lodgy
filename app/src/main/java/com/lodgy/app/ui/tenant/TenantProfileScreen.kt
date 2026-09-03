@@ -60,6 +60,7 @@ fun TenantProfileScreen(
     onCheckout: (String) -> Unit,
     onTransfer: (String) -> Unit,
     onRecordCredit: (String) -> Unit,
+    onPaySeveralMonths: (String) -> Unit,
     onOpenNotes: (String) -> Unit,
     viewModel: TenantProfileViewModel = hiltViewModel(),
 ) {
@@ -171,6 +172,21 @@ fun TenantProfileScreen(
                                 }
                             }
                         }
+                    }
+                }
+
+                Card(
+                    onClick = { onPaySeveralMonths(current.id) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(stringResource(R.string.multi_period_action), style = MaterialTheme.typography.titleMedium)
+                        Icon(CommonIcons.ChevronRight, contentDescription = null)
                     }
                 }
 

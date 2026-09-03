@@ -168,6 +168,13 @@ private fun InvoiceRow(
                 }
                 StatusChip(item.invoice.status)
             }
+            if (item.partOfMultiPeriodPayment) {
+                Text(
+                    stringResource(R.string.multi_period_badge),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                )
+            }
             if (item.creditTotal > 0.0) {
                 Text(
                     stringResource(

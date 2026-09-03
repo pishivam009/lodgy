@@ -24,6 +24,10 @@ data class Payment(
     val paymentMode: PaymentMode,
     val paidOn: Long,
     val note: String?,
+    /** Shared by every row a single lump-sum transaction produced, so a payment that cleared
+     *  several months stays recognisable as one payment rather than looking like several
+     *  ordinary ones. Null for a normal single-period payment. */
+    val multiPeriodGroupId: String? = null,
     val createdAt: Long,
     val updatedAt: Long,
 )

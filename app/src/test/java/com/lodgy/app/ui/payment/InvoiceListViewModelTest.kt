@@ -4,6 +4,8 @@ import com.lodgy.app.data.dao.BedLocation
 import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.Invoice
 import com.lodgy.app.data.entity.InvoiceStatus
+import com.lodgy.app.data.entity.Payment
+import com.lodgy.app.data.entity.PaymentMode
 import com.lodgy.app.data.entity.Tenant
 import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.entity.TenantStatus
@@ -19,6 +21,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -48,8 +52,12 @@ class InvoiceListViewModelTest {
         val agreement = TenancyAgreement(id = "a1", tenantId = "t1", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = null, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
         coEvery { tenancyAgreementRepository.getById("a1") } returns agreement
         coEvery { tenantRepository.getById("t1") } returns Tenant(id = "t1", name = "Ravi", phone = "1", photoPath = null, idProofPhotoPath = null, emergencyContactName = "", emergencyContactPhone = "", status = TenantStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
-        coEvery { paymentRepository.getTotalPaid("i1") } returns 0.0
-        coEvery { paymentRepository.getTotalPaid("i2") } returns 5000.0
+        every { paymentRepository.getByInvoiceId("i1") } returns flowOf(emptyList())
+        every { paymentRepository.getByInvoiceId("i2") } returns flowOf(
+            listOf(
+                Payment(id = "p1", invoiceId = "i2", amount = 5000.0, paymentMode = PaymentMode.CASH, paidOn = 0L, note = null, multiPeriodGroupId = "group-1", createdAt = 0L, updatedAt = 0L),
+            ),
+        )
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("204", "B")
 
         val state = viewModel().uiState.value
@@ -58,6 +66,8 @@ class InvoiceListViewModelTest {
         assertEquals("Ravi", state.items.first().tenantName)
         assertEquals(BedLocation("204", "B"), state.items.first().location)
         assertEquals(5000.0, state.items.first().totalPaid, 0.0001)
+        assertTrue(state.items.first().partOfMultiPeriodPayment)
+        assertFalse(state.items.last().partOfMultiPeriodPayment)
     }
 
     @Test
