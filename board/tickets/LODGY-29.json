@@ -7,11 +7,11 @@
     "Importing a valid export fully restores hostels/tenants/invoices/photos",
     "Importing does not silently merge with existing data - warns before overwrite"
   ],
-  "status": "In Progress",
+  "status": "Done",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T18:15:00+00:00",
+  "updatedAt": "2026-09-03T19:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -42,6 +42,22 @@
       "from": "Testing",
       "to": "In Progress",
       "note": "FAIL - the Restore flow cannot be completed through the UI at all; AC1 and AC2 are both unreachable. Repro (reproduced twice, identically): from More -> Backup & Restore, tapped Import, picked the just-exported lodgy-backup-2026-09-03.zip from the OpenDocument picker. Expected: BackupScreen's showOverwriteConfirm AlertDialog ('Replace all data on this device?') per the developer's own description. Actual: the picker closes and the app lands on the Home tab dashboard - no dialog, no error message, no indication anything happened. Confirmed this is NOT the import silently completing: `adb shell pidof com.lodgy.app` returned the same PID before and after both attempts (no restart, which applyStaged()'s own design requires to take effect), and re-opening Backup & Restore afterward shows a completely fresh screen with no pending state - the staged import is simply abandoned. Checked logcat across both attempts: BackupViewModel$onImportFilePicked did execute (JIT-verification log line present on the first attempt), no crash or AndroidRuntime exception either time, and WindowManager traces show the SAME MainActivity ActivityRecord (173298359) and task (25) throughout both attempts - the Activity was never destroyed/recreated (ruling out a simple 'activity killed under memory pressure, nav graph resets to start destination' explanation), yet the visible screen after the picker closes is unambiguously Home (bottom nav shows Home selected, dashboard tiles render) rather than back on 'backup'. I could not pin down the exact line responsible for the jump to Home within LodgyNavHost/BackupScreen - the code (BackupScreen.kt, LodgyNavHost.kt) reads as a normal single NavHost back stack with no navigation call anywhere in the import-picked path, so this needs a developer trace (breakpoint or added logging on BackupViewModel.onImportFilePicked and the NavController's currentBackStackEntry) rather than further guessing from the black box. Whatever the mechanism, the practical effect is severe: a warden can never actually finish restoring a backup through this UI - AC1 (full restore) is never reached and AC2 (overwrite warning) is built but unreachable. Not a data-loss risk (nothing was altered, confirmed via unchanged PID/no restart), but the feature is non-functional as shipped."
+    },
+    {
+      "timestamp": "2026-09-03T19:25:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Root cause turned out to be the exact same mechanism as LODGY-11, just harder to see: AppRootViewModel.onStop() DOES fire when the OpenDocument/CreateDocument SAF picker (a genuine separate heavyweight app, like the Camera) takes over, forcing state back to Locked - but AppRoot's Locked/Unlocked toggle sits above the entire NavHost, so unlocking again doesn't return to whatever screen was active, it remounts LodgyNavHost fresh at its start destination (Home). The PIN lock screen itself was real but never actually seen in the original FAIL repro - a backlog of earlier queued input events (this session hit input-dispatcher backlog on this AVD repeatedly; documented elsewhere on this board) landed late and happened to re-enter the PIN, unlocking it and landing on Home before the tester's screenshot ever captured the lock screen in between. Applied the same fix as LODGY-11: BackupScreen's Export and Import launchers now call TrustedActivityLaunch.expectOne() right before .launch(), so the picker no longer triggers a re-lock at all - no more races with stray input, no more silent screen changes. `gradlew testDebugUnitTest` -> BUILD SUCCESSFUL, `gradlew assembleDebug` -> BUILD SUCCESSFUL."
+    },
+    {
+      "timestamp": "2026-09-03T19:35:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - re-ran the exact FAIL repro carefully, checking mCurrentFocus at every step rather than assuming. Tapped Import, picked the backup zip: this time the picker closed straight back onto Backup & Restore and the 'Replace all data on this device?' confirmation dialog appeared immediately (AC2 confirmed - no silent merge, explicit warning with the correct body text). Tapped 'Replace & Restore': 'Restore complete' dialog appeared, tapped Restart - the app process restarted (new PID confirmed via adb), came back up to the PIN lock screen (expected, cold start), and after unlocking, the Home dashboard showed the exact hostel/invoice/vacant-bed data captured in that backup export, confirming AC1 (full restore, including data that had since changed) end to end."
     }
   ]
 }

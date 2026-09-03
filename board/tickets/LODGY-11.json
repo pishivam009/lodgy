@@ -7,11 +7,11 @@
     "Photo and ID proof photo are captured via camera or gallery and stored locally",
     "All fields are editable after creation"
   ],
-  "status": "In Progress",
+  "status": "Done",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T17:20:00+00:00",
+  "updatedAt": "2026-09-03T19:10:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -48,6 +48,22 @@
       "from": "Testing",
       "to": "In Progress",
       "note": "FAIL - AC1's camera path is broken by an interaction with LODGY-5's app lock, and re-tested with real images pushed onto the AVD (via adb, into /sdcard/Pictures) so the gallery path could finally be exercised for real. Gallery path: PASS on its own - onboarded 'Test Tenant', tapped 'Choose Photo' on the Photo field, picked a real pushed image via the Android Photo Picker, tapped Save, reopened the profile: photo displays correctly, confirming it round-tripped through PhotoStorage into app-private storage (AC1's gallery half holds). Camera path: FAIL. Tapped 'Take Photo' for ID Proof - the system Camera app opened and captured fine, but returning to Lodgy after tapping Done landed on the PIN lock screen instead of back in the Tenant Profile form. Root cause: AppRootViewModel.onStop() (AppRootViewModel.kt:44-48) unconditionally re-locks on ANY whole-app backgrounding with no grace period, and launching the system Camera (a separate full-screen activity, unlike the Photo Picker which apparently doesn't trigger the same onStop in practice) does background the app. Because the in-progress Tenant Profile form had not been saved yet, everything not yet persisted was lost across the forced re-lock/re-auth - the photo I'd have picked via camera never made it into the form, and I had to redo the whole gallery-based repro afterward to confirm AC1 at all. This makes 'Take Photo' unusable in real warden usage: any camera-based photo/ID capture attempt interrupts the flow with a PIN prompt and risks losing everything typed so far in the form if it isn't saved first. Separately, and worth flagging even though it's not blocking this FAIL: text fields (name/phone) persist to the DB immediately per-edit (confirmed: after the forced relock, 'Test Tenant'/'9999999999' were already saved despite Save never being tapped), but Photo/ID Proof picks live only in local Compose state until Save is pressed - an inconsistent persistence model that silently drops photo selections on any interruption (this relock, a call, an OS-initiated process kill), not just the camera-specific one. Suggested fix for the blocking issue: same shared-root-cause family as LODGY-20/22 but a different symptom - either exempt the camera/gallery capture launch from the onStop relock (e.g. track a 'launching trusted picker' flag the way LODGY-5's own dev note already exempts the biometric system dialog), or persist form field values (including the picked-but-unsaved photo Uris) so a forced relock doesn't lose work in progress."
+    },
+    {
+      "timestamp": "2026-09-03T19:00:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed via the first suggested option: added ui/TrustedActivityLaunch.kt, a tiny volatile flag object a screen sets right before launching something it trusts and expects a result back from (expectOne()), and AppRootViewModel.onStop() now consumes it (consumeIfExpected()) - if a trusted launch was expected, that one re-lock is skipped instead of unconditionally firing. PhotoPickerField's camera and gallery launches both call expectOne() right before .launch() (gallery didn't strictly need it since it wasn't observed to trigger onStop, but marking it too is free and future-proofs against that changing). No change to AppRootViewModel's default behavior otherwise - an unexpected backgrounding (home button, another app, etc.) still re-locks exactly as before. Added no new tests for this (it's a one-line state flag with no branching logic worth a unit test in isolation; the real proof is the on-device repro). `gradlew testDebugUnitTest` -> BUILD SUCCESSFUL (no regressions), `gradlew assembleDebug` -> BUILD SUCCESSFUL."
+    },
+    {
+      "timestamp": "2026-09-03T19:10:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - re-ran the exact FAIL repro on-device. From Test Tenant's Edit form, tapped 'Take Photo' on the ID Proof field: system Camera opened, captured, tapped Done - landed directly back on the Edit Tenant form (no PIN screen), with the captured photo showing in the ID Proof slot and the Photo field/name/phone all still intact. Tapped Save and reopened the profile: the ID Proof photo persisted correctly. Confirms AC1's camera path now works end-to-end alongside the already-passing gallery path, with no data loss across the camera round-trip."
     }
   ]
 }
