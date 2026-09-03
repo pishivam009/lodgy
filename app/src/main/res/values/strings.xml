@@ -128,4 +128,20 @@
     <string name="tenant_contact_whatsapp">WhatsApp</string>
     <string name="tenant_contact_sms">SMS</string>
     <string name="tenant_contact_whatsapp_unavailable">WhatsApp isn\'t available on this device</string>
+
+    <string name="invoice_list_title">Invoices</string>
+    <string name="invoice_filter_all">All</string>
+    <string name="invoice_status_unpaid">Unpaid</string>
+    <string name="invoice_status_partial">Partial</string>
+    <string name="invoice_status_paid">Paid</string>
+    <string name="invoice_period">%1$d/%2$d</string>
+    <string name="invoice_amount_of">₹%1$.0f of ₹%2$.0f</string>
+    <string name="invoice_record_payment">Record</string>
+
+    <string name="record_payment_title">Record Payment</string>
+    <string name="record_payment_already_paid">Already paid</string>
+    <string name="record_payment_amount">Amount received</string>
+    <string name="record_payment_paid_on">Paid on</string>
+    <string name="record_payment_note">Note (optional)</string>
+    <string name="record_payment_save">Save Payment</string>
 </resources>

@@ -7,10 +7,18 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
 class InvoiceRepository @Inject constructor(private val invoiceDao: InvoiceDao) {
+    fun getAll(): Flow<List<Invoice>> = invoiceDao.getAll()
+
     fun getByTenancyAgreementId(id: String): Flow<List<Invoice>> = invoiceDao.getByTenancyAgreementId(id)
+
+    suspend fun getById(id: String): Invoice? = invoiceDao.getById(id)
 
     suspend fun existsForPeriod(tenancyAgreementId: String, periodMonth: Int, periodYear: Int): Boolean =
         invoiceDao.getForPeriod(tenancyAgreementId, periodMonth, periodYear) != null
+
+    suspend fun updateStatus(invoice: Invoice, status: InvoiceStatus) {
+        invoiceDao.update(invoice.copy(status = status, updatedAt = System.currentTimeMillis()))
+    }
 
     suspend fun create(
         tenancyAgreementId: String,

@@ -12,6 +12,8 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
 
     suspend fun getAllActive(): List<TenancyAgreement> = dao.getAllActive()
 
+    suspend fun getById(id: String): TenancyAgreement? = dao.getById(id)
+
     suspend fun close(agreement: TenancyAgreement, moveOutDate: Long, depositRefundAmount: Double) {
         dao.update(
             agreement.copy(

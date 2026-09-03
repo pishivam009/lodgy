@@ -26,6 +26,9 @@ interface InvoiceDao {
     @Query("SELECT * FROM invoices WHERE tenancyAgreementId = :tenancyAgreementId")
     fun getByTenancyAgreementId(tenancyAgreementId: String): Flow<List<Invoice>>
 
+    @Query("SELECT * FROM invoices")
+    fun getAll(): Flow<List<Invoice>>
+
     @Query(
         "SELECT * FROM invoices WHERE tenancyAgreementId = :tenancyAgreementId " +
             "AND periodMonth = :periodMonth AND periodYear = :periodYear LIMIT 1",

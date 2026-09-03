@@ -25,6 +25,8 @@ import com.lodgy.app.ui.property.HostelListScreen
 import com.lodgy.app.ui.property.BedGridScreen
 import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
+import com.lodgy.app.ui.payment.InvoiceListScreen
+import com.lodgy.app.ui.payment.RecordPaymentScreen
 import com.lodgy.app.ui.screens.PlaceholderScreen
 import com.lodgy.app.ui.tenant.AgreementFormScreen
 import com.lodgy.app.ui.tenant.BedPickerScreen
@@ -44,6 +46,7 @@ private const val TENANT_FORM_ROUTE = "tenant_form"
 private const val TENANT_PROFILE_ROUTE = "tenant_profile"
 private const val AGREEMENT_FORM_ROUTE = "agreement_form"
 private const val CHECKOUT_ROUTE = "checkout"
+private const val RECORD_PAYMENT_ROUTE = "record_payment"
 
 @Composable
 fun LodgyNavHost() {
@@ -91,6 +94,9 @@ fun LodgyNavHost() {
                         LodgyDestination.Tenants -> TenantDirectoryScreen(
                             onAddTenant = { navController.navigate(BED_PICKER_ROUTE) },
                             onOpenTenant = { tenant -> navController.navigate("$TENANT_PROFILE_ROUTE/${tenant.id}") },
+                        )
+                        LodgyDestination.Payments -> InvoiceListScreen(
+                            onRecordPayment = { invoice -> navController.navigate("$RECORD_PAYMENT_ROUTE/${invoice.id}") },
                         )
                         else -> PlaceholderScreen(title = stringResource(destination.labelRes))
                     }
@@ -223,6 +229,16 @@ fun LodgyNavHost() {
             ) {
                 AgreementFormScreen(
                     onDone = { navController.popBackStack(LodgyDestination.Tenants.route, false) },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(
+                route = "$RECORD_PAYMENT_ROUTE/{invoiceId}",
+                arguments = listOf(navArgument("invoiceId") { type = NavType.StringType }),
+            ) {
+                RecordPaymentScreen(
+                    onDone = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )
             }

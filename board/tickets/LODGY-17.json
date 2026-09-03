@@ -8,17 +8,33 @@
     "Full payment sets status PAID",
     "Multiple partial payments against one invoice are all retained"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T10:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T10:15:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - there's no invoice list screen anywhere yet (Payments tab is still a placeholder), so building that too as the natural home for this ticket's payment-recording entry point, matching the wireframe. Reminder buttons (LODGY-18/19) intentionally left off the list rows for now, added when those tickets land."
+    },
+    {
+      "timestamp": "2026-09-03T10:35:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built PaymentRepository (create, getTotalPaid summing all payments for an invoice), extended InvoiceRepository (getAll, getById, updateStatus) and TenancyAgreementRepository (getById). InvoiceListScreen now backs the Payments tab: reactive Flow<List<Invoice>> enriched per-invoice with tenant name + total paid (N+1 lookups, acceptable at single-hostel scale), All/Unpaid/Partial/Paid filter chips, Record button per unpaid/partial row. RecordPaymentScreen pre-fills the amount field with the remaining balance, mode as filter chips, date picker, optional note; save() writes the payment then recomputes totalPaid and sets status via the exact AC-specified thresholds (>=amountDue -> PAID, >0 -> PARTIAL, else UNPAID stays). Because invoiceRepository.getAll() is a live Flow and the invoice row itself gets updated with the new status, the list screen picks up the change automatically on popping back - no manual refresh. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass (multiple partial payments accumulating correctly, in particular) still queued."
     }
   ]
 }
