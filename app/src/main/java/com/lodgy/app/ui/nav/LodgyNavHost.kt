@@ -27,12 +27,14 @@ import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.dashboard.DashboardScreen
 import com.lodgy.app.ui.dashboard.VacantViewScreen
+import com.lodgy.app.ui.expense.ExpenseFormScreen
+import com.lodgy.app.ui.expense.ExpenseListScreen
+import com.lodgy.app.ui.more.MoreScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
 import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
 import com.lodgy.app.ui.payment.ManualInvoiceTenantPickerScreen
 import com.lodgy.app.ui.payment.RecordPaymentScreen
 import com.lodgy.app.ui.payment.ReminderScreen
-import com.lodgy.app.ui.screens.PlaceholderScreen
 import com.lodgy.app.ui.tenant.AgreementFormScreen
 import com.lodgy.app.ui.tenant.BedPickerScreen
 import com.lodgy.app.ui.tenant.CheckoutScreen
@@ -56,6 +58,8 @@ private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_pi
 private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
 private const val REMINDER_ROUTE = "reminder"
 private const val VACANT_VIEW_ROUTE = "vacant_view"
+private const val EXPENSE_LIST_ROUTE = "expense_list"
+private const val EXPENSE_FORM_ROUTE = "expense_form"
 
 @Composable
 fun LodgyNavHost() {
@@ -112,7 +116,9 @@ fun LodgyNavHost() {
                         LodgyDestination.Home -> DashboardScreen(
                             onOpenVacantBeds = { navController.navigate(VACANT_VIEW_ROUTE) },
                         )
-                        else -> PlaceholderScreen(title = stringResource(destination.labelRes))
+                        LodgyDestination.More -> MoreScreen(
+                            onOpenExpenses = { navController.navigate(EXPENSE_LIST_ROUTE) },
+                        )
                     }
                 }
             }
@@ -283,6 +289,24 @@ fun LodgyNavHost() {
 
             composable(VACANT_VIEW_ROUTE) {
                 VacantViewScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(EXPENSE_LIST_ROUTE) {
+                ExpenseListScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddExpense = { navController.navigate(EXPENSE_FORM_ROUTE) },
+                    onEditExpense = { expense -> navController.navigate("$EXPENSE_FORM_ROUTE?expenseId=${expense.id}") },
+                )
+            }
+
+            composable(
+                route = "$EXPENSE_FORM_ROUTE?expenseId={expenseId}",
+                arguments = listOf(navArgument("expenseId") { type = NavType.StringType; nullable = true }),
+            ) {
+                ExpenseFormScreen(
+                    onDone = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() },
+                )
             }
         }
     }

@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 object CommonIcons {
     val Back: ImageVector = strokeIcon("CommonBack", "M15,18 L9,12 L15,6")
+    val ChevronRight: ImageVector = strokeIcon("CommonChevronRight", "M9,18 L15,12 L9,6")
     val Plus: ImageVector = strokeIcon("CommonPlus", "M12,5 V19 M5,12 H19")
     val Trash: ImageVector = strokeIcon(
         "CommonTrash",

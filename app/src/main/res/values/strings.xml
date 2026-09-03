@@ -180,4 +180,20 @@
     <string name="vacant_view_empty">No vacant beds right now.</string>
     <string name="vacant_view_floor_count">%1$s · %2$d vacant</string>
     <string name="vacant_view_room_bed">Room %1$s · Bed %2$s</string>
+
+    <string name="more_title">More</string>
+    <string name="more_expenses">Expenses</string>
+
+    <string name="expense_list_title">Expenses</string>
+    <string name="expense_list_empty">No expenses logged yet. Tap + to add one.</string>
+    <string name="expense_add">Add expense</string>
+    <string name="expense_recurring_badge">RECURRING</string>
+    <string name="expense_form_title_add">Add Expense</string>
+    <string name="expense_form_title_edit">Edit Expense</string>
+    <string name="expense_field_category">Category</string>
+    <string name="expense_field_amount">Amount</string>
+    <string name="expense_field_date">Date</string>
+    <string name="expense_field_recurring">Recurring monthly</string>
+    <string name="expense_field_note">Note (optional)</string>
+    <string name="expense_form_save">Save Expense</string>
 </resources>

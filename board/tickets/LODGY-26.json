@@ -7,17 +7,33 @@
     "All categories from DESIGN.md are selectable",
     "Recurring flag is stored and editable"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T13:05:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T12:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting, ahead of LODGY-22 (monthly report) since that ticket needs real expense data to be meaningful. No bottom-nav tab exists for Expenses yet, so building a minimal More-tab menu screen as the entry point (the More tab has been a placeholder since LODGY-3) - it'll gain more entries as Backup/Restore and Settings tickets land."
+    },
+    {
+      "timestamp": "2026-09-03T13:05:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built ExpenseRepository (create/update, both carrying updatedAt), ExpenseListScreen (total-for-hostel header card, list with recurring badge, reactively scoped to the active hostel via flatMapLatest so switching hostels updates the list), ExpenseFormScreen (all 7 ExpenseCategory values as FlowRow filter chips - AC1 - amount, date picker, recurring Switch - AC2 - optional note; shared add/edit). Also built ui/more/MoreScreen.kt and wired the More tab to it (was a placeholder since LODGY-3) with one entry, Expenses, as the way in. Every LodgyDestination now has real content behind it, so LodgyNavHost's per-destination `when` is exhaustive - deleted the now-fully-unused PlaceholderScreen.kt. `gradlew assembleDebug` -> BUILD SUCCESSFUL, no warnings after fixing an ExperimentalCoroutinesApi opt-in on flatMapLatest."
     }
   ]
 }
