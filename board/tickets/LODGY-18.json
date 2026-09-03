@@ -8,17 +8,33 @@
     "Message includes tenant name, amount due, and due date",
     "No auto-send occurs without the warden's explicit tap"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T11:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T11:15:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Building alongside LODGY-19 - one ReminderScreen with a channel toggle (WhatsApp/SMS), matching the wireframe. Message language (Hindi/English) is specific to this feature per DESIGN.md 4.9 ('reminder templates also available in Hindi and English... warden can pick per-reminder'), independent of LODGY-30's app-wide language switcher, so writing both message templates directly here rather than waiting on that ticket."
+    },
+    {
+      "timestamp": "2026-09-03T11:35:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built contact/ReminderIntents.kt (whatsApp: wa.me/<digits>?text=<url-encoded>, sms: smsto: + sms_body extra) and contact/ReminderMessageBuilder.kt (Hindi/English templates, date formatted via the target locale so month names come out right in either language). ReminderViewModel resolves the full chain from invoiceId (invoice -> agreement -> tenant for name/phone, agreement -> bed -> room -> floor -> hostel for the hostel-name signature) and rebuilds the message live when the language toggle changes. ReminderScreen shows channel + language chips, a live preview, and one send button that launches the right intent via runCatching (wrapped like LODGY-31, same crash-safety reasoning). Wired a Reminder button next to Record on every unpaid/partial InvoiceListScreen row. `gradlew assembleDebug` -> BUILD SUCCESSFUL, no warnings. AC3 (no auto-send) holds by construction - both intents only ever open the target app pre-filled, tapping send there is entirely the warden's action. On-device pass still queued."
     }
   ]
 }

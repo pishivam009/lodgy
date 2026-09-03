@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.first
 class BedRepository @Inject constructor(private val bedDao: BedDao) {
     fun getByRoomId(roomId: String): Flow<List<Bed>> = bedDao.getByRoomId(roomId)
 
+    suspend fun getById(id: String): Bed? = bedDao.getById(id)
+
     suspend fun hasOccupiedBed(roomId: String): Boolean =
         bedDao.getByRoomId(roomId).first().any { it.status == BedStatus.OCCUPIED }
 

@@ -156,4 +156,15 @@
     <string name="manual_invoice_field_amount">Amount due</string>
     <string name="manual_invoice_field_due_date">Due date</string>
     <string name="manual_invoice_save">Create Invoice</string>
+
+    <string name="invoice_send_reminder">Reminder</string>
+    <string name="reminder_title">Send Reminder</string>
+    <string name="reminder_channel">Channel</string>
+    <string name="reminder_language">Message language</string>
+    <string name="reminder_language_hindi">हिंदी</string>
+    <string name="reminder_language_english">English</string>
+    <string name="reminder_preview">Preview</string>
+    <string name="reminder_disclaimer">Opens with this pre-filled — you review and tap send there. Nothing sends automatically.</string>
+    <string name="reminder_open_whatsapp">Open WhatsApp</string>
+    <string name="reminder_open_sms">Open SMS</string>
 </resources>

@@ -7,17 +7,33 @@
     "Tapping opens the default SMS app pre-filled with tenant number and message",
     "No SEND_SMS permission is requested"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T11:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T11:15:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Building alongside LODGY-18 - see that ticket's note, same screen, shared message-building logic."
+    },
+    {
+      "timestamp": "2026-09-03T11:35:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "SMS half of the same build as LODGY-18: ReminderIntents.sms() uses ACTION_VIEW on an smsto: Uri with the message passed via the sms_body extra - no SEND_SMS permission requested or declared anywhere in the manifest (confirmed by grep). `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued."
     }
   ]
 }

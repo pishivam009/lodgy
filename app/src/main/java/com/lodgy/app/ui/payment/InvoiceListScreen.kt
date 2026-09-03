@@ -15,6 +15,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -37,6 +38,7 @@ import com.lodgy.app.ui.icons.CommonIcons
 @Composable
 fun InvoiceListScreen(
     onRecordPayment: (Invoice) -> Unit,
+    onSendReminder: (Invoice) -> Unit,
     onAddManualInvoice: () -> Unit,
     viewModel: InvoiceListViewModel = hiltViewModel(),
 ) {
@@ -82,7 +84,11 @@ fun InvoiceListScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(uiState.filteredItems, key = { it.invoice.id }) { item ->
-                    InvoiceRow(item = item, onRecordPayment = { onRecordPayment(item.invoice) })
+                    InvoiceRow(
+                        item = item,
+                        onRecordPayment = { onRecordPayment(item.invoice) },
+                        onSendReminder = { onSendReminder(item.invoice) },
+                    )
                 }
             }
         }
@@ -90,7 +96,7 @@ fun InvoiceListScreen(
 }
 
 @Composable
-private fun InvoiceRow(item: InvoiceListItem, onRecordPayment: () -> Unit) {
+private fun InvoiceRow(item: InvoiceListItem, onRecordPayment: () -> Unit, onSendReminder: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -114,7 +120,10 @@ private fun InvoiceRow(item: InvoiceListItem, onRecordPayment: () -> Unit) {
                     style = MaterialTheme.typography.titleMedium,
                 )
                 if (item.invoice.status != InvoiceStatus.PAID) {
-                    Button(onClick = onRecordPayment) { Text(stringResource(R.string.invoice_record_payment)) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = onSendReminder) { Text(stringResource(R.string.invoice_send_reminder)) }
+                        Button(onClick = onRecordPayment) { Text(stringResource(R.string.invoice_record_payment)) }
+                    }
                 }
             }
         }
