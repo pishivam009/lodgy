@@ -26,6 +26,7 @@ import com.lodgy.app.ui.property.BedGridScreen
 import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.dashboard.DashboardScreen
+import com.lodgy.app.ui.dashboard.MonthlyReportScreen
 import com.lodgy.app.ui.dashboard.VacantViewScreen
 import com.lodgy.app.ui.expense.ExpenseFormScreen
 import com.lodgy.app.ui.expense.ExpenseListScreen
@@ -58,6 +59,7 @@ private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_pi
 private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
 private const val REMINDER_ROUTE = "reminder"
 private const val VACANT_VIEW_ROUTE = "vacant_view"
+private const val MONTHLY_REPORT_ROUTE = "monthly_report"
 private const val EXPENSE_LIST_ROUTE = "expense_list"
 private const val EXPENSE_FORM_ROUTE = "expense_form"
 
@@ -115,6 +117,7 @@ fun LodgyNavHost() {
                         )
                         LodgyDestination.Home -> DashboardScreen(
                             onOpenVacantBeds = { navController.navigate(VACANT_VIEW_ROUTE) },
+                            onOpenMonthlyReport = { navController.navigate(MONTHLY_REPORT_ROUTE) },
                         )
                         LodgyDestination.More -> MoreScreen(
                             onOpenExpenses = { navController.navigate(EXPENSE_LIST_ROUTE) },
@@ -289,6 +292,10 @@ fun LodgyNavHost() {
 
             composable(VACANT_VIEW_ROUTE) {
                 VacantViewScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(MONTHLY_REPORT_ROUTE) {
+                MonthlyReportScreen(onBack = { navController.popBackStack() })
             }
 
             composable(EXPENSE_LIST_ROUTE) {

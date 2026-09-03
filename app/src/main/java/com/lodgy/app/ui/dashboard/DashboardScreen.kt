@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.ui.icons.CommonIcons
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -30,7 +33,11 @@ private data class StatTile(val value: String, val labelRes: Int, val onClick: (
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(onOpenVacantBeds: () -> Unit = {}, viewModel: DashboardViewModel = hiltViewModel()) {
+fun DashboardScreen(
+    onOpenVacantBeds: () -> Unit = {},
+    onOpenMonthlyReport: () -> Unit = {},
+    viewModel: DashboardViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -40,6 +47,13 @@ fun DashboardScreen(onOpenVacantBeds: () -> Unit = {}, viewModel: DashboardViewM
                     Text(
                         if (uiState.hasActiveHostel) uiState.hostelName else stringResource(R.string.dashboard_title),
                     )
+                },
+                actions = {
+                    if (uiState.hasActiveHostel) {
+                        IconButton(onClick = onOpenMonthlyReport) {
+                            Icon(CommonIcons.Report, contentDescription = stringResource(R.string.dashboard_view_report))
+                        }
+                    }
                 },
             )
         },

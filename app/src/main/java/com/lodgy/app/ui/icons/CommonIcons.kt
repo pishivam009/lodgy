@@ -19,4 +19,10 @@ object CommonIcons {
         "M4,20 H8 L18,10 L14,6 L4,16 Z",
         "M14,6 L18,10",
     )
+    val Report: ImageVector = strokeIcon(
+        "CommonReport",
+        "M4,20 V10",
+        "M10,20 V4",
+        "M16,20 V14",
+    )
 }

@@ -196,4 +196,12 @@
     <string name="expense_field_recurring">Recurring monthly</string>
     <string name="expense_field_note">Note (optional)</string>
     <string name="expense_form_save">Save Expense</string>
+
+    <string name="monthly_report_title">Monthly Report</string>
+    <string name="monthly_report_collected">Total collected</string>
+    <string name="monthly_report_dues">Total dues</string>
+    <string name="monthly_report_occupancy">Occupancy</string>
+    <string name="monthly_report_net_income">Income − expense</string>
+    <string name="monthly_report_expense_line">Total expenses this period: ₹%1$.0f</string>
+    <string name="dashboard_view_report">Monthly Report</string>
 </resources>
