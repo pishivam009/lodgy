@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.Flow
 class HostelRepository @Inject constructor(private val hostelDao: HostelDao) {
     fun getByWardenId(wardenId: String): Flow<List<Hostel>> = hostelDao.getByWardenId(wardenId)
 
+    /** Single-warden app, so "every hostel" needs no warden filter - see DESIGN.md 1. */
+    fun getAll(): Flow<List<Hostel>> = hostelDao.getAll()
+
     suspend fun getById(id: String): Hostel? = hostelDao.getById(id)
 
     suspend fun create(wardenId: String, name: String, address: String, contactPhone: String): Hostel {

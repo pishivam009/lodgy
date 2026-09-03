@@ -25,4 +25,7 @@ interface HostelDao {
 
     @Query("SELECT * FROM hostels WHERE wardenId = :wardenId")
     fun getByWardenId(wardenId: String): Flow<List<Hostel>>
+
+    @Query("SELECT * FROM hostels ORDER BY name")
+    fun getAll(): Flow<List<Hostel>>
 }

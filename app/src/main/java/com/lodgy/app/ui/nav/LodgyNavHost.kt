@@ -28,6 +28,7 @@ import com.lodgy.app.ui.property.BedGridScreen
 import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.backup.BackupScreen
+import com.lodgy.app.ui.backup.DataPacketScreen
 import com.lodgy.app.ui.dashboard.DashboardScreen
 import com.lodgy.app.ui.dashboard.MonthlyReportScreen
 import com.lodgy.app.ui.dashboard.VacantViewScreen
@@ -36,6 +37,7 @@ import com.lodgy.app.ui.expense.ExpenseListScreen
 import com.lodgy.app.ui.more.MoreScreen
 import com.lodgy.app.ui.note.NoteFormScreen
 import com.lodgy.app.ui.note.NotesTimelineScreen
+import com.lodgy.app.ui.payment.AcknowledgementScreen
 import com.lodgy.app.ui.payment.CreditFormScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
 import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
@@ -65,6 +67,7 @@ private const val AGREEMENT_FORM_ROUTE = "agreement_form"
 private const val CHECKOUT_ROUTE = "checkout"
 private const val TRANSFER_ROUTE = "transfer"
 private const val CREDIT_FORM_ROUTE = "credit_form"
+private const val ACKNOWLEDGEMENT_ROUTE = "acknowledgement"
 private const val RECORD_PAYMENT_ROUTE = "record_payment"
 private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_picker"
 private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
@@ -76,6 +79,7 @@ private const val EXPENSE_FORM_ROUTE = "expense_form"
 private const val NOTES_TIMELINE_ROUTE = "notes_timeline"
 private const val NOTE_FORM_ROUTE = "note_form"
 private const val BACKUP_ROUTE = "backup"
+private const val DATA_PACKET_ROUTE = "data_packet"
 
 @Composable
 fun LodgyNavHost() {
@@ -137,6 +141,7 @@ fun LodgyNavHost() {
                         LodgyDestination.Payments -> InvoiceListScreen(
                             onRecordPayment = { invoice -> navController.navigate("$RECORD_PAYMENT_ROUTE/${invoice.id}") },
                             onSendReminder = { invoice -> navController.navigate("$REMINDER_ROUTE/${invoice.id}") },
+                            onOpenReceipt = { invoice -> navController.navigate("$ACKNOWLEDGEMENT_ROUTE/${invoice.id}") },
                             onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
                         )
                         LodgyDestination.Home -> DashboardScreen(
@@ -146,6 +151,7 @@ fun LodgyNavHost() {
                         LodgyDestination.More -> MoreScreen(
                             onOpenExpenses = { navController.navigate(EXPENSE_LIST_ROUTE) },
                             onOpenBackup = { navController.navigate(BACKUP_ROUTE) },
+                            onOpenPrintableRecords = { navController.navigate(DATA_PACKET_ROUTE) },
                         )
                     }
                 }
@@ -302,6 +308,13 @@ fun LodgyNavHost() {
             }
 
             composable(
+                route = "$ACKNOWLEDGEMENT_ROUTE/{invoiceId}",
+                arguments = listOf(navArgument("invoiceId") { type = NavType.StringType }),
+            ) {
+                AcknowledgementScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(
                 route = "$CREDIT_FORM_ROUTE/{tenantId}",
                 arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
             ) {
@@ -413,6 +426,10 @@ fun LodgyNavHost() {
 
             composable(BACKUP_ROUTE) {
                 BackupScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(DATA_PACKET_ROUTE) {
+                DataPacketScreen(onBack = { navController.popBackStack() })
             }
         }
     }

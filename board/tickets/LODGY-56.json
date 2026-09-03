@@ -8,17 +8,33 @@
     "Produces valid, correctly-paginated multi-page PDFs when content overflows a single page",
     "LODGY-37 and LODGY-45 both consume this module rather than each rolling their own PDF generation"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T18:21:09+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    },
+    {
+      "timestamp": "2026-09-03T18:18:53+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - one PDF module both LODGY-37 and LODGY-45 will consume. Going with the platform PdfDocument rather than a library: Android already shapes and embeds Devanagari through its system typeface, so a library buys nothing here. Splitting the pure layout maths (wrapping, pagination, repeated table headers) out from the Canvas calls so the part that can actually get pagination wrong is JVM-testable."
+    },
+    {
+      "timestamp": "2026-09-03T18:21:09+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built the shared PDF module under com.lodgy.app.pdf, deliberately split so the risky part is testable. PdfContent.kt is the content model (Title/Heading/Paragraph/KeyValue/Table/Spacer + PdfDocumentContent) with no drawing concepts in it. PdfLayout.kt holds A4-at-72pt geometry plus two pure functions: wrapText(), which greedy-wraps against a caller-supplied measurer (so a word wider than the column lands on its own line instead of being dropped or looping), and paginate(), which splits measured lines into pages and re-emits a table's header row at the top of every page that table continues onto. PdfBlockLayout.kt turns blocks into wrapped, measured PdfLines through a TextMeasurer fun-interface - Paint on a device, a fixed-width stub in tests. LodgyPdfRenderer.kt is the only file that touches Canvas: it paginates, then draws each page with a running header, a rule, and an 'n / N' footer. Chose the platform android.graphics.pdf.PdfDocument over a PDF library on purpose - Android's system typeface already shapes Devanagari and PdfDocument embeds what it draws, so Hindi content per LODGY-30 renders correctly without shipping and subsetting a font, and LODGY-48 being Won't Do removed the only argument for the alternative. PdfLayoutTest covers wrapping (including the over-long word and empty input), single-page and multi-page splits, repeated table headers across a break, a line taller than a page not looping, empty content still yielding a page, and block-to-line conversion. LODGY-37 and LODGY-45 both build on this. testDebugUnitTest green."
     }
   ]
 }

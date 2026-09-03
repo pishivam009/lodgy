@@ -8,11 +8,11 @@
     "PDF is legible and organized (grouped by hostel/room/tenant), not a raw data dump",
     "Exported via SAF like other exports (LODGY-23/28), so it can be saved, printed, or shared"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T18:33:41+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -25,6 +25,22 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Added an explicit dependency on LODGY-56 - this ticket and LODGY-37 both need PDF rendering and were at risk of building two separate, inconsistent pipelines. LODGY-56 builds the shared renderer first; this ticket and LODGY-37 consume it."
+    },
+    {
+      "timestamp": "2026-09-03T18:27:24+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - the multi-page consumer of LODGY-56: a printable packet grouped hostel -> floor -> room -> tenant with agreement and payment history, exported through SAF like the other exports."
+    },
+    {
+      "timestamp": "2026-09-03T18:33:41+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Printable records packet built on LODGY-56's renderer, the same one LODGY-37 uses - no second pipeline. pdf/DataPacket.kt structures the document hostel -> floor -> room+bed -> tenant, which is how a warden walks the property, rather than a flat dump in whatever order the database returned: per hostel a title, address and bed summary; per floor a heading; per tenancy a 'Room 204 - Bed B - Ravi' heading with phone, status, agreed rent, move-in (and move-out only when there is one), then a Period/Due/Paid/Status table of the whole invoice history - or a plain sentence where a tenancy has no invoices and where a hostel has no tenancies at all, so an empty property is still visibly present instead of silently missing. DataPacketViewModel gathers it with a scope of This hostel (default) or All hostels, counts beds from the bed rows, takes each bed's latest agreement so a moved-out tenancy still appears rather than vanishing, orders invoices oldest period first, and runs every amount through effectiveAmountDue() so the packet agrees with the rest of the app about credits. Reached from More -> Printable records (PDF), exported via the same SAF CreateDocument path as LODGY-23/28/37 as lodgy-records-<date>.pdf. Tests: DataPacketTest asserts the grouping order, the invoice table, the no-invoices and no-tenancies cases, move-out row presence, and that a 32-tenancy property paginates across pages without losing a tenancy; DataPacketViewModelTest covers scope switching, bed counts, invoice ordering with a credit applied, and beds that were never occupied. testDebugUnitTest green."
     }
   ]
 }

@@ -45,6 +45,7 @@ import com.lodgy.app.ui.icons.CommonIcons
 fun InvoiceListScreen(
     onRecordPayment: (Invoice) -> Unit,
     onSendReminder: (Invoice) -> Unit,
+    onOpenReceipt: (Invoice) -> Unit,
     onAddManualInvoice: () -> Unit,
     viewModel: InvoiceListViewModel = hiltViewModel(),
 ) {
@@ -132,6 +133,7 @@ fun InvoiceListScreen(
                         item = item,
                         onRecordPayment = { onRecordPayment(item.invoice) },
                         onSendReminder = { onSendReminder(item.invoice) },
+                        onOpenReceipt = { onOpenReceipt(item.invoice) },
                     )
                 }
             }
@@ -140,7 +142,12 @@ fun InvoiceListScreen(
 }
 
 @Composable
-private fun InvoiceRow(item: InvoiceListItem, onRecordPayment: () -> Unit, onSendReminder: () -> Unit) {
+private fun InvoiceRow(
+    item: InvoiceListItem,
+    onRecordPayment: () -> Unit,
+    onSendReminder: () -> Unit,
+    onOpenReceipt: () -> Unit,
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -180,8 +187,9 @@ private fun InvoiceRow(item: InvoiceListItem, onRecordPayment: () -> Unit, onSen
                     },
                     style = MaterialTheme.typography.titleMedium,
                 )
-                if (item.invoice.status != InvoiceStatus.PAID) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = onOpenReceipt) { Text(stringResource(R.string.acknowledgement_action)) }
+                    if (item.invoice.status != InvoiceStatus.PAID) {
                         OutlinedButton(onClick = onSendReminder) { Text(stringResource(R.string.invoice_send_reminder)) }
                         Button(onClick = onRecordPayment) { Text(stringResource(R.string.invoice_record_payment)) }
                     }
