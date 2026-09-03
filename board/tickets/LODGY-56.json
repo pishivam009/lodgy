@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-56",
+  "epic": "Reporting & Dashboard",
+  "title": "Shared PDF rendering foundation",
+  "description": "LODGY-37 (per-invoice PDF acknowledgement) and LODGY-45 (full-data printable PDF export) both need to generate PDFs, and the app currently has zero PDF infrastructure - LODGY-23 deliberately shipped CSV-only and explicitly skipped PDF generation. Build one shared renderer (e.g. via Android's PdfDocument API, laid out with reusable header/table/footer building blocks) that both consumers use, instead of two independent, inevitably-inconsistent PDF pipelines. This is a prerequisite for LODGY-37 and LODGY-45 - land this first.",
+  "acceptanceCriteria": [
+    "A single PDF-rendering module exists (page setup, text/table layout helpers, Devanagari-safe font handling for Hindi-language content per LODGY-30) that isn't tied to one specific document's content",
+    "Produces valid, correctly-paginated multi-page PDFs when content overflows a single page",
+    "LODGY-37 and LODGY-45 both consume this module rather than each rolling their own PDF generation"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    }
+  ]
+}

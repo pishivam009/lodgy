@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-58",
+  "epic": "Localization",
+  "title": "Change default first-launch language to English",
+  "description": "Product decision reversal: LODGY-30 was built with Hindi as the first-launch default per an earlier explicit requirement ('primary users are Hindi-based'). Product Owner has since reversed that - default should be English on first launch. The switcher itself (LODGY-30, More -> App language) is unaffected; only AppLocale.applyDefaultIfUnset()'s default value changes.",
+  "acceptanceCriteria": [
+    "Fresh install with no locale preference set defaults to English, not Hindi",
+    "Existing installs that already have an explicit choice stored (Hindi or English) are unaffected - this only changes the unset-default case",
+    "Hindi remains fully available and switchable at any time via the existing More -> App language picker"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    }
+  ]
+}

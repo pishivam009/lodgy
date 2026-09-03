@@ -2,7 +2,7 @@
   "id": "LODGY-45",
   "epic": "Backup & Restore",
   "title": "Full data export as a human-readable, printable PDF packet",
-  "description": "Wardens trust a physical, readable paper trail more than a zip file they can't open themselves (LODGY-28 exports a DB+photos zip, not something a warden can read or hand to someone). To ease the fear of 'losing everything in the app', offer a printable/PDF export of the underlying records - hostels, tenants, invoices, payments - as a human-readable document, distinct from the machine-readable backup zip.",
+  "description": "Wardens trust a physical, readable paper trail more than a zip file they can't open themselves (LODGY-28 exports a DB+photos zip, not something a warden can read or hand to someone). To ease the fear of 'losing everything in the app', offer a printable/PDF export of the underlying records - hostels, tenants, invoices, payments - as a human-readable document, distinct from the machine-readable backup zip. Depends on LODGY-56 (shared PDF rendering foundation) - reuse the same renderer LODGY-37 builds against rather than a second pipeline; this ticket is the larger, multi-page consumer of it.",
   "acceptanceCriteria": [
     "Warden can export a printable PDF summary of all tenants, active agreements, and payment history for a hostel (or all hostels)",
     "PDF is legible and organized (grouped by hostel/room/tenant), not a raw data dump",
@@ -12,13 +12,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Added an explicit dependency on LODGY-56 - this ticket and LODGY-37 both need PDF rendering and were at risk of building two separate, inconsistent pipelines. LODGY-56 builds the shared renderer first; this ticket and LODGY-37 consume it."
     }
   ]
 }

@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-54",
+  "epic": "Usability",
+  "title": "Date/period filter and sort on the Invoice list",
+  "description": "Split out of the original LODGY-39. Extends LODGY-17's existing Unpaid/Partial/Paid status filter chips with a date/period filter and a sort option, so a warden isn't scrolling through every invoice ever created to find this month's.",
+  "acceptanceCriteria": [
+    "Invoice list's existing status filter chips (LODGY-17) are joined by a month/year (or date-range) filter",
+    "Invoice list can be sorted by due date or amount",
+    "Combining a status filter and a date filter narrows correctly (both apply together, not one replacing the other)"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    }
+  ]
+}

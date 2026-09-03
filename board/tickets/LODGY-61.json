@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-61",
+  "epic": "Appearance",
+  "title": "Smooth slide transitions for screen navigation",
+  "description": "LodgyNavHost's composable() destinations currently specify no enter/exit/popEnter/popExit transitions, so every navigation - especially back navigation - is an abrupt cut rather than feeling like moving through a stack of screens. Add consistent slide transitions (forward: slide in from the right / out to the left; back: reverse) across the app's single NavHost.",
+  "acceptanceCriteria": [
+    "Navigating forward (e.g. tenant list -> tenant profile) slides the new screen in from the right",
+    "Navigating back slides the previous screen back in from the left, reversing the forward animation - not an instant cut",
+    "Transition is applied consistently across the whole NavHost, not just a few hand-picked screens",
+    "Bottom-nav tab switches (Home/Property/Tenants/Payments/More) keep their own distinct feel and are not forced through the same slide (a tab switch is not a stack push)"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    }
+  ]
+}

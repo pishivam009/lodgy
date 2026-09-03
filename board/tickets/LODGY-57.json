@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-57",
+  "epic": "Usability",
+  "title": "Confirmation dialogs on all delete and high-impact update actions",
+  "description": "Real bug hit directly by the Product Owner: deleting a room produced no confirmation at all and it was gone immediately. Root cause found in code - RoomListViewModel.requestDelete() only shows an AlertDialog when the room has an OCCUPIED bed (a hard block, not a confirmation prompt); for an ordinary vacant room it calls roomRepository.delete() immediately with no prompt whatsoever. FloorListViewModel.delete() is worse - a bare one-liner with no confirmation and no occupied-bed check at all, despite deleting a floor cascading to every room/bed under it. By contrast, NoteFormScreen already does this correctly (showDeleteConfirm state + AlertDialog + explicit Delete/Cancel) - that's the pattern to replicate everywhere. Scope: every delete action needs a plain 'Are you sure?' confirmation; a handful of especially high-impact, hard-to-reverse updates (tenant checkout - already has one, room-type change on a room with an occupied bed, manually overriding a calculated invoice amount) should get one too. Routine field edits (name, address, phone, price) do not need a confirmation dialog - Save is the confirmation there, and adding one would just be friction with no safety benefit.",
+  "acceptanceCriteria": [
+    "Deleting a Room shows a plain confirmation dialog for the ordinary (no occupied bed) case, in addition to the existing occupied-bed hard block",
+    "Deleting a Floor shows a confirmation dialog, and the dialog states plainly that every room/bed under it goes too",
+    "Deleting a Note continues to use its existing (already-correct) confirmation pattern - used as the template for the other two",
+    "Changing a Room's type while it has an occupied bed shows a confirmation before applying",
+    "Routine non-destructive edits (renaming a hostel, editing a phone number, etc.) are explicitly NOT changed - no new confirmation added where there's nothing destructive happening"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    }
+  ]
+}

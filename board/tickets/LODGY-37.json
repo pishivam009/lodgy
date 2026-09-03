@@ -2,7 +2,7 @@
   "id": "LODGY-37",
   "epic": "Reporting & Dashboard",
   "title": "Export a single invoice / payment acknowledgement as PDF",
-  "description": "Wardens want to hand (or WhatsApp) a tenant a proper receipt-style PDF for a specific invoice or payment, distinct from LODGY-23's whole-month CSV/PDF report export. This is a per-transaction acknowledgement a tenant can keep.",
+  "description": "Wardens want to hand (or WhatsApp) a tenant a proper receipt-style PDF for a specific invoice or payment, distinct from LODGY-23's whole-month CSV/PDF report export. This is a per-transaction acknowledgement a tenant can keep. Depends on LODGY-56 (shared PDF rendering foundation) - build against that renderer rather than starting a second, independent PDF pipeline; LODGY-45's full-data export needs the same foundation and the two should not diverge.",
   "acceptanceCriteria": [
     "From an invoice or a recorded payment, warden can export a PDF acknowledgement showing tenant name, room, period, amount, payment mode, and date",
     "PDF is saved via SAF to a location the warden picks, same pattern as LODGY-23/LODGY-28",
@@ -12,13 +12,19 @@
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    },
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Added an explicit dependency on LODGY-56 - this ticket and LODGY-45 both need PDF rendering and were at risk of building two separate, inconsistent pipelines. LODGY-56 builds the shared renderer first; this ticket and LODGY-45 consume it."
     }
   ]
 }

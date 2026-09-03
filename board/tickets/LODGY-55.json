@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-55",
+  "epic": "Usability",
+  "title": "Filter and sort controls on the Expense list",
+  "description": "Split out of the original LODGY-39. Wardens want to filter expenses by category and sort by date or amount, especially once a hostel has months of recurring entries (WiFi, water, etc. from LODGY-26/27).",
+  "acceptanceCriteria": [
+    "Expense list can filter by category",
+    "Expense list can sort by date or amount"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    }
+  ]
+}

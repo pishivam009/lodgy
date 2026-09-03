@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-60",
+  "epic": "Notifications",
+  "title": "Local notifications for payment dues, reminders, and monthly expenses",
+  "description": "Wardens want to be notified about payment due dates, overdue invoices, and recurring monthly expenses (WiFi, water, etc. from LODGY-26/27) coming due - so this doesn't rely on the warden remembering to open the app and check the Dashboard/Invoices. Local notification only, same WorkManager-based approach as LODGY-59 and LODGY-15.",
+  "acceptanceCriteria": [
+    "Warden is notified when an invoice becomes overdue (past due date, still Unpaid/Partial)",
+    "Warden is notified ahead of a recurring expense's typical due date (e.g. WiFi/water bill window) based on past Expense entries for that category",
+    "Notifications are actionable - tapping one opens the relevant invoice or expense, not just the app's home screen",
+    "Warden can turn this category of notification off from the More tab without turning off the vacant-room notifications from LODGY-59"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T21:00:00+00:00",
+  "updatedAt": "2026-09-03T21:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T21:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added following backlog review: splitting LODGY-39, giving LODGY-37/45 a shared PDF prerequisite, and folding in the latest round of direct feedback (a real delete-without-confirmation bug hit on Rooms, a default-language reversal, and new notification/navigation-polish requests)."
+    }
+  ]
+}
