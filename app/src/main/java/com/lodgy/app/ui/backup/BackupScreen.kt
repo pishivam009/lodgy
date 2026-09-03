@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.ui.TrustedActivityLaunch
 import com.lodgy.app.ui.icons.CommonIcons
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -83,6 +84,7 @@ fun BackupScreen(
                     Button(
                         onClick = {
                             val stamp = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                            TrustedActivityLaunch.expectOne()
                             exportLauncher.launch("lodgy-backup-$stamp.zip")
                         },
                         enabled = !uiState.exporting,
@@ -112,7 +114,10 @@ fun BackupScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Button(
-                        onClick = { importLauncher.launch(arrayOf("*/*")) },
+                        onClick = {
+                            TrustedActivityLaunch.expectOne()
+                            importLauncher.launch(arrayOf("*/*"))
+                        },
                         enabled = !uiState.importing,
                         modifier = Modifier.fillMaxWidth(),
                     ) {

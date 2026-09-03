@@ -198,7 +198,7 @@
     <string name="reminder_disclaimer">Opens with this pre-filled — you review and tap send there. Nothing sends automatically.</string>
     <string name="reminder_open_whatsapp">Open WhatsApp</string>
     <string name="reminder_open_sms">Open SMS</string>
-    <string name="reminder_template_hi">नमस्ते %1$s जी, आपका ₹%2$d किराया बकाया है, due date %3$s। – %4$s</string>
+    <string name="reminder_template_hi">नमस्ते %1$s जी, आपका ₹%2$d किराया बकाया है, नियत तारीख %3$s। – %4$s</string>
     <string name="reminder_template_en">Hi %1$s, your rent of ₹%2$d is due on %3$s. - %4$s</string>
 
     <string name="dashboard_title">Home</string>

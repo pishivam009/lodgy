@@ -40,9 +40,11 @@ class AppRootViewModel @Inject constructor(
     }
 
     // Re-lock when the whole app leaves the foreground (not per-Activity onPause, so a
-    // biometric system dialog showing over us doesn't itself trigger a re-lock).
+    // biometric system dialog showing over us doesn't itself trigger a re-lock) - unless
+    // a screen just told us it's launching something trusted (e.g. the camera) and
+    // expects to come straight back, in which case skip this one re-lock.
     override fun onStop(owner: LifecycleOwner) {
-        if (_state.value == AppStartState.Unlocked) {
+        if (_state.value == AppStartState.Unlocked && !TrustedActivityLaunch.consumeIfExpected()) {
             _state.value = AppStartState.Locked
         }
     }

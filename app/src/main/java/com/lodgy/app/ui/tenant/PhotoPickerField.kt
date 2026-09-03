@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.lodgy.app.R
+import com.lodgy.app.ui.TrustedActivityLaunch
 
 @Composable
 fun PhotoPickerField(
@@ -76,6 +77,7 @@ fun PhotoPickerField(
                 modifier = Modifier.clickable {
                     val uri = createCameraOutputUri()
                     pendingCameraUri = uri
+                    TrustedActivityLaunch.expectOne()
                     cameraLauncher.launch(uri)
                 },
             )
@@ -84,6 +86,7 @@ fun PhotoPickerField(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable {
+                    TrustedActivityLaunch.expectOne()
                     galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 },
             )
