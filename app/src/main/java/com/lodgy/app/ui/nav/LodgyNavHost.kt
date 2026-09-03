@@ -7,6 +7,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,6 +19,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.lodgy.app.notify.ROUTE_EXPENSE_FORM
+import com.lodgy.app.notify.ROUTE_RECORD_PAYMENT
+import com.lodgy.app.notify.ROUTE_VACANT_VIEW
 import com.lodgy.app.ui.property.AllRoomsScreen
 import com.lodgy.app.ui.property.BulkRoomFormScreen
 import com.lodgy.app.ui.property.FloorFormScreen
@@ -36,6 +40,7 @@ import com.lodgy.app.ui.dashboard.VacantViewScreen
 import com.lodgy.app.ui.expense.ExpenseFormScreen
 import com.lodgy.app.ui.expense.ExpenseListScreen
 import com.lodgy.app.ui.more.MoreScreen
+import com.lodgy.app.ui.more.NotificationSettingsScreen
 import com.lodgy.app.ui.note.NoteFormScreen
 import com.lodgy.app.ui.note.NotesTimelineScreen
 import com.lodgy.app.ui.payment.AcknowledgementScreen
@@ -71,23 +76,31 @@ private const val TRANSFER_ROUTE = "transfer"
 private const val CREDIT_FORM_ROUTE = "credit_form"
 private const val ACKNOWLEDGEMENT_ROUTE = "acknowledgement"
 private const val MULTI_PERIOD_PAYMENT_ROUTE = "multi_period_payment"
-private const val RECORD_PAYMENT_ROUTE = "record_payment"
+private const val RECORD_PAYMENT_ROUTE = ROUTE_RECORD_PAYMENT
 private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_picker"
 private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
 private const val REMINDER_ROUTE = "reminder"
-private const val VACANT_VIEW_ROUTE = "vacant_view"
+private const val VACANT_VIEW_ROUTE = ROUTE_VACANT_VIEW
 private const val MONTHLY_REPORT_ROUTE = "monthly_report"
 private const val EXPENSE_LIST_ROUTE = "expense_list"
-private const val EXPENSE_FORM_ROUTE = "expense_form"
+private const val EXPENSE_FORM_ROUTE = ROUTE_EXPENSE_FORM
 private const val NOTES_TIMELINE_ROUTE = "notes_timeline"
 private const val NOTE_FORM_ROUTE = "note_form"
 private const val BACKUP_ROUTE = "backup"
 private const val DATA_PACKET_ROUTE = "data_packet"
 private const val HISTORY_IMPORT_ROUTE = "history_import"
+private const val NOTIFICATION_SETTINGS_ROUTE = "notification_settings"
 
 @Composable
-fun LodgyNavHost() {
+fun LodgyNavHost(pendingRoute: String? = null) {
     val navController = rememberNavController()
+
+    // A notification's destination, opened once the warden is through the lock screen. Keyed on
+    // the route so a second notification during the same session still lands.
+    LaunchedEffect(pendingRoute) {
+        pendingRoute?.let(navController::navigate)
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val isTopLevelDestination = LodgyDestination.entries.any { it.route == currentDestination?.route }
@@ -157,6 +170,7 @@ fun LodgyNavHost() {
                             onOpenBackup = { navController.navigate(BACKUP_ROUTE) },
                             onOpenPrintableRecords = { navController.navigate(DATA_PACKET_ROUTE) },
                             onOpenHistoryImport = { navController.navigate(HISTORY_IMPORT_ROUTE) },
+                            onOpenNotificationSettings = { navController.navigate(NOTIFICATION_SETTINGS_ROUTE) },
                         )
                     }
                 }
@@ -450,6 +464,10 @@ fun LodgyNavHost() {
 
             composable(HISTORY_IMPORT_ROUTE) {
                 HistoryImportScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(NOTIFICATION_SETTINGS_ROUTE) {
+                NotificationSettingsScreen(onBack = { navController.popBackStack() })
             }
         }
     }

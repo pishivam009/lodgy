@@ -10,6 +10,16 @@ data class FloorOccupancy(val floorId: String, val totalBeds: Int, val occupiedB
     val vacantBeds: Int get() = totalBeds - occupiedBeds
 }
 
+/** A long-vacant bed, named the way a warden would say it out loud. */
+data class VacantBedDetail(
+    val bedId: String,
+    val bedLabel: String,
+    val roomNumber: String,
+    val floorLabel: String,
+    val hostelName: String,
+    val vacantSince: Long,
+)
+
 /** A vacant bed with everything needed to describe and price it, in one query. */
 data class VacantBedRow(
     val bedId: String,

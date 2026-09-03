@@ -17,9 +17,10 @@ fun RoomType.label(): String = stringResource(
     },
 )
 
-@Composable
-fun ExpenseCategory.label(): String = stringResource(
-    when (this) {
+/** Split out of [label] so non-composable callers - the notification workers - resolve the same
+ *  string through a plain Context instead of duplicating the mapping. */
+val ExpenseCategory.labelRes: Int
+    get() = when (this) {
         ExpenseCategory.WIFI -> R.string.expense_category_wifi
         ExpenseCategory.WATER -> R.string.expense_category_water
         ExpenseCategory.ELECTRICITY -> R.string.expense_category_electricity
@@ -27,8 +28,10 @@ fun ExpenseCategory.label(): String = stringResource(
         ExpenseCategory.MAINTENANCE -> R.string.expense_category_maintenance
         ExpenseCategory.REPAIR -> R.string.expense_category_repair
         ExpenseCategory.OTHER -> R.string.expense_category_other
-    },
-)
+    }
+
+@Composable
+fun ExpenseCategory.label(): String = stringResource(labelRes)
 
 @Composable
 fun NoteType.label(): String = stringResource(

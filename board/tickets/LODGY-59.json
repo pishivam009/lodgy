@@ -10,11 +10,11 @@
     "Notification does not repeat daily for the same still-vacant bed (once per bed until it's occupied again, or a sensible re-notify cadence, not a daily nag)",
     "Runtime POST_NOTIFICATIONS permission (Android 13+) is requested appropriately and the feature degrades gracefully if denied"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": "Developer",
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T22:00:00+00:00",
+  "updatedAt": "2026-09-03T19:17:05+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -27,6 +27,22 @@
       "actor": "Product Owner",
       "action": "edited",
       "note": "Resolved: the vacancy threshold is warden-configurable via a setting, not a hardcoded constant."
+    },
+    {
+      "timestamp": "2026-09-03T19:06:29+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - shared notification plumbing (channels, permission, a tap target that survives the PIN gate) plus the daily vacancy check with a warden-set threshold and a notified-set so a still-vacant bed is not a daily nag. LODGY-60 will build on the same plumbing."
+    },
+    {
+      "timestamp": "2026-09-03T19:17:05+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built the shared notification plumbing and the vacancy check on top of it. notify/LodgyNotifications.kt owns the two channels, the permission check and the tap target, so every send goes through one place; every post is best-effort and wrapped, because a denied permission must leave a working app (AC 5) - the POST_NOTIFICATIONS request is made on Android 13+ at startup and a denial is simply accepted, with the settings screen saying plainly that Android is blocking them. VacancyCheckWorker runs daily via WorkManager, matching LODGY-15's existing periodic pattern. The threshold is data, not a constant: NotificationPreferences.vacancyThresholdDays defaults to 7, is clamped to 1-90, and is set from More -> Notifications. Long-vacant beds come from BedDao.getLongVacantBeds, which reads beds.updatedAt - for a VACANT bed that is when it was freed, the closest thing the schema has to 'vacant since', and the join names hostel, room and bed so the notification says which bed rather than just a count. AC 4 lives in notify/VacancyNudge.kt as a pure function: a bed is nudged once and then remembered, and the remembered set is pruned to beds that are STILL vacant - so a month-long vacancy produces one notification rather than thirty, while a bed that fills and later empties again is treated as new, which is exactly when the warden wants to hear about it. Tapping opens the Vacant beds view; because the app is PIN-gated the route travels as an intent extra and is replayed by LodgyNavHost after unlock rather than navigated to immediately, and the route constants are shared with the NavHost so a rename cannot silently break the tap. Tests: VacancyNudgeTest for first nudge, no repeat, forget-on-fill and re-nudge, and the empty case; NotificationSettingsViewModelTest for the threshold options and the blocked-permission state. assembleDebug and testDebugUnitTest green."
     }
   ]
 }

@@ -4,6 +4,7 @@ import com.lodgy.app.data.dao.BedDao
 import com.lodgy.app.data.dao.BedLocation
 import com.lodgy.app.data.dao.FloorOccupancy
 import com.lodgy.app.data.dao.RoomOccupancy
+import com.lodgy.app.data.dao.VacantBedDetail
 import com.lodgy.app.data.dao.VacantBedRow
 import com.lodgy.app.data.entity.Bed
 import com.lodgy.app.data.entity.BedStatus
@@ -29,6 +30,11 @@ class BedRepository @Inject constructor(private val bedDao: BedDao) {
 
     suspend fun getVacantBedsByHostel(hostelId: String): List<VacantBedRow> =
         bedDao.getVacantBedsByHostel(hostelId)
+
+    suspend fun getLongVacantBeds(vacantSinceBefore: Long): List<VacantBedDetail> =
+        bedDao.getLongVacantBeds(vacantSinceBefore)
+
+    suspend fun getVacantBedIds(): List<String> = bedDao.getVacantBedIds()
 
     suspend fun hasOccupiedBed(roomId: String): Boolean =
         bedDao.getByRoomId(roomId).first().any { it.status == BedStatus.OCCUPIED }

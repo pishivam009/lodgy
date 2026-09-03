@@ -25,4 +25,7 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM expenses WHERE hostelId = :hostelId ORDER BY incurredOn DESC")
     fun getByHostelId(hostelId: String): Flow<List<Expense>>
+
+    @Query("SELECT * FROM expenses")
+    suspend fun getAll(): List<Expense>
 }

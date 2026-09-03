@@ -69,4 +69,20 @@ interface BedDao {
             "ORDER BY floors.sortOrder, rooms.roomNumber, beds.label",
     )
     suspend fun getVacantBedsByHostel(hostelId: String): List<VacantBedRow>
+
+    /** beds.updatedAt is when the status last changed, which for a VACANT bed is when it was
+     *  freed - the closest thing the schema has to "vacant since". */
+    @Query(
+        "SELECT beds.id AS bedId, beds.label AS bedLabel, rooms.roomNumber AS roomNumber, " +
+            "floors.label AS floorLabel, hostels.name AS hostelName, beds.updatedAt AS vacantSince " +
+            "FROM beds INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "INNER JOIN floors ON floors.id = rooms.floorId " +
+            "INNER JOIN hostels ON hostels.id = floors.hostelId " +
+            "WHERE beds.status = 'VACANT' AND beds.updatedAt <= :vacantSinceBefore " +
+            "ORDER BY beds.updatedAt",
+    )
+    suspend fun getLongVacantBeds(vacantSinceBefore: Long): List<VacantBedDetail>
+
+    @Query("SELECT id FROM beds WHERE status = 'VACANT'")
+    suspend fun getVacantBedIds(): List<String>
 }

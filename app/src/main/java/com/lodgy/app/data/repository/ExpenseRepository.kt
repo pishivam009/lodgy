@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.Flow
 class ExpenseRepository @Inject constructor(private val expenseDao: ExpenseDao) {
     fun getByHostelId(hostelId: String): Flow<List<Expense>> = expenseDao.getByHostelId(hostelId)
 
+    /** Across every hostel - the notification check is not scoped to the selected one. */
+    suspend fun getAll(): List<Expense> = expenseDao.getAll()
+
     suspend fun getById(id: String): Expense? = expenseDao.getById(id)
 
     suspend fun create(
