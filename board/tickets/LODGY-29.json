@@ -7,11 +7,11 @@
     "Importing a valid export fully restores hostels/tenants/invoices/photos",
     "Importing does not silently merge with existing data - warns before overwrite"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "High",
-  "assigneeRole": "Tester",
+  "assigneeRole": "Developer",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:00:00+00:00",
+  "updatedAt": "2026-09-03T18:15:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "AC1: applyStaged() replaces the entire db file wholesale (not a table-by-table merge), so every entity - hostels/floors/rooms/beds/tenants/agreements/invoices/payments/notes/expenses - and every photo file comes back together; nothing is cherry-picked. AC2: picking a file only stages+validates it; BackupScreen then shows an AlertDialog ('Replace all data on this device? ... can't be undone') before BackupViewModel.confirmImport() is ever called - declining leaves the current data completely untouched (dismissOverwriteConfirm deletes the staging dir and does nothing else). If the picked file has no lodgy.db entry, ImportResult.NotALodgyBackup surfaces an inline error instead of silently no-oping. After a successful restore, a non-dismissable dialog explains the app will restart, and the restart relaunches via a fresh launch intent + Runtime.exit so the next cold start reads the newly-restored db. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued - this one especially needs a real device pass: export from one install, wipe/reinstall or use a second device, import, and confirm the restored hostel/tenant/photo data actually appears end to end."
+    },
+    {
+      "timestamp": "2026-09-03T18:15:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - the Restore flow cannot be completed through the UI at all; AC1 and AC2 are both unreachable. Repro (reproduced twice, identically): from More -> Backup & Restore, tapped Import, picked the just-exported lodgy-backup-2026-09-03.zip from the OpenDocument picker. Expected: BackupScreen's showOverwriteConfirm AlertDialog ('Replace all data on this device?') per the developer's own description. Actual: the picker closes and the app lands on the Home tab dashboard - no dialog, no error message, no indication anything happened. Confirmed this is NOT the import silently completing: `adb shell pidof com.lodgy.app` returned the same PID before and after both attempts (no restart, which applyStaged()'s own design requires to take effect), and re-opening Backup & Restore afterward shows a completely fresh screen with no pending state - the staged import is simply abandoned. Checked logcat across both attempts: BackupViewModel$onImportFilePicked did execute (JIT-verification log line present on the first attempt), no crash or AndroidRuntime exception either time, and WindowManager traces show the SAME MainActivity ActivityRecord (173298359) and task (25) throughout both attempts - the Activity was never destroyed/recreated (ruling out a simple 'activity killed under memory pressure, nav graph resets to start destination' explanation), yet the visible screen after the picker closes is unambiguously Home (bottom nav shows Home selected, dashboard tiles render) rather than back on 'backup'. I could not pin down the exact line responsible for the jump to Home within LodgyNavHost/BackupScreen - the code (BackupScreen.kt, LodgyNavHost.kt) reads as a normal single NavHost back stack with no navigation call anywhere in the import-picked path, so this needs a developer trace (breakpoint or added logging on BackupViewModel.onImportFilePicked and the NavController's currentBackStackEntry) rather than further guessing from the black box. Whatever the mechanism, the practical effect is severe: a warden can never actually finish restoring a backup through this UI - AC1 (full restore) is never reached and AC2 (overwrite warning) is built but unreachable. Not a data-loss risk (nothing was altered, confirmed via unchanged PID/no restart), but the feature is non-functional as shipped."
     }
   ]
 }

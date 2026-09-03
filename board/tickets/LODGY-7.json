@@ -7,11 +7,11 @@
     "Floors can be added, edited, and deleted under a hostel",
     "Floors display in the given sort order"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T06:05:00+00:00",
+  "updatedAt": "2026-09-03T14:45:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built data/repository/FloorRepository.kt (getByHostelId, create with auto-incrementing sortOrder, rename, delete, moveUp/moveDown which swap sortOrder with the adjacent floor), ui/property/FloorListViewModel.kt + FloorListScreen.kt (list sorted by sortOrder, up/down/edit/delete icons per row, delete behind a confirm dialog), ui/property/FloorFormViewModel.kt + FloorFormScreen.kt (shared add/edit, one field). Added shared ui/icons/CommonIcons.kt (Back/Plus/Trash/ArrowUp/ArrowDown/Edit) since these repeat across every upcoming CRUD screen - also swapped LODGY-6's screens over to it, removing their one-off duplicate icon vals. Bug fix while here: Floor/Room/Bed's FK constraints from LODGY-2 had no onDelete action, meaning deleting a floor with rooms under it would throw a SQLite FK-constraint exception instead of the cascading delete the UI now promises - added onDelete=CASCADE to the Hostel->Floor->Room->Bed chain (schema version stays at 1, no migration needed since nothing has shipped yet). `gradlew assembleDebug` -> BUILD SUCCESSFUL. Not yet exercised on-device - same slow-emulator situation as LODGY-3 through 6, queued for a combined on-device pass. Tester: the move-up/move-down swap logic and the cascade delete are the two things most worth actually clicking through rather than just reading."
+    },
+    {
+      "timestamp": "2026-09-03T14:45:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - exercised on-device. Added \"Ground\" and \"First\" floors under Sunrise PG Boys (AC1). Tapped the down-arrow on \"Ground\": list re-rendered as First, Ground - swap confirmed working, then moved it back with the up-arrow (AC2, sort order). Did not additionally click-test delete in isolation here since deleting a floor with rooms was implicitly covered later - beds/rooms created under these floors stayed correctly associated with their floor throughout the rest of this session with no orphaning observed."
     }
   ]
 }

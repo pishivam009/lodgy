@@ -7,11 +7,11 @@
     "Photo and ID proof photo are captured via camera or gallery and stored locally",
     "All fields are editable after creation"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "High",
-  "assigneeRole": "Tester",
+  "assigneeRole": "Developer",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T07:45:00+00:00",
+  "updatedAt": "2026-09-03T17:20:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,20 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built media/PhotoStorage.kt (creates a FileProvider camera-output Uri in cacheDir, persists any picked/captured image into filesDir/photos/<uuid>.jpg on IO dispatcher - satisfies DESIGN.md's app-private-storage requirement), ui/tenant/PhotoPickerField.kt (reusable: 'Take Photo' launches the system camera via ActivityResultContracts.TakePicture into a FileProvider Uri, 'Choose Photo' launches the Android Photo Picker via PickVisualMedia - neither needs a runtime permission), data/repository/TenantRepository.kt, and the full Tenant flow: TenantDirectoryScreen (search + list, wired as the Tenants tab), TenantFormScreen (photo + ID proof pickers, name/phone/emergency contact, shared add/edit), TenantProfileScreen (view + edit entry point for LODGY-31 to extend). Added coil3 (coil-compose) for image loading since AsyncImage from a file path is needed in three places now and will be needed again for notes photos later. Manifest: added a FileProvider + res/xml/file_paths.xml for the camera Uri. Bug caught before shipping: TenantProfileViewModel originally fetched the tenant once with getById, which would go stale after editing since popping back to a retained NavBackStackEntry doesn't re-run init - added TenantDao.getByIdFlow/TenantRepository.observeById and switched to that instead. `gradlew assembleDebug` -> BUILD SUCCESSFUL. Not yet exercised on-device (camera/gallery flows especially need real interaction, not just a code read) - still queued behind the slow emulator boot, now well over an hour."
+    },
+    {
+      "timestamp": "2026-09-03T15:10:00+00:00",
+      "actor": "Tester",
+      "action": "comment",
+      "note": "AC2 confirmed on-device: onboarded two tenants (Ravi Kumar, Priya Sharma) with name/phone/emergency contact fields, then edited one afterward - all text fields save and reload correctly. AC1 (photo/ID proof capture via camera or gallery) was NOT exercised - deliberately skipped photo capture on both tenants since this AVD has no useful camera feed or seeded gallery images to pick, and camera/gallery picker flows need real interaction to mean anything (the developer's own note flagged the same limitation). Holding in Testing rather than Done until someone can actually tap Take Photo/Choose Photo on a device with a camera and confirm the file lands in app-private storage and displays back correctly."
+    },
+    {
+      "timestamp": "2026-09-03T17:20:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - AC1's camera path is broken by an interaction with LODGY-5's app lock, and re-tested with real images pushed onto the AVD (via adb, into /sdcard/Pictures) so the gallery path could finally be exercised for real. Gallery path: PASS on its own - onboarded 'Test Tenant', tapped 'Choose Photo' on the Photo field, picked a real pushed image via the Android Photo Picker, tapped Save, reopened the profile: photo displays correctly, confirming it round-tripped through PhotoStorage into app-private storage (AC1's gallery half holds). Camera path: FAIL. Tapped 'Take Photo' for ID Proof - the system Camera app opened and captured fine, but returning to Lodgy after tapping Done landed on the PIN lock screen instead of back in the Tenant Profile form. Root cause: AppRootViewModel.onStop() (AppRootViewModel.kt:44-48) unconditionally re-locks on ANY whole-app backgrounding with no grace period, and launching the system Camera (a separate full-screen activity, unlike the Photo Picker which apparently doesn't trigger the same onStop in practice) does background the app. Because the in-progress Tenant Profile form had not been saved yet, everything not yet persisted was lost across the forced re-lock/re-auth - the photo I'd have picked via camera never made it into the form, and I had to redo the whole gallery-based repro afterward to confirm AC1 at all. This makes 'Take Photo' unusable in real warden usage: any camera-based photo/ID capture attempt interrupts the flow with a PIN prompt and risks losing everything typed so far in the form if it isn't saved first. Separately, and worth flagging even though it's not blocking this FAIL: text fields (name/phone) persist to the DB immediately per-edit (confirmed: after the forced relock, 'Test Tenant'/'9999999999' were already saved despite Save never being tapped), but Photo/ID Proof picks live only in local Compose state until Save is pressed - an inconsistent persistence model that silently drops photo selections on any interruption (this relock, a call, an OS-initiated process kill), not just the camera-specific one. Suggested fix for the blocking issue: same shared-root-cause family as LODGY-20/22 but a different symptom - either exempt the camera/gallery capture launch from the onStop relock (e.g. track a 'launching trusted picker' flag the way LODGY-5's own dev note already exempts the biometric system dialog), or persist form field values (including the picked-but-unsaved photo Uris) so a forced relock doesn't lose work in progress."
     }
   ]
 }

@@ -8,11 +8,11 @@
     "No duplicate invoice is created for the same tenant+period",
     "Job survives app restarts (WorkManager persistence)"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T10:05:00+00:00",
+  "updatedAt": "2026-09-03T17:30:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built work/InvoiceGenerationWorker.kt (@HiltWorker, checks every ACTIVE agreement's billingCycleDay against today, creates an UNPAID invoice at agreedRent for agreements that match and don't already have one for the current periodMonth/periodYear) and work/WorkScheduler.kt (enqueueUniquePeriodicWork, KEEP policy). Wired Hilt into WorkManager: LodgyApplication now implements Configuration.Provider with an injected HiltWorkerFactory, and the manifest disables WorkManager's default androidx.startup initializer (tools:node=\"remove\") so it doesn't race with the custom config. Added InvoiceDao.getForPeriod and TenancyAgreementDao.getAllActive to support this. `gradlew assembleDebug` -> BUILD SUCCESSFUL, including the hilt-work KSP codegen for @HiltWorker. AC1/AC2 are implemented directly in doWork()'s filter+existsForPeriod check. AC3 (survives restarts) is a WorkManager platform guarantee for periodic work + KEEP policy, not something I wrote myself - reasonably confident by API contract, but the only way to truly confirm it is watching a real day boundary or using WorkManager's test APIs, neither of which I could exercise without a working emulator this session. Tester: worth at least confirming via `adb shell dumpsys jobscheduler` (or WorkManager's own inspector) that the job is actually scheduled once a device is available, even without waiting a full day."
+    },
+    {
+      "timestamp": "2026-09-03T17:30:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - AC3 confirmed directly on-device: `adb shell dumpsys jobscheduler | grep -A20 InvoiceGenerationWorker` shows the job live as `androidx.work.systemjobscheduler:u0a229/1 #InvoiceGenerationWorker#`, periodic, TIMING_DELAY constraint pending (~20h to next run), confirming WorkManager persisted the schedule independent of the app process (survived multiple force-stops/relaunches during this session's testing) - satisfies AC3. AC1/AC2 could not be exercised live: this AVD has no root (`adb root` -> 'cannot run as root in production builds'), so the device clock can't be advanced to a tenant's billingCycleDay, and `adb shell cmd jobscheduler run -f com.lodgy.app 1` (and the numeric job hash from dumpsys) both returned 'Could not find job' - this build doesn't support force-running a WorkManager-owned SystemJobService job via the jobscheduler shell command, and there's no WorkManager test/inspector API surface reachable without instrumentation. Verified AC1/AC2 by code review instead: InvoiceGenerationWorker.doWork() (work/InvoiceGenerationWorker.kt:21-37) filters tenancyAgreementRepository.getAllActive() by billingCycleDay==today (AC1's trigger condition, correctly using the real device Calendar), and guards every creation with invoiceRepository.existsForPeriod() (InvoiceRepository.kt:16-17, a genuine DB lookup keyed on tenancyAgreementId+periodMonth+periodYear, not an in-memory check that would miss a re-run) before calling create() - a re-run of the same job on the same day for the same agreement cannot double-insert, satisfying AC2 by construction. No off-by-one or edge case found (billingCycleDay is pre-constrained to 1-28 elsewhere per the developer's In Progress note, so every month has the day). Passing on the strength of confirmed AC3 plus sound, direct code verification of AC1/AC2 - the same category of environment limitation already accepted for LODGY-4/5's biometric paths on this hardware-less/rootless AVD."
     }
   ]
 }

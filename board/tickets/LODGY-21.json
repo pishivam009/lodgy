@@ -7,11 +7,11 @@
     "Vacant beds are listed correctly and update immediately after checkout/onboarding",
     "Filtering by floor works"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T12:35:00+00:00",
+  "updatedAt": "2026-09-03T15:50:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built VacantViewViewModel/VacantViewScreen, grouped by floor with an 'All floors' + per-floor filter chip row, wired as a drill-in from the Dashboard's 'Vacant beds' tile (now clickable). Reactivity: combine() over each room's bedRepository.getByRoomId Flow, so any bed's status flipping (checkout frees one, onboarding occupies one) re-emits the whole list live, satisfying AC1 literally rather than just 'correct on next screen load'. AC2 (floor filtering) is a plain client-side filter over the combined list. Caught two real bugs before shipping: (1) my first draft placed the filter Row and the list as two SEPARATE direct children of Scaffold's content slot instead of wrapping both in a Column - Scaffold's content is a Box internally, so they'd have overlapped/rendered on top of each other; audited every other list+filter screen in the app (Invoices, Tenants) and confirmed this was the only instance. (2) a leftover brace from refactoring StatCard into StatCard+StatCardContent broke the build entirely - fixed before it ever reached a commit. `gradlew assembleDebug` -> BUILD SUCCESSFUL, clean rebuild after both fixes. On-device pass still queued - this one in particular deserves an actual click-through given the overlap bug I just caught by re-reading, not by seeing it render."
+    },
+    {
+      "timestamp": "2026-09-03T15:50:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - no overlap, filter row and list render as separate rows correctly. Opened via the Home dashboard's \"Vacant beds\" tile: listed every vacant bed correctly grouped by floor, with Room 101/102's occupied beds correctly excluded. Filtered to \"Ground\" (a floor with no rooms): \"No vacant beds right now.\" - filter works (AC2). Checked out Ravi Kumar afterward and re-opened this screen: Room 101 - Bed A reappeared in the list without needing to force-refresh - live Flow reactivity confirmed (AC1)."
     }
   ]
 }

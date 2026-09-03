@@ -7,11 +7,11 @@
     "Tapping opens the default SMS app pre-filled with tenant number and message",
     "No SEND_SMS permission is requested"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T11:35:00+00:00",
+  "updatedAt": "2026-09-03T17:40:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "SMS half of the same build as LODGY-18: ReminderIntents.sms() uses ACTION_VIEW on an smsto: Uri with the message passed via the sms_body extra - no SEND_SMS permission requested or declared anywhere in the manifest (confirmed by grep). `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued."
+    },
+    {
+      "timestamp": "2026-09-03T17:40:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - both this ticket's AC confirmed on-device. From Priya Sharma's Rs.4000 unpaid invoice's Reminder screen, selected SMS channel: tapped Open SMS and Google Messages opened directly to a conversation with (987) 650-0003 (Priya's correct number) with the reminder text pre-filled in the compose field, nothing sent (AC1). `adb shell dumpsys package com.lodgy.app` requested-permissions list has no SEND_SMS anywhere (AC2). Note: the Hindi message text itself has a real bug (the English words 'due date' left untranslated mid-sentence) but that's a message-content defect in the shared ReminderMessageBuilder/reminder_template_hi string, not a violation of either of this ticket's AC (opening the app correctly, and not requesting SEND_SMS) - filed and failed on LODGY-18 where the message-content AC actually lives, not duplicating here."
     }
   ]
 }

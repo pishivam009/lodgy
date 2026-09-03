@@ -7,11 +7,11 @@
     "Assigned bed shows OCCUPIED immediately",
     "An already-occupied bed cannot be selected during onboarding"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T08:30:00+00:00",
+  "updatedAt": "2026-09-03T15:20:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "AgreementFormViewModel.save() calls bedRepository.setOccupied(bedId) in the same coroutine as creating the TenancyAgreement, so the write lands before the wizard pops back - BedGridScreen (LODGY-9) reads beds via a live Flow, so re-opening that room's bed grid afterward correctly shows OCCUPIED with no stale cache. AC2 is enforced structurally: BedPickerViewModel only ever collects beds with status==VACANT into its option list, so an occupied bed is never rendered as a selectable row in the first place, not just blocked after the fact. `gradlew assembleDebug` -> BUILD SUCCESSFUL, same as LODGY-12 (built together). On-device pass queued - specifically worth checking that the bed grid actually flips after completing onboarding, not just trusting the Flow theoretically works."
+    },
+    {
+      "timestamp": "2026-09-03T15:20:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - onboarded Ravi Kumar onto Room 101/Bed A, then immediately opened Room 101's bed grid: Bed A showed OCCUPIED, no stale cache (AC1). Started onboarding a second tenant right after: the vacant-bed picker no longer listed \"Room 101 - Bed A\" at all - confirmed structurally unselectable, not just blocked after picking it (AC2)."
     }
   ]
 }

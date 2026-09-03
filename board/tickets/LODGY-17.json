@@ -8,11 +8,11 @@
     "Full payment sets status PAID",
     "Multiple partial payments against one invoice are all retained"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T10:35:00+00:00",
+  "updatedAt": "2026-09-03T15:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built PaymentRepository (create, getTotalPaid summing all payments for an invoice), extended InvoiceRepository (getAll, getById, updateStatus) and TenancyAgreementRepository (getById). InvoiceListScreen now backs the Payments tab: reactive Flow<List<Invoice>> enriched per-invoice with tenant name + total paid (N+1 lookups, acceptable at single-hostel scale), All/Unpaid/Partial/Paid filter chips, Record button per unpaid/partial row. RecordPaymentScreen pre-fills the amount field with the remaining balance, mode as filter chips, date picker, optional note; save() writes the payment then recomputes totalPaid and sets status via the exact AC-specified thresholds (>=amountDue -> PAID, >0 -> PARTIAL, else UNPAID stays). Because invoiceRepository.getAll() is a live Flow and the invoice row itself gets updated with the new status, the list screen picks up the change automatically on popping back - no manual refresh. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass (multiple partial payments accumulating correctly, in particular) still queued."
+    },
+    {
+      "timestamp": "2026-09-03T15:35:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all three AC confirmed on a single invoice (Ravi Kumar, 7/2026, Rs.5000 due). Recorded Rs.2000: status flipped to PARTIAL, row showed \"Rs.2000 of Rs.5000\" (AC1). Recorded a second partial of Rs.1000 without touching the first: row showed \"Rs.3000 of Rs.5000\" - both payments retained and summed, not overwritten (AC3). Recorded the remaining Rs.2000 (form correctly pre-filled the exact remaining balance): status flipped to PAID, amount shown as the full Rs.5000 with Record/Reminder buttons gone from the row (AC2)."
     }
   ]
 }

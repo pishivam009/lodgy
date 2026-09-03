@@ -7,11 +7,11 @@
     "App has a consistent Material theme",
     "Navigating between placeholder screens works"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T14:30:00+00:00",
+  "updatedAt": "2026-09-03T16:40:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Board-hygiene fix: this was left In Progress after the initial commit even though ui/nav/LodgyNavHost.kt (LodgyTheme applied in MainActivity, 5-destination bottom nav: Home/Property/Tenants/Payments/More) has been the live, working navigation shell every subsequent ticket built its screens into - the 'placeholder screens' AC has long since been superseded by real screens for every destination. Both AC verified directly by code and by this session's own repeated `gradlew assembleDebug` BUILD SUCCESSFUL runs across dozens of tickets that all depend on this NavHost working. Moving to Testing to reflect actual state rather than leaving a stale In Progress on the board."
+    },
+    {
+      "timestamp": "2026-09-03T16:40:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - confirmed implicitly across this entire testing pass rather than in isolation: consistent Material3 theme and a working Home/Property/Tenants/Payments/More bottom nav were exercised continuously through dozens of screens (property setup, tenant onboarding, billing, checkout, notes, expenses) with no visual inconsistency, dead route, or navigation dead-end encountered anywhere."
     }
   ]
 }

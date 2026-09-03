@@ -7,11 +7,11 @@
     "Timeline sorts by occurredOn, not createdAt",
     "Editing a note's occurredOn re-sorts it correctly in the timeline"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T14:20:00+00:00",
+  "updatedAt": "2026-09-03T16:05:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -26,6 +26,14 @@
       "from": "Todo",
       "to": "Testing",
       "note": "Built alongside LODGY-24 (note CRUD) - same screen pair. NotesTimelineScreen (ui/note/NotesTimelineScreen.kt) observes TenantNoteDao.getByTenantId(tenantId), which already queries `ORDER BY occurredOn DESC` - AC1 holds with no new query needed. AC2 ('editing occurredOn re-sorts correctly') holds structurally: the screen collects that Flow reactively via NotesTimelineViewModel, so any occurredOn edit through NoteFormScreen re-triggers the query and the row moves to its new position automatically - there's no separate cached/ordered list that could go stale. Each note renders as a row with a type-colored dot (COMPLAINT amber, DAMAGE red, GENERAL blue) per the wireframe, plus the note text and formatted occurredOn date. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued (see LODGY-24's note on the emulator limitation) - worth confirming visually that adding a note with a backdated occurredOn inserts it in the right timeline position, not just at the top."
+    },
+    {
+      "timestamp": "2026-09-03T16:05:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - this is the one worth spelling out precisely since createdAt-order and occurredOn-order can coincide by accident. Created a COMPLAINT note dated 1 Sep, then a GENERAL note dated 28 Aug (created SECOND but occurring EARLIER) - timeline correctly showed 1 Sep above 28 Aug, proving sort-by-occurredOn rather than sort-by-createdAt (AC1, since createdAt order would have put them the other way if it were sorting on that). Then edited the 28-Aug GENERAL note's date forward to 2 Sep (later than the COMPLAINT note's 1 Sep, despite still being the first-created row): it immediately jumped to the top of the timeline, above the COMPLAINT note (AC2)."
     }
   ]
 }

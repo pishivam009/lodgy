@@ -7,11 +7,11 @@
     "Room type, price, and amenities are captured and editable",
     "Deleting a room is blocked or warned if it has active tenants"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T06:35:00+00:00",
+  "updatedAt": "2026-09-03T15:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built data/repository/RoomRepository.kt + BedRepository.kt (hasOccupiedBed check), ui/property/RoomListViewModel.kt + RoomListScreen.kt (room cards with type chip, edit/delete icons, delete routes through requestDelete which checks hasOccupiedBed first and shows a blocking AlertDialog instead of deleting if any bed on the room is OCCUPIED), ui/property/RoomFormViewModel.kt + RoomFormScreen.kt (room number, SINGLE/DOUBLE/TRIPLE filter chips, price-per-bed as a numeric field kept as String state and parsed on save, amenities free text). Wired room_list/{floorId} and room_form/{floorId}?roomId={id} into LodgyNavHost; FloorListScreen's onOpenRooms now actually navigates instead of being a no-op. `gradlew assembleDebug` -> BUILD SUCCESSFUL. AC1 (type/price/amenities captured+editable) and AC2 (blocked with occupied bed) both implemented in code; AC2 specifically can't be exercised end-to-end on-device until LODGY-9 lets a bed actually be marked OCCUPIED (right now hasOccupiedBed always returns false since no beds exist yet) - the check itself is real and will engage correctly once beds do, but flagging that Tester can't fully verify AC2's blocking behavior until LODGY-9/13 land. On-device pass still queued behind the slow emulator boot."
+    },
+    {
+      "timestamp": "2026-09-03T15:00:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - both AC now fully exercisable and confirmed. AC1: created rooms with each type/price/amenities combination, edited an existing room's number/price - all fields save and reload correctly (see LODGY-9's Done note for detail). AC2: with a tenant actually onboarded onto Room 101/Bed A (LODGY-13), tried deleting Room 101 - got a clear blocking dialog: \"Can't delete this room - Room 101 has a bed with an active tenant. Check that tenant out first.\" No silent failure, no crash."
     }
   ]
 }

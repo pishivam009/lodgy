@@ -7,11 +7,11 @@
     "All categories from DESIGN.md are selectable",
     "Recurring flag is stored and editable"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T13:05:00+00:00",
+  "updatedAt": "2026-09-03T16:30:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built ExpenseRepository (create/update, both carrying updatedAt), ExpenseListScreen (total-for-hostel header card, list with recurring badge, reactively scoped to the active hostel via flatMapLatest so switching hostels updates the list), ExpenseFormScreen (all 7 ExpenseCategory values as FlowRow filter chips - AC1 - amount, date picker, recurring Switch - AC2 - optional note; shared add/edit). Also built ui/more/MoreScreen.kt and wired the More tab to it (was a placeholder since LODGY-3) with one entry, Expenses, as the way in. Every LodgyDestination now has real content behind it, so LodgyNavHost's per-destination `when` is exhaustive - deleted the now-fully-unused PlaceholderScreen.kt. `gradlew assembleDebug` -> BUILD SUCCESSFUL, no warnings after fixing an ExperimentalCoroutinesApi opt-in on flatMapLatest."
+    },
+    {
+      "timestamp": "2026-09-03T16:30:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - logged one expense in each of the 7 categories (WIFI 500, WATER 300, ELECTRICITY 800, TAX 200, MAINTENANCE 400, REPAIR 600, OTHER 150) - all selectable and saved correctly with their own chip label on the list (AC1). Edited the WIFI expense afterward, toggled Recurring on, saved - a \"RECURRING\" badge appeared on that row, confirming the flag is both stored and editable (AC2)."
     }
   ]
 }

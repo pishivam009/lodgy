@@ -6,11 +6,11 @@
   "acceptanceCriteria": [
     "Monthly report's expense total matches the sum of that month's expense entries"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T13:45:00+00:00",
+  "updatedAt": "2026-09-03T16:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -25,6 +25,14 @@
       "from": "Todo",
       "to": "Testing",
       "note": "Already built as part of LODGY-22, not a separate follow-on change: MonthlyReportViewModel.refresh() queries expenseRepository.getByHostelId(hostelId) and sums entries whose incurredOn falls in the selected month/year, and netIncome = totalCollected - totalExpense is shown directly on the report tile - there's no separate expense-rollup code path to add, this ticket's AC was the natural shape of 'build income vs expense correctly' from the start. Same build verification as LODGY-22 (`gradlew assembleDebug` -> BUILD SUCCESSFUL). No incremental code change to note here beyond what LODGY-22's history already describes."
+    },
+    {
+      "timestamp": "2026-09-03T16:35:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - logged 7 expenses today totalling Rs.2950 by hand (500+300+800+200+400+600+150). Monthly Report for September 2026 showed \"Total expenses this period: Rs.2950\" - exact match. Unlike LODGY-22's total-collected/total-dues figures, this rollup queries ExpenseRepository directly with no dependency on tenancyAgreementRepository.getAllActive(), so it isn't affected by the checked-out-tenant bug filed on LODGY-20/22."
     }
   ]
 }

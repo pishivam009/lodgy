@@ -7,11 +7,11 @@
     "Numbers reconcile with underlying invoice/payment/expense records",
     "Report can be viewed for any past month, not just the current one"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T13:40:00+00:00",
+  "updatedAt": "2026-09-03T17:05:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,30 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built MonthlyReportViewModel/MonthlyReportScreen, reachable via a report icon in the Dashboard's app bar (only shown once a hostel is active). Editable month/year fields recompute the report on every change - AC2 satisfied directly, any past (or future) period can be queried, nothing pins it to the current month. Total collected = sum of payments whose invoice falls in the selected period; total dues = sum of (amountDue - paidSoFar) over that period's non-PAID invoices; occupancy = current occupied/total beds for the hostel (see the in-progress note on why this can't be truly historical); expense = sum of Expense rows incurred in that calendar month, scoped to hostel. Every number traces directly to a real DAO query over Payment/Invoice/Expense rows - AC1 ('numbers reconcile with underlying records') holds because there's no separate aggregate/cache table to drift out of sync with the source rows. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued; this one's worth checking with real seeded payments/expenses across a couple of months to confirm the period filtering is right, not just that it compiles."
+    },
+    {
+      "timestamp": "2026-09-03T16:20:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - AC1 violated for any period involving a checked-out tenant. Repro: Ravi Kumar had a manually-created July 2026 invoice (Rs.5000) that was fully paid via three payments (all recorded today, correctly showing Rs.5000 collected/PAID at the time). Checked him out (LODGY-14). Opened Monthly Report for Sunrise PG Boys, set Month=7/Year=2026: Total collected shows Rs.0 and Total dues shows Rs.0 - the entire invoice and its payments have vanished from the report, even though they're still in the database and the report is being viewed for the exact period they occurred in. Root cause (MonthlyReportViewModel.kt:97): `agreementIds` is built from `tenancyAgreementRepository.getAllActive()`, which only returns agreements with status==ACTIVE. Once an agreement is CLOSED (any checkout), every invoice/payment tied to it is filtered out of `invoicesForPeriod` on line 102-103 and `totalCollected`/`totalDues` on lines 107-113 - permanently, for every month, not just the current one. This breaks AC1 ('numbers reconcile with underlying records') for any hostel that has ever had a tenant check out, which will be normal within a month or two of real use. Expected: a month's report should include every invoice/payment/expense that occurred in that period regardless of whether the tenant is still active today. Suggested fix: derive the relevant agreement set from ALL agreements whose bed is/was in this hostel (or better, filter invoices directly by tenancyAgreementId->bedId->hostelId without gating on agreement status at all), not from getAllActive(). Same root cause almost certainly affects LODGY-20's Dashboard (filed separately) - worth fixing both from one corrected query if that's a natural shared helper."
+    },
+    {
+      "timestamp": "2026-09-03T16:50:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed. Same root cause as LODGY-20: added TenancyAgreementDao.getAll()/TenancyAgreementRepository.getAll() (all statuses, unlike getAllActive()) and switched MonthlyReportViewModel.kt:97 to use it - a closed agreement's invoices/payments now stay included in `agreementIds` for any period they actually occurred in, including periods after the checkout. Added a regression test (a checked-out tenant's invoice/payment still counted for the period they occurred in) - full suite green. `gradlew assembleDebug` -> BUILD SUCCESSFUL."
+    },
+    {
+      "timestamp": "2026-09-03T17:05:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - re-verified on-device with the exact repro from the FAIL note. After reinstalling the fixed build, opened Monthly Report for Sunrise PG Boys with Month=7/Year=2026 (Ravi Kumar already checked out): Total collected now correctly shows Rs.5000 and Total dues shows Rs.0, matching the underlying paid invoice instead of the prior Rs.0/Rs.0. Confirmed AC1 holds for a past period involving a checked-out tenant. Bug closed."
     }
   ]
 }

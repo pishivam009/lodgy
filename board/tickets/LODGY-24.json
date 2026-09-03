@@ -8,11 +8,11 @@
     "Editing and deleting an existing note both work",
     "Deleting is a hard delete (no undo required)"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T14:20:00+00:00",
+  "updatedAt": "2026-09-03T16:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built TenantNoteRepository (data/repository/TenantNoteRepository.kt: create/update/delete/getByTenantId/getById over TenantNoteDao), NoteFormViewModel/NoteFormScreen (ui/note/NoteFormForm*.kt) with type filter chips for COMPLAINT/DAMAGE/GENERAL, a text field, an occurredOn date picker (unrestricted, so past dates work - AC1), and PhotoPickerField reused as-is for the optional photo. Editing an existing note pre-fills all fields from TenantNoteRepository.getById and shows a delete icon in the top bar with an AlertDialog confirm ('This can't be undone') - AC2 (edit/delete both work) and AC3 (hard delete, no undo) both hold: delete calls TenantNoteDao.delete directly, no soft-delete flag anywhere in the schema. Added the 'Notes & timeline' entry point to TenantProfileScreen.kt (a new Card between the detail card and the checkout action) and wired NOTES_TIMELINE_ROUTE/NOTE_FORM_ROUTE into LodgyNavHost.kt. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued - same emulator/adb limitation noted on every ticket this session; worth checking camera vs gallery photo capture on a note, and that editing occurredOn on a note (LODGY-25's AC2) visibly moves it in the timeline."
+    },
+    {
+      "timestamp": "2026-09-03T16:00:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - added a note dated 1 Sep 2026 while \"today\" is 3 Sep - accepted with no error (AC1). Edited a second note's date and confirmed the change persisted and reflected in the timeline immediately (AC2, edit). Deleted that same note: got \"Delete this note? This can't be undone.\" confirm dialog, tapped through, and it was gone from the timeline immediately with no trash/undo affordance anywhere (AC3). Photo attach on a note not exercised, same reasoning as LODGY-11."
     }
   ]
 }

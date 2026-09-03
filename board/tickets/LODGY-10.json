@@ -7,11 +7,11 @@
     "Warden can specify a count and type and get N rooms created at once",
     "Each generated room gets correctly numbered and its beds created"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Low",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T16:40:00+00:00",
+  "updatedAt": "2026-09-03T14:55:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -26,6 +26,14 @@
       "from": "Todo",
       "to": "Testing",
       "note": "Last Todo ticket in the backlog. Built BulkRoomFormViewModel/BulkRoomFormScreen (ui/property/), reachable via a new top-bar action icon on RoomListScreen next to the existing single-room FAB. Numbering scheme (not specified by the ticket or DESIGN.md): warden gives a numeric starting room number and a count N; rooms are created as (start), (start+1), ... (start+N-1) - e.g. 101 + 5 rooms -> 101..105 - stated explicitly in a hint under the field so the warden isn't guessing at the scheme (AC1). Each iteration reuses RoomFormViewModel's exact create-then-generate-beds sequence (roomRepository.create then bedRepository.generateForRoom with the same SINGLE/DOUBLE/TRIPLE->1/2/3 bed-count mapping RoomFormViewModel already uses), so every generated room gets the right number of correctly-labeled (A, B, C...) beds, same as creating them one at a time (AC2). No duplicate-room-number check was added, matching RoomFormScreen's existing single-add behavior (roomNumber was never unique-constrained anywhere in the schema or the one-at-a-time form) - not introducing stricter validation here than already exists elsewhere. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still blocked (session-wide emulator limitation) - worth confirming the generated rooms/beds actually show up correctly in RoomListScreen/BedGridScreen right after a bulk save, not just that the repository calls look right on paper. This was the last remaining Todo ticket on the board - everything else is now at least in Testing."
+    },
+    {
+      "timestamp": "2026-09-03T14:55:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - exercised on-device, the exact gap the developer flagged. Ran the wizard with starting number 201, count 4, DOUBLE, price 3500: rooms 201/202/203/204 all appeared in RoomListScreen with the correct price (AC1). Opened room 201's and room 204's bed grids directly: both show exactly 2 beds (A, B) as VACANT, matching DOUBLE's bed-count mapping (AC2). Sequential numbering, room creation, and bed generation all confirmed working end to end."
     }
   ]
 }

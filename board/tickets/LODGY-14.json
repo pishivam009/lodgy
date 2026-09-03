@@ -8,11 +8,11 @@
     "Bed becomes VACANT immediately after checkout",
     "Tenant's history remains viewable after checkout (status VACATED, not deleted)"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T09:00:00+00:00",
+  "updatedAt": "2026-09-03T15:45:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Added TenancyAgreementRepository.getActiveByTenantId/close and TenantRepository.setVacated. Built CheckoutViewModel/CheckoutScreen (move-out date via Material3 DatePicker, deposit shown against a damage-deduction field, live-computed refund), reachable from a 'Checkout tenant' action on TenantProfileScreen (only shown while status==ACTIVE). confirmCheckout() does all three writes in one coroutine: closes the agreement (moveOutDate, depositRefundAmount, status=CLOSED), calls bedRepository.setVacant, and sets the tenant's own status to VACATED - then pops back to the Tenants tab. AC1: move-out date is a required field defaulting to today (DatePicker, no restriction), deposit vs deduction vs computed refund all shown together. AC2: setVacant runs synchronously in the same save, and BedGridScreen reads a live Flow so it reflects VACANT immediately on next view - same reasoning as LODGY-13. AC3: checkout never deletes the Tenant row, only flips status - TenantProfileScreen and the directory's VACATED chip both keep working afterward. This also closes LODGY-9's AC2 in full (onboarding half from LODGY-13, checkout half from this) - moving that ticket to Testing too. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still queued."
+    },
+    {
+      "timestamp": "2026-09-03T15:45:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - checked Ravi Kumar out on-device. Set a Rs.1500 damage deduction against his Rs.10000 deposit: refund live-updated to Rs.8500 before confirming (AC1). Confirmed checkout: Room 101/Bed A flipped to VACANT immediately (checked BedGridScreen right after) and also dropped out of the Vacant Beds view's exclusion correctly (AC2). Ravi's row in the Tenants directory now shows a VACATED chip instead of disappearing - opened his profile afterward and it's still fully there (phone, emergency contact, notes, Call/WhatsApp/SMS) with only \"Checkout tenant\" gone since he's no longer active (AC3)."
     }
   ]
 }

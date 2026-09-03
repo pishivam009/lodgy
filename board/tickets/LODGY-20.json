@@ -7,11 +7,11 @@
     "All four metrics are visible and correct against seed data",
     "Dashboard reflects the currently selected hostel"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T12:05:00+00:00",
+  "updatedAt": "2026-09-03T17:00:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,30 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built DashboardViewModel/DashboardScreen backing the Home tab. Reactively observes HostelPreferences.selectedHostelId (not a one-shot fetch) specifically so AC2 holds correctly - switching the active hostel on the Property tab and returning to Home reflects the new hostel immediately, rather than showing stale data from a retained ViewModel (bottom-nav's saveState/restoreState keeps the Home back-stack entry, and its ViewModel, alive across tab switches - same class of staleness bug I fixed for TenantProfileViewModel in LODGY-11). Metrics computed by resolving the hostel's bed set (Floor->Room->Bed) then filtering ACTIVE agreements/invoices/payments against it - vacant beds and overdue invoices are directly correct; today's collections filters payments by same-calendar-day; upcoming move-outs is the query described above (correct logic, will read empty until a future ticket adds the underlying feature - noted plainly on this ticket rather than hidden). No-active-hostel state shows a prompt instead of zeros. `gradlew assembleDebug` -> BUILD SUCCESSFUL. Tester: please explicitly confirm AC2 by switching hostels and checking Home updates, and treat 'upcoming move-outs shows 0' as expected/correct given the gap noted above, not a bug - the other three metrics are what's meaningfully testable against seed data here."
+    },
+    {
+      "timestamp": "2026-09-03T16:25:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - two distinct bugs, both breaking AC1's 'correct against seed data'. (1) Same root cause as LODGY-22 (filed there in detail): DashboardViewModel.kt:76 builds `agreementsInHostel` from `tenancyAgreementRepository.getAllActive()`, so once a tenant checks out, their invoices/payments disappear from 'Overdue invoices' and 'Today's collections' - including a payment collected earlier THE SAME DAY. Repro: recorded three payments today totalling Rs.5000 against Ravi Kumar's invoice (Home correctly showed 'Rs.5000 collected today' at that point), then checked him out. Home now shows 'Rs.0 collected today' - the cash collected today didn't stop being collected today just because the tenant left afterward. This is a real-world footgun: a warden who collects rent and checks a tenant out the same day would see their daily cash reconciliation silently drop to zero. (2) Separate staleness bug: 'Vacant beds' also went stale after the same checkout WITHOUT the collections bug's mechanism - it kept showing the pre-checkout count (12) when returning to Home via bottom-nav tab switches (Property -> Home), only correcting to the right number (13) after a full app restart created a fresh DashboardViewModel. loadMetrics() is only re-run when HostelPreferences.selectedHostelId re-emits (i.e. on a hostel switch) - the developer's note says this pattern was chosen specifically to fix hostel-switch staleness, but it means any OTHER data change (checkout, onboarding, payment) while sitting on the same hostel leaves a retained Home ViewModel showing a stale snapshot until either the hostel is switched or the app restarts. Suggested fix for (1): same as LODGY-22, stop gating the agreement/invoice set on getAllActive(). Suggested fix for (2): make loadMetrics observe live Flows (beds/invoices/payments) the way VacantViewViewModel (LODGY-21) does, rather than one-shot .first() fetches keyed only off hostel selection."
+    },
+    {
+      "timestamp": "2026-09-03T16:50:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed both. (1) Added TenancyAgreementDao.getAll()/TenancyAgreementRepository.getAll() (all statuses, unlike getAllActive()) and switched DashboardViewModel.kt:76 to use it - a closed agreement's invoices/payments now stay visible. (2) Rather than a full Flow-rewrite of loadMetrics (would need new Flow-returning DAO methods for payments/agreements plus a nested combine() chain - a much bigger surface for what's fundamentally a 'refresh when the screen comes back into view' problem), added a narrower fix: DashboardViewModel now remembers currentHostelId and exposes fun refresh() that re-runs loadMetrics for it; DashboardScreen calls viewModel.refresh() from a LifecycleResumeEffect, so returning to the Home tab always re-fetches regardless of whether the hostel selection itself changed. Added two regression tests (a checked-out tenant's invoice/payment still counted; refresh() re-fetches) - full suite green. `gradlew assembleDebug` -> BUILD SUCCESSFUL."
+    },
+    {
+      "timestamp": "2026-09-03T17:00:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - re-verified both fixes on-device with the exact repro from the FAIL note. After reinstalling the fixed build, Home correctly showed \"Rs.5000 collected today\" and \"13 vacant beds\" (both now include Ravi Kumar's post-checkout data correctly). Then, without restarting the app, onboarded a new tenant onto a vacant bed from the Tenants tab and switched back to Home: vacant beds dropped from 13 to 12 immediately, live, with no restart or hostel-switch needed - confirms the LifecycleResumeEffect refresh is working. Both bugs closed."
     }
   ]
 }

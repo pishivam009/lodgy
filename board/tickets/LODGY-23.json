@@ -6,11 +6,11 @@
   "acceptanceCriteria": [
     "Export produces a readable PDF or CSV with the same numbers as the on-screen report"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Low",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T16:20:00+00:00",
+  "updatedAt": "2026-09-03T17:50:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -25,6 +25,14 @@
       "from": "Todo",
       "to": "Testing",
       "note": "DESIGN.md section 4.6 explicitly marks this 'Phase 2', and it's Low priority, but the AC only asks for 'a readable PDF or CSV' - CSV alone satisfies that in full, so built the smaller of the two rather than deferring: an export icon in MonthlyReportScreen's app bar (only shown once a hostel is active) opens the standard SAF CreateDocument('text/csv') picker; the CSV is built directly from MonthlyReportViewModel's existing uiState (hostel, month, year, totalCollected, totalDues, occupancy%, totalExpense, netIncome) - the exact same numbers already reconciled and shown on screen for LODGY-22, so there's no separate query path that could drift out of sync (AC holds by construction). Row labels reuse existing localized string resources (LODGY-30) so the CSV comes out in whichever language the app is currently set to; amounts are formatted with Locale.US/%.2f deliberately regardless of app language, since a locale-dependent decimal separator would silently corrupt the comma-delimited CSV. No PDF generation was built - not needed to satisfy the AC, and skipping it keeps this appropriately small for a Low-priority, explicitly-Phase-2 item; flagging in case Product Owner specifically wants a PDF later. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass still blocked (session-wide emulator limitation, most recently reconfirmed this round) - worth opening the exported CSV in a real spreadsheet app to confirm it parses cleanly."
+    },
+    {
+      "timestamp": "2026-09-03T17:50:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - AC confirmed on-device with a real number reconciliation. Opened Monthly Report for Sunrise PG Boys, Month=9/Year=2026 (Rs.0 collected, Rs.4000 dues, 14% occupancy, Rs.2950 expense, -Rs.2950 net), tapped the export icon: the standard SAF CreateDocument picker opened with a sensible pre-filled name (lodgy-report-9-2026.csv), saved to Downloads. Pulled the file via adb and its contents are: Hostel=Sunrise PG Boys, Month=9, Year=2026, Total collected=0.00, Total dues=4000.00, Occupancy=14%, Total Expense=2950.00, Income - expense=-2950.00 - every field matches the on-screen report exactly, satisfying the AC in full. File is well-formed (quoted key/value CSV rows, stable 2-decimal amount formatting) and opened/parsed without issue via a plain file read. No PDF was built, which is fine per the AC's 'PDF or CSV' wording and the developer's explicit Phase-2 scoping note."
     }
   ]
 }

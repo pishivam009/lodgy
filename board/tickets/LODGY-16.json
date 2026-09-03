@@ -7,11 +7,11 @@
     "Invoice can be created for a period earlier than the current month",
     "Manually added invoices behave identically to auto-generated ones for payment tracking"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T11:00:00+00:00",
+  "updatedAt": "2026-09-03T15:30:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built ManualInvoiceTenantPickerScreen (active tenants only) and ManualInvoiceFormScreen (month/year as validated numeric fields like billingCycleDay elsewhere, amount pre-filled from the tenant's active agreement's agreedRent but editable, due date via DatePicker with no restriction - AC1's 'earlier than current month' works because nothing constrains the month/year fields to the present or future). Save calls the exact same InvoiceRepository.create() the LODGY-15 worker uses, so a manually-created invoice is byte-for-byte the same shape (UNPAID status, same columns) and shows up in the same InvoiceListScreen, can be paid via the same RecordPaymentScreen - satisfies AC2 by sharing the implementation rather than parallel code paths. Wired a FAB on InvoiceListScreen (Payments tab) as the entry point. `gradlew assembleDebug` -> BUILD SUCCESSFUL."
+    },
+    {
+      "timestamp": "2026-09-03T15:30:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - created a July 2026 invoice for Ravi Kumar (current month was September) - accepted with no error, appeared as \"7/2026, UNPAID\" in the invoice list (AC1). Tried creating a second invoice for the same tenant+period: form showed \"An invoice already exists for this period\" in red, Create Invoice disabled - confirms it shares InvoiceRepository.existsForPeriod with the auto-generation path rather than a separate check. Then recorded two partial payments and a final payment against this manually-created invoice via the normal RecordPaymentScreen (see LODGY-17) - status tracked PARTIAL then PAID exactly like an auto-generated invoice would, satisfying AC2."
     }
   ]
 }

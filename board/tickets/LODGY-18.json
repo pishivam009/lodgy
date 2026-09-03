@@ -8,11 +8,11 @@
     "Message includes tenant name, amount due, and due date",
     "No auto-send occurs without the warden's explicit tap"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "Medium",
-  "assigneeRole": "Tester",
+  "assigneeRole": "Developer",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T11:35:00+00:00",
+  "updatedAt": "2026-09-03T17:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built contact/ReminderIntents.kt (whatsApp: wa.me/<digits>?text=<url-encoded>, sms: smsto: + sms_body extra) and contact/ReminderMessageBuilder.kt (Hindi/English templates, date formatted via the target locale so month names come out right in either language). ReminderViewModel resolves the full chain from invoiceId (invoice -> agreement -> tenant for name/phone, agreement -> bed -> room -> floor -> hostel for the hostel-name signature) and rebuilds the message live when the language toggle changes. ReminderScreen shows channel + language chips, a live preview, and one send button that launches the right intent via runCatching (wrapped like LODGY-31, same crash-safety reasoning). Wired a Reminder button next to Record on every unpaid/partial InvoiceListScreen row. `gradlew assembleDebug` -> BUILD SUCCESSFUL, no warnings. AC3 (no auto-send) holds by construction - both intents only ever open the target app pre-filled, tapping send there is entirely the warden's action. On-device pass still queued."
+    },
+    {
+      "timestamp": "2026-09-03T17:35:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - AC2 broken for the Hindi template. Repro: backfilled a Rs.4000 unpaid invoice for Priya Sharma (due 3 Sep), opened its Reminder screen, WhatsApp channel, Hindi language selected. Preview shows: 'नमस्ते Priya Sharma जी, आपका ₹4000 किराया बकाया है, due date 3 सितंबर। - Sunrise PG Boys' - the English phrase 'due date' is embedded verbatim inside an otherwise-Hindi sentence. Root cause (values/strings.xml:201): `reminder_template_hi` is `\"नमस्ते %1$s जी, आपका ₹%2$d किराया बकाया है, due date %3$s। – %4$s\"` - 'due date' was never translated when the string was written, unlike every other word in the template. Confirmed the English template (values/strings.xml:202) is correct and unaffected. Confirmed this is the exact string shared by LODGY-19's SMS channel too (same ReminderScreen, same ReminderMessageBuilder) - switched channel to SMS with Hindi still selected and got the identical broken preview, then tapped Open SMS and confirmed Google Messages opens pre-filled with the same broken text to the correct number (987) 650-0003 without sending (AC1/AC3 hold for both channels - only AC2's Hindi completeness is broken). This isn't a cosmetic nit: DESIGN.md 4.9 calls out Hindi templates specifically for wardens who may not be comfortable in English, and 'due date' sitting untranslated in the middle of the sentence undercuts exactly that. Suggested fix: translate the string resource to something like 'नमस्ते %1$s जी, आपका ₹%2$d किराया बकाया है, नियत तारीख %3$s। – %4$s' (or whatever phrasing a Hindi speaker confirms reads naturally) - one-line fix in strings.xml, same root cause covers LODGY-19, filing there too rather than duplicating the investigation. Separately, WhatsApp isn't installed on this AVD - tapping Open WhatsApp fell back to Chrome (wa.me resolves as a plain https link) with no crash, matching the same graceful-fallback reasoning already accepted for LODGY-31; not blocking on it here since AC1's intent (open pre-filled, no auto-send) still holds via the fallback and WhatsApp's absence is an environment limitation, not an app defect."
     }
   ]
 }

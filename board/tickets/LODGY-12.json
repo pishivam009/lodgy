@@ -8,11 +8,11 @@
     "Billing cycle day (1-28) is validated",
     "Agreement is linked to exactly one bed"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T08:30:00+00:00",
+  "updatedAt": "2026-09-03T15:15:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Full wizard wired: Tenants tab '+' -> BedPickerScreen (grouped by floor, only VACANT beds ever queried) -> TenantFormScreen (bedId carried as a nav arg) -> on save, TenantFormScreen now reports back the saved tenant's id (fixed a gap where it only reported 'done', not which tenant) -> AgreementFormScreen (rent/deposit/billing-day/move-in-date) -> save creates the TenancyAgreement AND calls bedRepository.setOccupied in the same action, then pops the whole wizard stack back to the Tenants tab. AC1: move-in date uses Material3's DatePicker with no selectableDates restriction, so past dates are accepted with no validation error. AC2: billingCycleDay is a numeric field validated to 1-28 inline (error state + helper text), Save disabled until valid. AC3: TenancyAgreement.bedId is a required non-null field on the entity already (LODGY-2), and this screen is only reachable with a bedId in hand. Editing an existing tenant (from the profile screen) still bypasses the picker entirely and goes straight to the plain form. `gradlew assembleDebug` -> BUILD SUCCESSFUL. On-device pass (especially clicking through the full 4-screen wizard) still queued behind the emulator boot."
+    },
+    {
+      "timestamp": "2026-09-03T15:15:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all three AC confirmed on-device across two full onboarding runs. AC1: opened the date picker and selected Sept 1 (a date before \"today\", Sept 3) as move-in date - accepted with no error. AC2: typed billing cycle day 31 - field and helper text turned red (\"1-28, so it stays valid every month\") and Save & Move In disabled; corrected to 5/10 for the two tenants and it re-enabled. AC3: both agreements only ever reachable via the bed-picker flow (Room 101/Bed A for Ravi, Room 102/Bed A for Priya) - no way to reach the agreement form without a bed already chosen, and both beds correctly flipped to OCCUPIED on save."
     }
   ]
 }

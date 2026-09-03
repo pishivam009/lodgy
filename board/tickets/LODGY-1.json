@@ -7,11 +7,11 @@
     "Project builds and runs a blank Compose screen on a device/emulator",
     "Hilt, Room, Navigation, WorkManager dependencies compile"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T00:40:00+00:00",
+  "updatedAt": "2026-09-03T14:10:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -40,6 +40,14 @@
       "actor": "Tester",
       "action": "comment",
       "note": "Android Studio + SDK now installed. Found the dependency versions in the ticket were stale (Gradle 8.9 cannot run on the bundled JDK 25; AGP 9.4.0 removed the separate org.jetbrains.kotlin.android plugin in favor of built-in Kotlin support). Updated to current stable: AGP 9.4.0, Kotlin 2.4.10, KSP 2.3.11, Gradle 9.7.1, Compose BOM 2026.08.00, Hilt 2.60.1, Room 2.8.4, Navigation 2.10.0, WorkManager 2.11.2, compileSdk/targetSdk 37 (matches installed platform). Generated the real Gradle wrapper (was previously missing). `gradlew assembleDebug` now runs BUILD SUCCESSFUL in 4m44s, all 41 tasks executed including kspDebugKotlin, hiltJavaCompileDebug, dexBuilderDebug - AC #2 (Hilt/Room/Navigation/WorkManager compile) is satisfied. app-debug.apk produced. AC #1 not yet fully verified - no device/emulator connected to actually run it and see the Compose screen render. Holding in Testing until that's confirmed."
+    },
+    {
+      "timestamp": "2026-09-03T14:10:00+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - AC1 now verified on-device. User got an Android emulator (\"Medium Phone\", API 36, sdk_gphone16k_x86_64) running in Android Studio; installed app-debug.apk via adb and launched it. MainActivity became the foreground activity with no crash, and the Compose UI rendered correctly (first the PIN-setup screen, later the bottom-nav shell) - confirmed via adb screenshots. AC2 was already build-verified. Both AC now satisfied."
     }
   ]
 }
