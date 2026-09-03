@@ -26,6 +26,7 @@ import com.lodgy.app.ui.property.BedGridScreen
 import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.dashboard.DashboardScreen
+import com.lodgy.app.ui.dashboard.VacantViewScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
 import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
 import com.lodgy.app.ui.payment.ManualInvoiceTenantPickerScreen
@@ -54,6 +55,7 @@ private const val RECORD_PAYMENT_ROUTE = "record_payment"
 private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_picker"
 private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
 private const val REMINDER_ROUTE = "reminder"
+private const val VACANT_VIEW_ROUTE = "vacant_view"
 
 @Composable
 fun LodgyNavHost() {
@@ -107,7 +109,9 @@ fun LodgyNavHost() {
                             onSendReminder = { invoice -> navController.navigate("$REMINDER_ROUTE/${invoice.id}") },
                             onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
                         )
-                        LodgyDestination.Home -> DashboardScreen()
+                        LodgyDestination.Home -> DashboardScreen(
+                            onOpenVacantBeds = { navController.navigate(VACANT_VIEW_ROUTE) },
+                        )
                         else -> PlaceholderScreen(title = stringResource(destination.labelRes))
                     }
                 }
@@ -275,6 +279,10 @@ fun LodgyNavHost() {
                 arguments = listOf(navArgument("invoiceId") { type = NavType.StringType }),
             ) {
                 ReminderScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(VACANT_VIEW_ROUTE) {
+                VacantViewScreen(onBack = { navController.popBackStack() })
             }
         }
     }

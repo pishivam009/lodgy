@@ -174,4 +174,10 @@
     <string name="dashboard_overdue_invoices">Overdue invoices</string>
     <string name="dashboard_vacant_beds">Vacant beds</string>
     <string name="dashboard_upcoming_move_outs">Upcoming move-outs</string>
+
+    <string name="vacant_view_title">Vacant Beds</string>
+    <string name="vacant_view_all_floors">All floors</string>
+    <string name="vacant_view_empty">No vacant beds right now.</string>
+    <string name="vacant_view_floor_count">%1$s · %2$d vacant</string>
+    <string name="vacant_view_room_bed">Room %1$s · Bed %2$s</string>
 </resources>

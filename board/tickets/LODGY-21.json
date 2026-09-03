@@ -7,17 +7,33 @@
     "Vacant beds are listed correctly and update immediately after checkout/onboarding",
     "Filtering by floor works"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T12:35:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T12:15:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. AC1 explicitly asks for immediate updates after checkout/onboarding, so this one gets genuine Flow reactivity (combine() over each room's live bed Flow) rather than the one-shot-fetch pattern used elsewhere - avoids the retained-ViewModel staleness class of bug already hit twice this session (LODGY-11, LODGY-20)."
+    },
+    {
+      "timestamp": "2026-09-03T12:35:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built VacantViewViewModel/VacantViewScreen, grouped by floor with an 'All floors' + per-floor filter chip row, wired as a drill-in from the Dashboard's 'Vacant beds' tile (now clickable). Reactivity: combine() over each room's bedRepository.getByRoomId Flow, so any bed's status flipping (checkout frees one, onboarding occupies one) re-emits the whole list live, satisfying AC1 literally rather than just 'correct on next screen load'. AC2 (floor filtering) is a plain client-side filter over the combined list. Caught two real bugs before shipping: (1) my first draft placed the filter Row and the list as two SEPARATE direct children of Scaffold's content slot instead of wrapping both in a Column - Scaffold's content is a Box internally, so they'd have overlapped/rendered on top of each other; audited every other list+filter screen in the app (Invoices, Tenants) and confirmed this was the only instance. (2) a leftover brace from refactoring StatCard into StatCard+StatCardContent broke the build entirely - fixed before it ever reached a commit. `gradlew assembleDebug` -> BUILD SUCCESSFUL, clean rebuild after both fixes. On-device pass still queued - this one in particular deserves an actual click-through given the overlap bug I just caught by re-reading, not by seeing it render."
     }
   ]
 }

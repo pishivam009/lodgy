@@ -26,11 +26,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private data class StatTile(val value: String, val labelRes: Int)
+private data class StatTile(val value: String, val labelRes: Int, val onClick: (() -> Unit)? = null)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel()) {
+fun DashboardScreen(onOpenVacantBeds: () -> Unit = {}, viewModel: DashboardViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -59,7 +59,7 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel()) {
             val tiles = listOf(
                 StatTile(stringResource(R.string.currency_amount, uiState.todaysCollections), R.string.dashboard_collections_today),
                 StatTile(uiState.overdueInvoiceCount.toString(), R.string.dashboard_overdue_invoices),
-                StatTile(uiState.vacantBedCount.toString(), R.string.dashboard_vacant_beds),
+                StatTile(uiState.vacantBedCount.toString(), R.string.dashboard_vacant_beds, onOpenVacantBeds),
                 StatTile(uiState.upcomingMoveOuts.size.toString(), R.string.dashboard_upcoming_move_outs),
             )
             LazyVerticalGrid(
@@ -95,14 +95,22 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel()) {
 
 @Composable
 private fun StatCard(tile: StatTile) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Text(tile.value, style = MaterialTheme.typography.headlineSmall)
-            Text(
-                stringResource(tile.labelRes),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+    val onClick = tile.onClick
+    if (onClick != null) {
+        Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) { StatCardContent(tile) }
+    } else {
+        Card(modifier = Modifier.fillMaxWidth()) { StatCardContent(tile) }
+    }
+}
+
+@Composable
+private fun StatCardContent(tile: StatTile) {
+    Column(modifier = Modifier.padding(14.dp)) {
+        Text(tile.value, style = MaterialTheme.typography.headlineSmall)
+        Text(
+            stringResource(tile.labelRes),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
