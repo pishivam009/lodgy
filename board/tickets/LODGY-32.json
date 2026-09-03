@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-32",
+  "epic": "Appearance",
+  "title": "Dark mode",
+  "description": "Add a dark theme and a way to switch to it, independent of the app's language setting (LODGY-30). Requested directly by wardens using the app at night/in dim common areas.",
+  "acceptanceCriteria": [
+    "A dark color scheme exists for LodgyTheme with adequate contrast on all screens",
+    "Warden can switch between Light/Dark/System default from the More tab",
+    "Switching applies immediately without restarting the app",
+    "Preference persists across app restarts"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

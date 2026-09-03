@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-42",
+  "epic": "Rent & Payments",
+  "title": "Flag exceptional multi-month/delayed payments for warden review",
+  "description": "Occasionally a tenant delays a month and later pays for two months together in one lump sum. This is a legitimate but exceptional pattern that today just looks like two ordinary payments - the warden has no way to spot it happened, or reconcile it, later.",
+  "acceptanceCriteria": [
+    "A payment that clears more than one period's dues in a single transaction is flagged/labeled as such on the invoice(s) and payment record",
+    "Dashboard or payment list surfaces these flagged multi-period payments so a warden can review them",
+    "No change to how a normal single-period payment is recorded or displayed"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

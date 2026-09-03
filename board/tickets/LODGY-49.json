@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-49",
+  "epic": "Tenant Onboarding",
+  "title": "Planned/notice move-out date for tenants",
+  "description": "Buried gap found while building LODGY-20 (Home dashboard): 'Upcoming move-outs' has no real data source today. Checkout (LODGY-14) is immediate - bed freed, agreement closed, tenant vacated all in one action - there's no 'tenant gave notice, will leave on date X' concept anywhere, so an ACTIVE agreement with a future moveOutDate never actually occurs through any existing flow. The dashboard's query is correct but will always render empty until this exists.",
+  "acceptanceCriteria": [
+    "Warden can record a tenant's notice/planned move-out date while the tenant is still ACTIVE, without checking them out immediately",
+    "Home dashboard's 'Upcoming move-outs' tile (LODGY-20) now genuinely populates from real data",
+    "The planned date does not auto-checkout the tenant - checkout (LODGY-14) remains an explicit separate action on or after that date"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

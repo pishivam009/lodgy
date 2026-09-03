@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-50",
+  "epic": "Auth",
+  "title": "Configurable PIN length (4-6 digits)",
+  "description": "Buried scope note from LODGY-4: PIN length was fixed at 4 digits since neither DESIGN.md nor the ticket specified one, and a variable-length flow needs an explicit confirm control the wireframe didn't show. Revisit if wardens want a longer PIN.",
+  "acceptanceCriteria": [
+    "PIN setup supports a warden-chosen length between 4 and 6 digits",
+    "Setup flow has an explicit confirm step regardless of chosen length",
+    "Existing 4-digit PINs from before this change continue to work unchanged"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-33",
+  "epic": "Property Setup",
+  "title": "Surface room & bed number alongside tenant identity everywhere",
+  "description": "Room.roomNumber already exists at the schema/property-setup level, but wardens think of tenants by room number first, name second - the reverse of how the app currently presents them. Tenant list rows, tenant profile, invoices, payment records, and reminder previews all show name/phone with no room reference. Surface 'Room 204 - Bed B' (or equivalent) next to the tenant's name everywhere a tenant is identified.",
+  "acceptanceCriteria": [
+    "Tenant directory list rows show each tenant's current room+bed alongside their name",
+    "Tenant profile screen shows room+bed prominently near the top",
+    "Invoice list rows and the payment recording screen show room+bed, not just tenant name",
+    "A vacated tenant's historical room+bed still displays (not blanked out after checkout)"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

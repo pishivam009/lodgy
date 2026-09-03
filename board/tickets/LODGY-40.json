@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-40",
+  "epic": "Property Setup",
+  "title": "View all rooms of a hostel without drilling into floors",
+  "description": "Currently seeing a hostel's rooms requires Property -> hostel -> floor -> room list, one floor at a time. Wardens want a single flat view of every room in a hostel across all floors, for a quick full-property scan.",
+  "acceptanceCriteria": [
+    "A hostel-level 'All Rooms' view lists every room across every floor, with the floor labeled per row",
+    "Reachable directly from the hostel screen, not just via each floor",
+    "Tapping a room still opens its normal bed grid / edit flow"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

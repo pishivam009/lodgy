@@ -1,0 +1,23 @@
+{
+  "id": "LODGY-38",
+  "epic": "Settings & About",
+  "title": "App version info for support/debugging",
+  "description": "Small addition so a warden reporting an issue (or the developer supporting them remotely) can quickly see which build they're running. A one-line version string somewhere reachable, not a full About screen.",
+  "acceptanceCriteria": [
+    "More tab shows the app's versionName/versionCode somewhere visible (e.g. a footer line)",
+    "Value updates automatically per build - not a hardcoded string that goes stale"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

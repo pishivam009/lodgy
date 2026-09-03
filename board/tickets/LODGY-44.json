@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-44",
+  "epic": "Backup & Restore",
+  "title": "Lightweight historical backfill mode (avoid full manual re-entry)",
+  "description": "Wardens are reluctant to type years of paper history into the app tenant-by-tenant, invoice-by-invoice - it's described as boring, slow, and low-value for them. Rather than requiring full ledger reconstruction, offer a fast, minimal way to seed historical context (e.g. a tenant's move-in date and a running balance/opening due, or a bulk CSV import) instead of every past invoice/payment.",
+  "acceptanceCriteria": [
+    "Onboarding an existing (already-resident) tenant supports an optional 'opening balance / dues carried forward' field instead of requiring every past invoice to be re-entered",
+    "A bulk import path (e.g. CSV) exists for wardens who do want to bring over structured history, as an alternative to one-by-one manual entry",
+    "Skipping historical backfill entirely does not block using the app for new activity going forward"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

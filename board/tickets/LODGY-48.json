@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-48",
+  "epic": "Engineering Quality",
+  "title": "Reduce APK size without regressing performance",
+  "description": "Investigate what's contributing to APK size (dependencies, resources, unused code) and trim it for easier installs on lower-end devices/slower connections common among the target users, without hurting startup time or runtime performance.",
+  "acceptanceCriteria": [
+    "APK analyzer run to identify largest contributors (libraries, resources, generated code)",
+    "R8/ProGuard minification and resource shrinking enabled and verified not to break any feature (needs a full manual pass, not just a successful build)",
+    "Unused dependencies or oversized assets removed or replaced",
+    "Cold start time and key screen transitions measured before/after to confirm no regression"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

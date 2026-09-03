@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-47",
+  "epic": "Engineering Quality",
+  "title": "Raise automated test coverage further",
+  "description": "Current unit test coverage sits around 94.6% (JaCoCo). Push further into thinly-covered areas - especially ones this QA pass had to verify manually because no test existed, like InvoiceGenerationWorker's WorkManager scheduling logic and the backup/restore file-handling paths.",
+  "acceptanceCriteria": [
+    "JaCoCo coverage report identifies remaining low-coverage classes/packages",
+    "New unit tests added for BackupManager (export/stageImport/applyStaged) and InvoiceGenerationWorker's doWork() logic, which currently have no dedicated tests",
+    "Coverage gate in build.gradle.kts reviewed and raised if the new tests support it"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

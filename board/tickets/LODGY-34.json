@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-34",
+  "epic": "Tenant Onboarding",
+  "title": "Tenant room/bed transfer flow",
+  "description": "Tenants sometimes move from one room to another mid-tenancy - same bed type or a different one (e.g. moving in with a partner into a double). There is currently no way to change a tenant's assigned bed without a full checkout + re-onboard, which loses continuity (new agreement, resets history grouping) and double-frees/occupies beds incorrectly if done by hand.",
+  "acceptanceCriteria": [
+    "A tenant profile action lets the warden move an active tenant to a different vacant bed (same or different room type)",
+    "The old bed flips to VACANT and the new bed flips to OCCUPIED atomically - no double-booking, no orphaned OCCUPIED bed",
+    "The tenant's history (notes, past invoices/payments) stays associated with the same tenant, not split across two records",
+    "Rent amount can be updated at transfer time if the new bed/room has a different price",
+    "The transfer is visible in the tenant's notes/timeline as an event"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

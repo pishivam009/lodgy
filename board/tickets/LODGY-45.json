@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-45",
+  "epic": "Backup & Restore",
+  "title": "Full data export as a human-readable, printable PDF packet",
+  "description": "Wardens trust a physical, readable paper trail more than a zip file they can't open themselves (LODGY-28 exports a DB+photos zip, not something a warden can read or hand to someone). To ease the fear of 'losing everything in the app', offer a printable/PDF export of the underlying records - hostels, tenants, invoices, payments - as a human-readable document, distinct from the machine-readable backup zip.",
+  "acceptanceCriteria": [
+    "Warden can export a printable PDF summary of all tenants, active agreements, and payment history for a hostel (or all hostels)",
+    "PDF is legible and organized (grouped by hostel/room/tenant), not a raw data dump",
+    "Exported via SAF like other exports (LODGY-23/28), so it can be saved, printed, or shared"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

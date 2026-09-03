@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-46",
+  "epic": "Engineering Quality",
+  "title": "Security review pass",
+  "description": "Explicit ask to check the app for security vulnerabilities before wider rollout - PIN/bcrypt storage, exported components, file provider/URI permission scoping, backup file handling, and any other OWASP Mobile Top 10-relevant surface.",
+  "acceptanceCriteria": [
+    "Manifest components (activities, providers, services) reviewed for unintended exported=true / missing permission scoping",
+    "FileProvider paths and granted URI permissions reviewed for over-broad access",
+    "PIN hashing (bcrypt via jbcrypt) and storage reviewed for correct salt/rounds usage",
+    "Backup export/import (LODGY-28/29) reviewed for zip-slip/path-traversal safety (stageImport's existing '..'/'/' filtering should be re-verified, not assumed)",
+    "Findings written up with severity and suggested fixes, even if some are accepted as out-of-scope for a local-only, no-backend app"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

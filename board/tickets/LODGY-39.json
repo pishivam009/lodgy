@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-39",
+  "epic": "Usability",
+  "title": "Sort and filter controls on all list screens",
+  "description": "Long-running hostels accumulate a large list of vacated tenants, closed agreements, and old invoices that clutter the day-to-day views. Wardens want to sort and filter lists (tenants, rooms/beds, invoices, expenses) so they can see just what's relevant - e.g. only vacant rooms, only active tenants, only this month's invoices - without scrolling past history.",
+  "acceptanceCriteria": [
+    "Tenant directory can filter to Active-only (hide vacated) and sort by name or room",
+    "Room/bed views can filter to vacant-only or occupied-only",
+    "Invoice list's existing status filter chips (LODGY-17) are joined by a date/period filter and a sort option",
+    "Expense list can filter by category and sort by date/amount",
+    "Filter/sort state is per-screen and resets sensibly (doesn't silently hide data the warden forgot was filtered)"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}

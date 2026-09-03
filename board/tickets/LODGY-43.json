@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-43",
+  "epic": "Backup & Restore",
+  "title": "Reconciliation workflow between paper registers and the app",
+  "description": "Wardens keep decades of history on paper and are only entering new activity into the app going forward - they are not confident the two records will stay in sync, and have no way to mark 'this paper entry is now also in the app' or spot gaps. Needs a lightweight way to track reconciliation status rather than forcing a full migration (see LODGY-44).",
+  "acceptanceCriteria": [
+    "Warden can mark a period (e.g. a given month for a given hostel) as 'reconciled with paper records'",
+    "Reconciled periods are visually distinguished from not-yet-reconciled ones in the Monthly Report / Payments views",
+    "This is a manual attestation, not an automated diff against anything - it does not block or alter any data"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-03T20:00:00+00:00",
+  "updatedAt": "2026-09-03T20:00:00+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-03T20:00:00+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Added from the v2 feedback session (warden interviews after the v1 field test) and from buried enhancement/limitation notes surfaced while re-reading the full v1 board history."
+    }
+  ]
+}
