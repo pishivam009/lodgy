@@ -25,6 +25,7 @@ import com.lodgy.app.ui.property.HostelListScreen
 import com.lodgy.app.ui.property.BedGridScreen
 import com.lodgy.app.ui.property.RoomFormScreen
 import com.lodgy.app.ui.property.RoomListScreen
+import com.lodgy.app.ui.dashboard.DashboardScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
 import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
 import com.lodgy.app.ui.payment.ManualInvoiceTenantPickerScreen
@@ -106,6 +107,7 @@ fun LodgyNavHost() {
                             onSendReminder = { invoice -> navController.navigate("$REMINDER_ROUTE/${invoice.id}") },
                             onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
                         )
+                        LodgyDestination.Home -> DashboardScreen()
                         else -> PlaceholderScreen(title = stringResource(destination.labelRes))
                     }
                 }

@@ -7,17 +7,33 @@
     "All four metrics are visible and correct against seed data",
     "Dashboard reflects the currently selected hostel"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
-  "assigneeRole": null,
+  "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T12:55:59.648423+00:00",
+  "updatedAt": "2026-09-03T12:05:00+00:00",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Ticket created from initial DESIGN.md feature breakdown."
+    },
+    {
+      "timestamp": "2026-09-03T11:45:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Flagging a real gap before building: 'upcoming move-outs' has no data source in the schema as built. LODGY-14's checkout is immediate (bed freed, agreement closed, tenant vacated all in one action) - there's no 'tenant gave notice, will leave on date X' concept anywhere, so an ACTIVE agreement with a future moveOutDate never actually occurs through any flow in this app. Building the query correctly anyway (ACTIVE agreements in this hostel with a non-null moveOutDate in the future) so it's honestly testable against seeded data, but in practice it will always render empty until a future ticket adds a notice-period/planned-move-out concept. Not faking data to make the tile look populated."
+    },
+    {
+      "timestamp": "2026-09-03T12:05:00+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built DashboardViewModel/DashboardScreen backing the Home tab. Reactively observes HostelPreferences.selectedHostelId (not a one-shot fetch) specifically so AC2 holds correctly - switching the active hostel on the Property tab and returning to Home reflects the new hostel immediately, rather than showing stale data from a retained ViewModel (bottom-nav's saveState/restoreState keeps the Home back-stack entry, and its ViewModel, alive across tab switches - same class of staleness bug I fixed for TenantProfileViewModel in LODGY-11). Metrics computed by resolving the hostel's bed set (Floor->Room->Bed) then filtering ACTIVE agreements/invoices/payments against it - vacant beds and overdue invoices are directly correct; today's collections filters payments by same-calendar-day; upcoming move-outs is the query described above (correct logic, will read empty until a future ticket adds the underlying feature - noted plainly on this ticket rather than hidden). No-active-hostel state shows a prompt instead of zeros. `gradlew assembleDebug` -> BUILD SUCCESSFUL. Tester: please explicitly confirm AC2 by switching hostels and checking Home updates, and treat 'upcoming move-outs shows 0' as expected/correct given the gap noted above, not a bug - the other three metrics are what's meaningfully testable against seed data here."
     }
   ]
 }

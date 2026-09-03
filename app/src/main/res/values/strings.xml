@@ -167,4 +167,11 @@
     <string name="reminder_disclaimer">Opens with this pre-filled — you review and tap send there. Nothing sends automatically.</string>
     <string name="reminder_open_whatsapp">Open WhatsApp</string>
     <string name="reminder_open_sms">Open SMS</string>
+
+    <string name="dashboard_title">Home</string>
+    <string name="dashboard_no_hostel">Add a hostel first (Property tab) to see your dashboard.</string>
+    <string name="dashboard_collections_today">Collected today</string>
+    <string name="dashboard_overdue_invoices">Overdue invoices</string>
+    <string name="dashboard_vacant_beds">Vacant beds</string>
+    <string name="dashboard_upcoming_move_outs">Upcoming move-outs</string>
 </resources>

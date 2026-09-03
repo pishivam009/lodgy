@@ -25,4 +25,7 @@ interface PaymentDao {
 
     @Query("SELECT * FROM payments WHERE invoiceId = :invoiceId")
     fun getByInvoiceId(invoiceId: String): Flow<List<Payment>>
+
+    @Query("SELECT * FROM payments")
+    suspend fun getAll(): List<Payment>
 }

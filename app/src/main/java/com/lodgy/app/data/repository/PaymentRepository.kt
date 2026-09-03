@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.first
 class PaymentRepository @Inject constructor(private val paymentDao: PaymentDao) {
     fun getByInvoiceId(invoiceId: String): Flow<List<Payment>> = paymentDao.getByInvoiceId(invoiceId)
 
+    suspend fun getAll(): List<Payment> = paymentDao.getAll()
+
     suspend fun getTotalPaid(invoiceId: String): Double =
         paymentDao.getByInvoiceId(invoiceId).first().sumOf { it.amount }
 
