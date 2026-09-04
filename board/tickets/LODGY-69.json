@@ -2,7 +2,7 @@
   "id": "LODGY-69",
   "epic": "Tenant Onboarding",
   "title": "Assign a tenant by tapping a bed, from the bed grid and from All rooms",
-  "description": "Product Owner request: tapping a bed should offer two choices rather than acting immediately, so onboarding and tenant lookup can both start from the bed the warden is looking at instead of only from the Tenants tab. Should work from the bed grid inside a floor and from the All rooms tiles. THE INTERACTION, as settled by the PO across two clarifications: every bed tap opens the same two-option sheet, and only the second option changes with the bed's state. A VACANT bed offers 'view description' and 'assign tenant'. An OCCUPIED bed offers 'view description' and 'view tenant', the latter opening the assigned tenant's profile, which is already where every operation on that tenancy lives - notes, notice, transfer, credit, checkout. That symmetry is worth preserving in the build: the warden learns one gesture, the sheet always appears, and the second row is the only thing that differs. It also means no destructive or navigational action ever fires on a bare tap, which matters on a dense grid where mis-taps are easy. WHY THIS MATTERS: today onboarding runs Tenants > + > Pick a Vacant Bed, which asks the warden to find a bed in a list after they have already been looking straight at it in Property, and there is no route at all from a bed to the person in it. The bed picker (BedPickerScreen) stays as the entry point from the Tenants tab; this adds the reverse direction. CURRENT STATE: beds on BedGridScreen are not clickable at all - the tiles render status but carry no onClick, so this is a new interaction rather than an extension of an existing one. From All rooms a tile opens the room's bed grid, so if the grid is the shared target then the bed-level behaviour only has to be built once and both routes inherit it. OPEN QUESTION for the PO: what 'view description' shows. A bed has only a label and a status of its own, so the useful content is the room's - type, price per bed, amenities - plus, for an occupied bed, the tenancy summary. If it turns out to be thin for a vacant bed, that is worth knowing before build rather than after: the sheet is still justified by the symmetry above, but the description screen itself may not need to be more than a compact panel.",
+  "description": "Product Owner request: tapping a bed should offer two choices rather than acting immediately, so onboarding and tenant lookup can both start from the bed the warden is looking at instead of only from the Tenants tab. Should work from the bed grid inside a floor and from the All rooms tiles. THE INTERACTION, as settled by the PO across two clarifications: every bed tap opens the same two-option sheet, and only the second option changes with the bed's state. A VACANT bed offers 'view description' and 'assign tenant'. An OCCUPIED bed offers 'view description' and 'view tenant', the latter opening the assigned tenant's profile, which is already where every operation on that tenancy lives - notes, notice, transfer, credit, checkout. That symmetry is worth preserving in the build: the warden learns one gesture, the sheet always appears, and the second row is the only thing that differs. It also means no destructive or navigational action ever fires on a bare tap, which matters on a dense grid where mis-taps are easy. WHY THIS MATTERS: today onboarding runs Tenants > + > Pick a Vacant Bed, which asks the warden to find a bed in a list after they have already been looking straight at it in Property, and there is no route at all from a bed to the person in it. The bed picker (BedPickerScreen) stays as the entry point from the Tenants tab; this adds the reverse direction. CURRENT STATE: beds on BedGridScreen are not clickable at all - the tiles render status but carry no onClick, so this is a new interaction rather than an extension of an existing one. From All rooms a tile opens the room's bed grid, so if the grid is the shared target then the bed-level behaviour only has to be built once and both routes inherit it. RESOLVED - what 'view description' shows: the room's full details, meaning type, price per bed and amenities, plus the tenancy summary when the bed is occupied. The PO's motivation for the option was specifically that amenities are captured today and displayed nowhere, which is confirmed and filed separately as LODGY-71. Build this sheet against that ticket rather than duplicating the display logic, and note that LODGY-71 must not be satisfied by this sheet alone - amenities also need a read-only home outside a bed tap.",
   "acceptanceCriteria": [
     "Beds are tappable on BedGridScreen, which they are not today",
     "Every bed tap opens a two-option sheet rather than acting immediately, so no navigation happens on a bare tap",
@@ -13,13 +13,14 @@
     "The same interaction is reachable for a bed arrived at via All rooms, so both routes behave identically",
     "A bed can never be assigned twice - assign is not offered for an occupied bed, so no second tenancy can be created on one bed",
     "A bed whose tenancy is somehow missing does not dead-end or crash - it falls back to the vacant behaviour rather than opening a profile that is not there",
-    "The existing Tenants tab onboarding route via BedPickerScreen keeps working unchanged"
+    "The existing Tenants tab onboarding route via BedPickerScreen keeps working unchanged",
+    "View description shows the room's type, price per bed and amenities - amenities being the field the PO could not see anywhere today (LODGY-71)"
   ],
   "status": "Todo",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-04T12:38:35+00:00",
+  "updatedAt": "2026-09-04T12:43:19+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
@@ -32,6 +33,12 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "Amended before build. The PO first said an occupied bed should go straight to the tenant profile, then revised it to a two-option sheet - view description and view tenant. Taking the revision: every bed tap now opens the same sheet and only the second option varies by state, so the warden learns one gesture and nothing navigates on a bare tap, which matters on a dense grid. Acceptance criteria rewritten to match; the ticket had not been started, so no work is discarded."
+    },
+    {
+      "timestamp": "2026-09-04T12:43:19+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "Open question resolved: view description shows type, price and amenities. The PO's underlying concern was that amenities are recorded but viewable nowhere - verified in code and filed as LODGY-71, because this sheet must not become the only place they appear."
     }
   ]
 }

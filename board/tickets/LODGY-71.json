@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-71",
+  "epic": "Property Setup",
+  "priority": "Medium",
+  "title": "Room amenities are recorded but never displayed anywhere",
+  "description": "Raised by the Product Owner while specifying LODGY-69's 'view description'. Confirmed in code, and the gap is wider than 'hard to find': Room.amenities is captured on the room form and the bulk-add form, stored on the entity, carried through RoomRepository.create/update - and then read back by nothing. A grep for 'amenities' across app/src/main/java returns hits in exactly two UI files, RoomFormScreen and BulkRoomFormScreen, and in both it is an editable input rather than a display. There is no read-only surface at all: not the room list, not the bed grid, not All rooms, not the printable PDF packet (LODGY-45), not the monthly report CSV. THE PRACTICAL EFFECT: the only way to read what a room has is to open its EDIT form. So a warden answering 'does 204 have an attached bathroom?' has to enter a screen whose entire purpose is changing things, where a stray keystroke silently edits the record they came to read. That is the actual defect - not that the field is hidden, but that reading it requires entering an editing context. The data itself is safe - it is in the DB and rides along in the backup zip - so this is a display gap, not data loss. SCOPE NOTE: LODGY-69's 'view description' sheet is one place this should surface, but it must not be the ONLY place, or amenities stay invisible to anyone who never taps a bed. The room list and the printable packet are the two that matter most - the packet especially, since it is the document a warden hands to someone, and a room description without its amenities is a thin record. WORTH THE PO's VIEW: amenities is a free-text String today, so it is whatever the warden typed - 'AC, attached bath' or 'ac attached bathroom wifi'. Displaying it is straightforward; making it filterable ('show me rooms with AC') would need it structured as tags, which is a larger change and deliberately NOT in this ticket's scope.",
+  "acceptanceCriteria": [
+    "Room amenities are visible on at least one read-only surface, so reading them never requires opening the edit form",
+    "Amenities appear on the room's own detail view, alongside type and price per bed",
+    "Amenities appear in the printable PDF packet's room information, since that is the record a warden hands over",
+    "A room with no amenities recorded renders cleanly - no empty label, stray separator or blank row",
+    "Long free-text amenities wrap or truncate gracefully rather than breaking the layout they appear in",
+    "Existing installs need no migration and no re-entry - whatever is already stored displays as typed",
+    "The amenities field on the room and bulk-add forms is unchanged; this ticket only adds places to read it"
+  ],
+  "status": "Todo",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:43:19+00:00",
+  "updatedAt": "2026-09-04T12:43:19+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:43:19+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed after the PO flagged that amenities are recorded but not viewable. Verified in code: the only two UI references are the write forms, and there is no read-only surface anywhere including the PDF packet and CSV export. Split out of LODGY-69 so amenities do not end up visible solely inside a bed sheet."
+    }
+  ]
+}
