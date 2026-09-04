@@ -9,11 +9,11 @@
     "Invoice list rows and the payment recording screen show room+bed, not just tenant name",
     "A vacated tenant's historical room+bed still displays (not blanked out after checkout)"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:00:02+00:00",
+  "updatedAt": "2026-09-04T11:38:43+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -52,6 +52,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed - the label is now derived reactively instead of read once. TenantProfileViewModel: replaced the single `getLatestByTenantId()` read in init with a collect on `observeByTenantId(tenantId)`, resolving location and planned move-out on every emission. Also dropped the optimistic `_plannedMoveOut.value = millis` from setPlannedMoveOut so the flow is the single source of truth. TenantDirectoryViewModel: init now `combine`s the tenants flow with a new `observeAll()` agreements flow and resolves each tenant's location per emission; the now-dead private locationOf() is gone. Added TenancyAgreementDao.observeAll() + repository observeByTenantId/observeAll to back this. VERIFIED ON EMULATOR - both original repros, without any restart: (1) onboarded Suresh and 'Room 101 · Bed A' appeared on the directory row immediately, where before it was blank until relaunch; (2) transferred him to Room 102 Bed B and both the profile header and the directory row updated to 'Room 102 · Bed B' on return, where before both showed the old room. Added two regression tests to TenantDirectoryViewModelTest driving a MutableStateFlow of agreements - one for the transfer case, one for the agreement-written-after-tenant-row case - both of which fail against the old one-shot implementation. Build and full suite green: 412 tests pass (4 new), ./gradlew testDebugUnitTest and assembleDebug both successful. Tests touched for the new signatures: TenantProfileViewModelTest and TenantDirectoryViewModelTest now mock the observed agreement flows, InvoiceListViewModelTest gains the ReconciliationRepository mock, and DataPacketTest gains the noticeGiven label. Note on two profile tests: they assert state after setPlannedMoveOut, which previously passed only because the ViewModel wrote the value optimistically. Rather than keep that second source of truth - the exact bug class LODGY-33 is about - the mocks now use a MutableStateFlow that re-emits on write, which is how Room actually behaves."
+    },
+    {
+      "timestamp": "2026-09-04T11:38:43+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - both original repros fixed, and I went looking for the bug the fix could have introduced. AC1: onboarded a brand-new tenant (Suresh) and 'Room 101 · Bed A' appeared on the directory row IMMEDIATELY, where before it stayed blank until an app restart. AC2: the profile shows room+bed prominently under the name. Transfer case: moved Suresh from Room 101 Bed A to Room 102 Bed B and both the profile header and the directory row updated to the new bed on return, with no restart - previously both kept showing the old room. AC3: invoice rows and the Record Payment screen still show room+bed (verified on Priya's invoice - 'Room 501 · Bed A'). AC4: a vacated tenant still resolves to their last bed - Ramesh Kumar shows 'Room 102 · Bed A' with a VACATED badge rather than being blanked. THE RISK I CHASED: the developer replaced the DAO's SQL ordering (ORDER BY status='ACTIVE' DESC, moveInDate DESC) with a hand-written Kotlin comparator, so I tested the returning-tenant case DESIGN.md section 3 explicitly calls out. Injected a second agreement for Ramesh - ACTIVE, on Room 101 Bed A, with a move-in date EARLIER than his existing CLOSED one - which discriminates the two orderings: if status is weighed first the app must show Room 101 Bed A, if date is weighed first it would wrongly show Room 102 Bed A. Both the directory and the profile resolved to Room 101 · Bed A, so the comparator matches the SQL precedence exactly. Synthetic row removed afterwards."
     }
   ]
 }

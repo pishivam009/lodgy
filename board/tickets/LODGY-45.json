@@ -8,11 +8,11 @@
     "PDF is legible and organized (grouped by hostel/room/tenant), not a raw data dump",
     "Exported via SAF like other exports (LODGY-23/28), so it can be saved, printed, or shared"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:00:02+00:00",
+  "updatedAt": "2026-09-04T11:38:43+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -57,6 +57,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed. pdf/DataPacket.kt no longer assumes a moveOutDate means a completed departure: PacketTenancy gains `moveOutIsPlanned`, PacketLabels gains `noticeGiven`, and the block picks the label by that flag. DataPacketScreen passes `moveOutIsPlanned = tenancy.active`, using the `active` flag already carried on PacketTenancyData - so an ACTIVE agreement with a notice date reads as notice, and only a CLOSED one reads as a departure. New strings packet_notice_given in values/ ('Leaving on (notice given)') and values-hi/. VERIFIED ON EMULATOR with one export that exercises BOTH branches in a single document: Ramesh Kumar (VACATED, real checkout) prints 'Moved out: 4 Sep 2026', and Suresh (ACTIVE, notice set for 25 Sep 2026) prints 'Leaving on (notice given): 25 Sep 2026'. The self-contradiction QA found - a record saying ACTIVE three lines above 'Moved out' - is gone. Added two DataPacketTest cases asserting each branch emits the right label and not the other. Build and full suite green: 412 tests pass (4 new), ./gradlew testDebugUnitTest and assembleDebug both successful. Tests touched for the new signatures: TenantProfileViewModelTest and TenantDirectoryViewModelTest now mock the observed agreement flows, InvoiceListViewModelTest gains the ReconciliationRepository mock, and DataPacketTest gains the noticeGiven label. Note on two profile tests: they assert state after setPlannedMoveOut, which previously passed only because the ViewModel wrote the value optimistically. Rather than keep that second source of truth - the exact bug class LODGY-33 is about - the mocks now use a MutableStateFlow that re-emits on write, which is how Room actually behaves."
+    },
+    {
+      "timestamp": "2026-09-04T11:38:43+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - the self-contradiction is gone, and one export proves both branches at once. AC1 and AC3 were already passing. The fix: I set a notice date of 25 Sep 2026 on Suresh while he was still ACTIVE with his bed still OCCUPIED (exactly the LODGY-49 state that produced the bug), then exported the printable packet with Ramesh Kumar already checked out. The single PDF contains both cases and labels them differently and correctly - Ramesh reads 'Status VACATED' then 'Moved out: 4 Sep 2026', Suresh reads 'Status ACTIVE' then 'Leaving on (notice given): 25 Sep 2026'. No record now says a current resident has moved out. AC2 still holds: the packet is still grouped hostel -> floor -> room -> tenant with per-tenant invoice history and correct credit-adjusted amounts, and the new label is translated in values-hi so the Hindi export is not left with an English string."
     }
   ]
 }

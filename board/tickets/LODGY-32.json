@@ -9,11 +9,11 @@
     "Switching applies immediately without restarting the app",
     "Preference persists across app restarts"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:00:02+00:00",
+  "updatedAt": "2026-09-04T11:38:43+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -58,6 +58,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed in the theme, as QA suggested, rather than by bolting a Scaffold onto the one screen. LodgyTheme now wraps its content in `Surface(modifier = Modifier.fillMaxSize(), color = colorScheme.background)`, so the theme paints its own ground and sets LocalContentColor from the scheme. Previously MaterialTheme(...) was called with content passed straight through, so nothing painted a background - the window fell back to the static android:windowBackground (light) while components resolved their own dark colours, producing the light-page/dark-keypad/near-black-digit mix. Every other screen masked this by using a Scaffold. VERIFIED ON EMULATOR: with Appearance still set to Dark from QA's session, force-stopped and relaunched - the PIN lock screen now renders a dark background with light, fully legible digits and a readable 'Enter your PIN'. Re-checked the rest of the app in dark (invoice list, tenant profile, printable records) and nothing regressed; Scaffold screens simply overdraw the same background colour. Build and full suite green: 412 tests pass (4 new), ./gradlew testDebugUnitTest and assembleDebug both successful. Tests touched for the new signatures: TenantProfileViewModelTest and TenantDirectoryViewModelTest now mock the observed agreement flows, InvoiceListViewModelTest gains the ReconciliationRepository mock, and DataPacketTest gains the noticeGiven label. Note on two profile tests: they assert state after setPlannedMoveOut, which previously passed only because the ViewModel wrote the value optimistically. Rather than keep that second source of truth - the exact bug class LODGY-33 is about - the mocks now use a MutableStateFlow that re-emits on write, which is how Room actually behaves."
+    },
+    {
+      "timestamp": "2026-09-04T11:38:43+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - retested the original repro and then went after the fix's blast radius, since wrapping LodgyTheme's content in a Surface touches every screen in the app. AC1: the PIN lock screen now renders a dark ground with light, fully legible digits and readable 'Enter your PIN' - the light-page/dark-keypad/near-black-digit mix is gone. I also checked the OTHER Scaffold-less screen the developer flagged: cleared app data with the system in night mode so first launch came up on PinSetupScreen with the theme still on its SYSTEM default, and it renders correctly in dark too (dark ground, legible keypad, readable 'Create a PIN' and the 4/5/6-digit chips). Then I checked the fix had not regressed light mode, which is the real risk of a theme-wide change: switched Appearance to Light and walked More, invoices, tenant directory, tenant profile, monthly report, bed grid and printable records - all correct, no washed-out or double-painted surfaces. Scaffold screens simply overdraw the same background colour, as expected. AC2/AC3/AC4 re-verified: Light/Dark/System default all selectable from More, switching applies instantly with no restart, and the choice survived a force-stop. Also confirmed the RAG tokens still read correctly in dark - bed grid shows green VACANT against red OCCUPIED, invoice badges keep their Unpaid/Partial/Paid colours."
     }
   ]
 }

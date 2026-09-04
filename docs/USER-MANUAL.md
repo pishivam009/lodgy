@@ -8,9 +8,11 @@ the app asks for no internet permission at all. Nothing you type leaves the
 device unless you export it yourself.
 
 Screen-by-screen visuals live in
-[`docs/design/wardens-guide.html`](design/wardens-guide.html) and
-[`docs/design/wireframes.html`](design/wireframes.html) — open either in a
-browser.
+[`docs/design/screenshots.html`](design/screenshots.html) — real screenshots of
+every screen described below, in light, dark and Hindi. Two earlier pages,
+[`wardens-guide.html`](design/wardens-guide.html) and
+[`wireframes.html`](design/wireframes.html), cover the same ground as a walkthrough
+and as layout sketches. Open any of them in a browser.
 
 ---
 
@@ -98,7 +100,10 @@ Property is a four-level structure: **hostel → floor → room → bed**.
 ### Notice, transfer and checkout
 
 - **Notice given.** Record the date a tenant says they're leaving. This is a
-  flag only; it doesn't check anyone out, and it can be withdrawn.
+  flag only; it doesn't check anyone out, and it can be withdrawn. The date
+  feeds the **Upcoming move-outs** tile on the dashboard, and on the printable
+  packet it reads *Leaving on (notice given)* — never *Moved out*, which is
+  reserved for a tenant who has actually been checked out.
 - **Move to another bed.** Transfer a tenant to a different bed, optionally
   changing the rent — the new rent applies to future invoices, past ones stay
   as they were. The move is logged on the tenant's timeline.
@@ -158,7 +163,11 @@ Property is a four-level structure: **hostel → floor → room → bed**.
     history the app doesn't keep.
   - **Export CSV** for the period.
   - **Checked against paper records** — mark a month as reconciled with your
-    register, so you can tell at a glance which months you've verified.
+    register, so you can tell at a glance which months you've verified. Once
+    a month is marked, its invoices carry a **Checked against register** tick
+    on the Payments tab too, so you can see it while you're working through
+    payments instead of only on the report. The mark is per hostel: marking
+    August at one property leaves the other property's August untouched.
 
 ## 7. Reminders the app sends you
 
@@ -184,7 +193,9 @@ points you at system settings.
   the app afterwards. This is the "moved to a new phone" path.
 - **Printable records (PDF).** A readable PDF packet of tenants, agreements
   and payment history — for this hostel or all of them — that you can print or
-  hand over. The backup zip is for machines; this is for people.
+  hand over. The backup zip is for machines; this is for people. Each tenancy
+  shows its status alongside its dates, so a tenant who has only given notice
+  reads as *Leaving on*, and one who has left reads as *Moved out*.
 - **Import past history (CSV).** Optional. If you keep past months in a
   spreadsheet, bring them in as `phone, month, year, amount_due, amount_paid`
   (one row per tenant per month, header optional). Lodgy matches rows to

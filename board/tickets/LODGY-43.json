@@ -8,11 +8,11 @@
     "Reconciled periods are visually distinguished from not-yet-reconciled ones in the Monthly Report / Payments views",
     "This is a manual attestation, not an automated diff against anything - it does not block or alter any data"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:00:02+00:00",
+  "updatedAt": "2026-09-04T11:38:43+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -51,6 +51,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed - reconciliation state now appears on the Payments view as well as the Monthly Report. InvoiceListItem gains `periodReconciled`; the ViewModel combines the invoices flow with a new ReconciliationRepository.observeAll() and matches each invoice on (hostelId, periodMonth, periodYear). The hostel is resolved per invoice via a new BedDao.getHostelId(bedId) join (beds -> rooms -> floors), because the invoice list spans every hostel rather than a selected one - matching on period alone would have wrongly marked another hostel's invoices. The row renders a check icon plus the text 'Checked against register' in the LODGY-36 GOOD token, so it follows LODGY-62's icon-plus-label rule rather than colour alone. New strings reconciliation_badge in values/ and values-hi/. Because it is driven by an observed query, toggling the switch on the Monthly Report updates the invoice list without a restart. VERIFIED ON EMULATOR: 8/2026, the period QA marked reconciled this morning, now shows the badge while 6/2026 and 7/2026 do not. Build and full suite green: 412 tests pass (4 new), ./gradlew testDebugUnitTest and assembleDebug both successful. Tests touched for the new signatures: TenantProfileViewModelTest and TenantDirectoryViewModelTest now mock the observed agreement flows, InvoiceListViewModelTest gains the ReconciliationRepository mock, and DataPacketTest gains the noticeGiven label. Note on two profile tests: they assert state after setPlannedMoveOut, which previously passed only because the ViewModel wrote the value optimistically. Rather than keep that second source of truth - the exact bug class LODGY-33 is about - the mocks now use a MutableStateFlow that re-emits on write, which is how Room actually behaves."
+    },
+    {
+      "timestamp": "2026-09-04T11:38:43+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - and I specifically tried to break the new hostel-matching logic, because keying a badge on period alone would have been an easy and invisible bug. AC1 and AC3 were already passing and still are. AC2 is now met on BOTH surfaces the criterion names. The test that matters: I built a second hostel (Moonlight, Room 501, tenant Priya) and gave it an invoice for 8/2026 - the SAME period already marked reconciled on Sunrise PG. Filtered the invoice list to month 8 so both sat side by side: Sunrise's 8/2026 row carried 'Checked against register' and Moonlight's 8/2026 row did NOT. So the badge follows the hostel, not just the period - a period-only match would have wrongly flagged Priya's invoice. Then I marked Moonlight's 8/2026 reconciled on its own Monthly Report and returned to the invoice list WITHOUT restarting: Priya's row picked up the badge immediately, confirming it is driven by an observed query rather than a one-shot read. The badge pairs a check icon with the text 'Checked against register' in the LODGY-36 GOOD token, so it satisfies LODGY-62's icon-plus-label rule rather than relying on colour alone, and it is translated in values-hi."
     }
   ]
 }

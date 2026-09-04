@@ -236,7 +236,12 @@ Notes:
 - **Reconciliation**: a warden can mark a month as checked against their
   paper register. Wardens keep decades on paper and don't trust that the two
   records stay in step; the mark is an attestation, not an audit — nothing is
-  compared automatically (LODGY-43).
+  compared automatically (LODGY-43). The mark is set on the monthly report
+  and shown in both places it matters — the report and the invoice list —
+  since a warden reviewing payments needs to see which periods they have
+  already checked. Because the invoice list spans every hostel, a mark is
+  matched on hostel *and* period; matching on period alone would flag another
+  property's invoices.
 - Export the month as CSV, and see 4.8 for the printable PDF packet
   (LODGY-23, LODGY-45).
 
@@ -345,6 +350,35 @@ turning a category off just makes its next run a no-op.
 - **Version and build number** on the More screen, for support questions
   (LODGY-38).
 
+### 4.12 UI invariants
+
+Three rules that hold app-wide. Each is here because breaking it produced a
+bug that looked like a feature fault rather than a layout or plumbing one,
+and each is invisible on the screen that introduces it.
+
+- **The theme paints its own ground.** `LodgyTheme` wraps its content in a
+  `Surface` using the scheme's background colour. Without it nothing paints a
+  themed background and `LocalContentColor` is never set, so any screen not
+  inside a `Scaffold` inherits the static window background — which is how
+  the PIN lock screen ended up light-backed with near-black digits in dark
+  mode while every other screen looked fine (LODGY-32).
+- **Screen content scrolls.** A screen whose content can grow — a profile
+  that gains actions, a form that gains fields — is scrollable, or the
+  content past the fold is unreachable rather than merely off-screen. The
+  tenant profile clipped Record a credit, Move to another bed and Checkout on
+  an ordinary phone, which read as three separate missing features
+  (LODGY-34, LODGY-35, and a regression against LODGY-14).
+- **Derive UI state from observed queries, not one-shot reads.** A value read
+  once in a ViewModel's `init` cannot notice later writes. Room's `Flow`
+  queries are the source of truth, and a screen that shows data from a table
+  it doesn't observe will go stale. Tenant room/bed was resolved by a single
+  read, so it was blank after onboarding (the agreement is written after the
+  tenant row) and stale after a transfer (which touches only
+  `tenancy_agreements`) — correcting itself only when the ViewModel happened
+  to be recreated (LODGY-33). The same rule is why a write should not also
+  optimistically set the state it just persisted: that is a second source of
+  truth waiting to disagree.
+
 ## 5. Explicit non-goals
 - No auto-sent WhatsApp/SMS (tap-to-send only — no paid API, no backend).
   The same principle governs the quick-contact buttons: `ACTION_DIAL`, never
@@ -408,3 +442,8 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Orphaned photo cleanup | Photos are written on pick, so abandoned forms leaked files into every backup | LODGY-51 |
 | Occupancy stays a current-state figure, disclosed in the UI | Snapshots would add a second source of truth for a number read as a rough gauge | LODGY-52 |
 | APK-size work declined | Already small enough; minification risk not worth it, and it was constraining the PDF choice | LODGY-48 |
+| Theme wraps content in a `Surface` | Without it no themed background is painted, so Scaffold-less screens break in dark mode only — see 4.12 | LODGY-32 |
+| Growable screens scroll | Clipped content reads as a missing feature, not a layout fault — see 4.12 | LODGY-34, LODGY-35 |
+| UI state comes from observed queries | A one-shot read in `init` cannot see later writes, so labels went stale — see 4.12 | LODGY-33 |
+| Reconciliation marks match on hostel *and* period | The invoice list spans every property; period alone would flag the wrong hostel's invoices | LODGY-43 |
+| `moveOutDate` is read together with agreement status | The field means notice on an ACTIVE agreement and departure on a CLOSED one (3); the printable packet read it without the status and told the warden a current resident had left | LODGY-45 |

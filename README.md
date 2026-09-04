@@ -44,7 +44,7 @@ app/src/main/java/com/lodgy/app/
   ui/theme/       Material 3 theme, color/type/status tokens
 docs/DESIGN.md    Product & architecture spec — read before schema/architecture changes
 docs/USER-MANUAL.md  Every feature, written for the warden using it
-docs/design/      Wireframes and the warden's guide, as openable HTML
+docs/design/      Screenshots, wireframes and the warden's guide, as openable HTML
 board/            Ticket-based build tracker (see below)
 ```
 
@@ -76,6 +76,7 @@ four roles (each a Claude Code skill under `.claude/skills/`):
 Low-fidelity wireframes for every screen in the app, organized by epic,
 were built before any UI code:
 
+- [`docs/design/screenshots.html`](docs/design/screenshots.html) — real screenshots of the built app, in light, dark and Hindi
 - [`docs/design/wireframes.html`](docs/design/wireframes.html) — every screen, organized by epic
 - [`docs/design/wardens-guide.html`](docs/design/wardens-guide.html) — the same screens walked through task by task, for the actual end user
 
