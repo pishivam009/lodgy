@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-83",
+  "epic": "Notifications",
+  "priority": "Medium",
+  "title": "Overdue rent still posts one notification per invoice",
+  "description": "Found while QA-ing LODGY-74 on the device. That ticket capped the vacancy burst at one summary per run, and the fix works - 48 long-vacant beds now produce one notification. But DuesReminderWorker was out of its scope and still iterates its result list posting per record: notifyOverdueInvoices() calls notifications.post once per overdue invoice, with notificationId = invoice.id.hashCode(). Observed in the same session: 3 notifications on the dues channel from 2 overdue invoices plus 1 recurring expense. Small here only because the test data is small. A hostel with thirty tenants who are late in a lean month gets thirty notifications in one morning, which is the same failure LODGY-74 exists to prevent and the same reason a warden switches the category off. The recurring-expense path in the same worker has the same shape, though it is naturally bounded by how many recurring expenses a warden records, so it matters less. SUGGESTED FIX: mirror what LODGY-74 and LODGY-73 now do - one summary per run naming the count and the total outstanding, opening the invoice list, with a fixed literal notification id so a later run replaces rather than stacks. Keep the single-record wording when there is only one, as the vacancy fix does, so the common case stays concrete. NOT A REGRESSION - this behaviour predates all three notification tickets. It is filed now because the device testing that proved LODGY-74 also made this visible.",
+  "acceptanceCriteria": [
+    "A dues run with many overdue invoices posts one summary, not one notification per invoice",
+    "The summary states how many invoices are overdue and the total outstanding",
+    "Tapping it opens the invoice list",
+    "A single overdue invoice keeps concrete wording naming that tenant, rather than reading as a summary of one",
+    "A later run replaces the previous summary instead of stacking another one",
+    "Recurring-expense notifications are reviewed for the same shape and made consistent",
+    "The existing suppression - not nagging about an invoice already covered by payments and credits - still holds"
+  ],
+  "status": "Todo",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T21:39:02+00:00",
+  "updatedAt": "2026-09-04T21:39:02+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T21:39:02+00:00",
+      "actor": "Tester",
+      "action": "created",
+      "note": "Filed from device observation while verifying LODGY-74. The vacancy burst is fixed; the overdue-rent path has the same one-per-record shape and was outside that ticket's scope."
+    }
+  ]
+}

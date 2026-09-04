@@ -10,11 +10,11 @@
     "The same guard is applied anywhere else a delete can remove a bed that an agreement still references, so the fix is not floor-only",
     "A test covers the occupied-bed case at the ViewModel or DAO level, so the crash cannot regress silently"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:05:59+00:00",
-  "updatedAt": "2026-09-04T20:05:23+00:00",
+  "updatedAt": "2026-09-04T21:39:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:05:59+00:00",
@@ -37,6 +37,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed. FloorListViewModel gained the request/confirm/block cycle that RoomListViewModel already had: requestDelete() asks the DAO who lives under the floor and either raises a block or a plain confirmation, so floorRepository.delete() is now unreachable while an ACTIVE tenancy points at a bed below it. Two new DAO queries (BedDao.getActiveTenantNamesOnFloor / getActiveTenantNamesInRoom) return the tenant NAMES rather than a boolean, because AC2 asks the block to say who is in the way. FloorListScreen's delete dialog moved off local remember{} state onto the ViewModel, and gained a second dialog for the blocked case. AC4 applied to the room path too rather than leaving it floor-only: RoomListViewModel's existing hard-block now carries names as well, so both levels read the same way instead of one saying 'a bed is occupied' and the other naming people. New strings in values/ and values-hi/. VERIFIED ON EMULATOR by reproducing the exact crash path: Moonlight > Ground (0 vacant / 1 occupied, Priya) > delete. Previously this died to the launcher with SQLiteConstraintException FOREIGN KEY from FloorDao_Impl.delete; now the app stays alive (PID unchanged, zero FATAL in logcat) and shows 'Ground still has tenants living on it: Priya'. AC3 checked separately - created an empty floor, deleted it, and it took the ordinary confirmation and removed cleanly with no crash. BACKWARD COMPATIBILITY: not schema-affecting. No entity changed, database stays at version 4, no migration needed - the new queries are reads over existing tables. TESTS: 6 new in FloorListViewModelTest, including one asserting the repository is never reached for a tenanted floor, which is the regression guard for the crash itself. Three RoomListViewModelTest cases updated for the names-carrying block. Full suite 428 pass / 0 fail. Coverage 96.96% line."
+    },
+    {
+      "timestamp": "2026-09-04T21:39:02+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all five. AC1 and AC2 verified by reproducing the original crash path exactly: Moonlight > Ground, which holds one occupied bed, > delete. That previously killed the process with SQLiteConstraintException FOREIGN KEY from FloorDao_Impl.delete; it now shows 'Ground still has tenants living on it: Priya', the app stays alive (PID unchanged, zero FATAL in logcat), and the block names the tenant rather than failing generically. AC3 checked separately by creating an empty floor and deleting it - it took the ordinary confirmation and removed cleanly. AC4: the guard was applied to the room path too rather than left floor-only, so the existing room block now names its tenant instead of saying only that a bed is occupied; both levels read the same way. AC5: six new ViewModel tests, including one asserting floorRepository.delete is never reached for a tenanted floor, which is the regression guard for the crash itself. Confirmed not schema-affecting - the new DAO queries are reads over existing tables and the database stays at version 4."
     }
   ]
 }

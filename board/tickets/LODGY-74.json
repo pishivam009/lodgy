@@ -10,11 +10,11 @@
     "LODGY-59 AC4 still holds - a bed already nudged is not nudged again on later runs, and is forgotten once it fills",
     "Verified by actually firing it, not only by unit test: move the device clock forward with several long-vacant beds and confirm the notification count"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:28:16+00:00",
-  "updatedAt": "2026-09-04T20:51:58+00:00",
+  "updatedAt": "2026-09-04T21:39:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T13:28:16+00:00",
@@ -29,6 +29,14 @@
       "from": "Todo",
       "to": "Testing",
       "note": "Fixed. VacancyCheckWorker now posts one summary per run instead of iterating decision.toNotify and posting per bed. A single bed keeps its original wording; several get a new string naming the count and one example bed, so the message is still concrete rather than a bare number. The notification id is a fixed literal, so a later run REPLACES the previous summary rather than stacking another one - and a literal rather than a hash so it cannot collide with the per-record ids derived from UUIDs elsewhere. LODGY-59 AC4 is untouched: already-notified bed ids are still persisted and skipped, and still forgotten once a bed fills, so this only caps the burst within one run. New string in values/ and values-hi/. TEST: twelve long-vacant beds now assert exactly one post() call - the regression guard for the 48 observed on the device. Full suite 434 pass, coverage 96.98% line. Not schema-affecting."
+    },
+    {
+      "timestamp": "2026-09-04T21:39:02+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - verified on the device under the exact conditions that produced the bug, not by unit test alone, since the original 48-notification burst was only ever visible on a device. Backdated all 48 vacant beds to 30 days, cleared the persisted notified-bed set so they would all qualify again, and advanced the clock so the daily worker ran. Result: ONE notification on the vacancy channel, where the same setup previously produced 48 - counted in dumpsys both times. AC1 and AC2: the text reads '48 बेड खाली पड़े हैं, जिनमें Sunrise PG कमरा 101, बेड A भी है' - the count plus a concrete example bed, so it still says where to look rather than degrading into a bare number, and it is correct in Hindi. AC3: the single-bed path keeps the original wording, covered by the existing test. AC4: LODGY-59's across-days suppression still holds and I saw it working - on the first run after the clock jump the vacancy channel was silent because those bed ids were still remembered from the earlier session, and it only fired once that memory was cleared. So the fix caps the burst within a run without weakening the suppression between runs. AC5 satisfied by the twelve-bed unit test. Also checked the fixed notification id behaves: a later run replaces the summary rather than stacking a second one."
     }
   ]
 }

@@ -9,11 +9,11 @@
     "If (b): scope is written up honestly across all 15 DAOs, the cascade-grouping needed for a correct undo, the uniqueness question, and the effect on LODGY-51's photo cleanup and LODGY-28's backup size",
     "Either way DESIGN.md gains a short statement of what 'delete' means in Lodgy, so future tickets inherit the answer rather than re-asking it"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:05:59+00:00",
-  "updatedAt": "2026-09-04T13:04:11+00:00",
+  "updatedAt": "2026-09-04T21:39:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:05:59+00:00",
@@ -28,6 +28,14 @@
       "note": "DECIDED: no soft delete. Delete stays permanent. The protections are prevention (LODGY-63/64 block deletes that would take tenancies or money), voiding rather than deleting financial records, and backup before cascading deletes plus the daily automatic backup (LODGY-68) - which unlike a bin also survives a lost phone. Recorded in DESIGN.md as a new section 4.13 'What delete means', with the reasoning kept so this is not re-litigated, and a decision-log row. AC2's auto-export requirement is already specced as LODGY-68. All acceptance criteria met.",
       "from": "Todo",
       "to": "Testing"
+    },
+    {
+      "timestamp": "2026-09-04T21:39:02+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - this is a decision ticket and the decision is properly recorded, which is what its criteria ask for. AC1: soft delete declined, hard delete retained. AC2 and AC4: DESIGN.md now carries section 4.13 'What delete means', stating that delete is permanent and, more usefully, WHY - filtering every read across fifteen DAOs, cascade undo needing its own grouping record, soft-deleted rooms keeping their numbers, and the orphan-photo sweep deleting photos a bin would still claim were restorable. It also records what protects the warden instead, in order: prevention, voiding money rather than deleting it, and backup before cascading deletes. Two decision-log rows added. The auto-export measure AC2 calls for is specced as LODGY-68 rather than left implicit. Checked that the reasoning is preserved and not just the conclusion, which is the point - it stops this being re-litigated in six months."
     }
   ]
 }

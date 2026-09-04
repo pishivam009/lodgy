@@ -13,10 +13,10 @@
     "Existing installs need no migration and no re-entry - whatever is already stored displays as typed",
     "The amenities field on the room and bulk-add forms is unchanged; this ticket only adds places to read it"
   ],
-  "status": "Testing",
+  "status": "Done",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:43:19+00:00",
-  "updatedAt": "2026-09-04T21:20:14+00:00",
+  "updatedAt": "2026-09-04T21:39:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:43:19+00:00",
@@ -45,6 +45,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built. Amenities now have two read-only homes, deliberately not just the LODGY-69 bed sheet, since that would leave them invisible to anyone who never taps a bed. (1) The bed grid - the screen a warden opens to look at a room - now shows price per bed and, when recorded, an 'Amenities: ...' line above the bed tiles. (2) The printable PDF packet carries an Amenities row per tenancy, which matters because that is the document handed to someone. A room with nothing recorded renders nothing at all - no empty label, no stray separator - in both surfaces. The forms are untouched; this only adds places to read. VERIFIED ON DEVICE: opened Room 101, which had no amenities, and saw only the price; added 'AC, attached bath' through the edit form; reopened the room from the room list and the amenities line was there. So the original complaint - that the only way to read them was to enter a screen whose purpose is changing them - is resolved. Note for QA: I removed a DUPLICATE room_price_per_bed string that already existed at line 68 and which I had unknowingly re-added; the build caught it as a resource merge error. The surviving definition is the original. TESTS: 2 new in DataPacketTest, one asserting amenities appear and one asserting no line is emitted when blank. Full suite 436 pass, coverage 97.00% line. Not schema-affecting - Room.amenities already existed and is unchanged."
+    },
+    {
+      "timestamp": "2026-09-04T21:39:02+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all seven. The core complaint is resolved: amenities are now readable without entering the edit form. Verified on the device by opening Room 101, which had none recorded, and seeing only the price; then adding 'AC, attached bath' and reopening from the room list, where the amenities line appeared. AC2 is satisfied by the bed grid, which is the screen a warden actually opens to look at a room, showing price per bed and the amenities line above the tiles. AC3 by the printable packet carrying an Amenities row per tenancy - the right call, since a bed sheet alone would have left amenities invisible to anyone who never taps a bed. AC4: a room with nothing recorded emits no label and no stray separator in either surface, covered by a unit test asserting the PDF omits the line entirely. AC7: the forms are untouched. Not schema-affecting - Room.amenities already existed. The duplicate room_price_per_bed string the developer flagged is genuinely resolved; only the original definition remains and the resource merger is clean."
     }
   ]
 }
