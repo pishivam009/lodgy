@@ -9,11 +9,11 @@
     "Transition is applied consistently across the whole NavHost, not just a few hand-picked screens",
     "Bottom-nav tab switches (Home/Property/Tenants/Payments/More) keep their own distinct feel and are not forced through the same slide (a tab switch is not a stack push)"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T17:37:58+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -36,6 +36,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Added ui/nav/NavTransitions.kt holding pushEnter/pushExit/popEnter/popExit (280ms horizontal slide; the outgoing screen only travels a quarter width so it reads as sitting underneath the incoming one rather than being shoved off at the same speed) and tabEnter/tabExit (150ms cross-fade). The slides are set on the NavHost itself, so every destination inherits them and nothing gets hand-picked; the five bottom-nav destinations then override with the fade, because a tab switch is a lateral move between siblings rather than a push onto the stack. compileDebugKotlin green - this is animation behaviour with no JVM-testable surface, so it needs an on-device look."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all four. AC1: pushEnter is slideInHorizontally { width -> width }, so a forward navigation slides in from the right. AC2: popEnter slides the previous screen back in from the left (-width/4) while popExit slides the current one out to the right - a proper reverse of the forward move, not an instant cut; the quarter-width underlap makes the outgoing screen read as sitting underneath rather than being shoved off at the same speed. AC3: applied NavHost-wide - the four transitions are set once on the NavHost itself (LodgyNavHost.kt:136-139) so every destination inherits them; there are exactly two enterTransition sites in the whole file, the NavHost default and the tab override, so no screen is hand-picked or missed. AC4: the five bottom-nav destinations override with fadeIn/fadeOut (tabEnter/tabExit), so a tab switch cross-fades and keeps its own feel instead of being pushed through the stack slide. Transitions were visible throughout the session's navigation."
     }
   ]
 }

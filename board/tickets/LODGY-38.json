@@ -7,11 +7,11 @@
     "More tab shows the app's versionName/versionCode somewhere visible (e.g. a footer line)",
     "Value updates automatically per build - not a hardcoded string that goes stale"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Low",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T17:31:03+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Enabled android.buildFeatures.buildConfig and added a centred footer line under the More tab's menu reading R.string.more_version with BuildConfig.VERSION_NAME and BuildConfig.VERSION_CODE, so it tracks whatever the build produced rather than a literal that goes stale. Strings added in en and hi. gradlew compileDebugKotlin green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. AC1: the More tab shows 'Lodgy v0.1 (build 1)' as a footer line under the menu, visible without scrolling. AC2: not hardcoded - MoreScreen.kt:128 reads BuildConfig.VERSION_NAME and BuildConfig.VERSION_CODE, which match app/build.gradle.kts versionName '0.1' / versionCode 1, so it tracks the build automatically. Also localises correctly - renders as 'Lodgy v0.1 (build 1)' with a translated 'build' word in Hindi."
     }
   ]
 }

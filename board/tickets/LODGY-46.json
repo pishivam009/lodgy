@@ -10,11 +10,11 @@
     "Backup export/import (LODGY-28/29) reviewed for zip-slip/path-traversal safety (stageImport's existing '..'/'/' filtering should be re-verified, not assumed)",
     "Findings written up with severity and suggested fixes, even if some are accepted as out-of-scope for a local-only, no-backend app"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T05:51:15+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -37,6 +37,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Review done and written up in docs/SECURITY-REVIEW.md, with severity judged against this app's actual threat model (another app on the same device, and someone picking the phone up) rather than a generic checklist - there is no network permission and no server, so whole OWASP categories have no surface here. Six findings, two fixed in this pass. FIXED, Medium: MainActivity is exported and was passing its notification-route extra straight to navController.navigate(), so any app on the device could crash Lodgy on launch with a bogus route - a route I introduced in LODGY-59/60. Now allow-listed by isSupportedNotificationRoute() and covered by NotificationRoutesTest; no data was ever reachable, since the route is only replayed after the PIN gate. FIXED, Low: file_paths.xml shared all of cacheDir, which is also where restore_staging puts an unencrypted copy of the whole database during an import; narrowed to cacheDir/camera/ with PhotoStorage writing there, so the staging area is no longer inside any shareable path. OPEN, Medium: the lock screen has no backoff or lockout on repeated PIN attempts - left as a finding with a suggested fix rather than changed here, because adding a lockout is a product decision that can lock a warden out of their own records. ACCEPTED, Low x2: the 4-6 digit PIN space is small against someone who already has the DB file (bcrypt usage itself is correct - per-hash gensalt, cost 10, checkpw; mitigated by LODGY-50's longer PIN and the roadmap's SQLCipher item, and extraction needs root, which DESIGN.md 5 puts out of scope), and an imported zip has no size cap, which is a self-inflicted DoS since the warden picks the file. AC 4 specifically: the zip-slip filter was re-verified line by line rather than assumed - the DB entry is matched by exact string equality, photo names are rejected if blank or containing '..' or '/', every other entry is ignored, and backslash is not a separator on Android, so nested and traversing paths are all refused. Also confirmed clean: only MainActivity is exported, allowBackup is false (which is what stops adb backup lifting the unencrypted DB), the single permission is POST_NOTIFICATIONS, there is no logging anywhere in app/src/main to leak tenant data, and every outbound intent is tap-to-send. assembleDebug and the coverage gate both green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - re-verified every finding independently rather than accepting the write-up. AC1: read AndroidManifest.xml directly - MainActivity is the only exported=true component (launcher requirement); FileProvider, androidx.startup InitializationProvider (WorkManager's default initializer removed via tools:node=remove) and AppLocalesMetadataHolderService are all exported=false; no receivers, no exported services, allowBackup=false, and exactly one permission (POST_NOTIFICATIONS). AC2: res/xml/file_paths.xml grants only <cache-path path='camera/'>, not all of cacheDir - correct, since the restore staging area under cacheDir holds a plaintext copy of the whole DB during an import. AC3: PinHasher uses BCrypt.gensalt() (random per-hash salt, cost 10, salt embedded in the hash) and BCrypt.checkpw - no fixed salt, no home-rolled digest, no fast hash. AC4: re-read stageImport myself rather than assuming - the DB entry is accepted only on exact name equality, and photo entries are rejected if blank, containing '..' or containing '/', so nothing can escape the staging directory; the '..' check also covers Windows-style traversal. AC5: docs/SECURITY-REVIEW.md rates 6 findings with severity and status (2 FIXED, 1 OPEN with a concrete suggested fix, 2 ACCEPTED against DESIGN.md 5, 1 re-verified clean) plus a 'reviewed and clean' section. I also live-tested the finding-1 fix: launched the exported MainActivity with --es com.lodgy.app.NOTIFICATION_ROUTE 'evil_route_does_not_exist' and the app started normally with no crash - isSupportedNotificationRoute is genuinely wired in at LodgyNavHost.kt:102, not merely written."
     }
   ]
 }

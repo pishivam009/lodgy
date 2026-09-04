@@ -7,11 +7,11 @@
     "Expense list can filter by category",
     "Expense list can sort by date or amount"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T17:52:20+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Expense list gained a category filter (an 'All' chip plus one per ExpenseCategory, reusing the existing .label() so the names stay translated) and a date/amount sort, both via the shared FilterChipRow. The header total now sums the visible rows rather than every expense - under a 'Repair only' list the number a warden reads is the repair total, and the active chip is right above it so there is no ambiguity about what is being totalled. An empty filtered result says 'Nothing matches this filter' instead of the no-expenses-yet message. ExpenseListViewModelTest covers the filter narrowing both list and total, clearing back to All, and both sort orders. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. AC1: the category filter works - with a WIFI 1000 and an ELECTRICITY 3000 logged, selecting WIFI left only the WIFI row and the header total correctly dropped from 4000 to 1000, so the summary respects the filter rather than always showing the unfiltered total. AC2: Sort by Date / Amount both present; sorting by Amount ordered 3000 then 1000. Recurring entries are badged RECURRING in the list, which is what LODGY-60's expense reminder keys off."
     }
   ]
 }

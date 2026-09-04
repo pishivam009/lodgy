@@ -8,11 +8,11 @@
     "PDF is saved via SAF to a location the warden picks, same pattern as LODGY-23/LODGY-28",
     "Numbers on the PDF match the underlying invoice/payment records exactly"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T18:27:24+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -41,6 +41,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Per-invoice acknowledgement built on LODGY-56's renderer, no second PDF pipeline. pdf/InvoiceAcknowledgement.kt assembles the PdfDocumentContent - hostel as subtitle, tenant/room+bed/period, invoice amount, credit line when there is one, amount due, total paid, balance, then a Date/Mode/Amount table of every recorded payment (or a plain sentence when there are none, rather than an empty table) and the issue date. All chrome comes in through an AcknowledgementLabels object the composable fills from string resources, so the receipt prints in whichever language the warden is running, and every number arrives pre-formatted from the invoice/payment/credit rows - nothing is recomputed in the builder, so the sheet a tenant is handed cannot drift from what the app shows (AC 3). AcknowledgementViewModel walks invoice -> agreement -> tenant and agreement -> bed -> room -> floor -> hostel, sorts payments oldest-first, and runs the credit through the same effectiveAmountDue() as everywhere else; an overpayment reads as a zero balance rather than a negative one, and a deleted invoice says so instead of rendering blanks. Reached from a Receipt button on every invoice row (paid ones included - a receipt for a settled invoice is the common case), and saved through the same SAF ActivityResultContracts.CreateDocument flow as LODGY-23/28, with mime application/pdf and a lodgy-receipt-<month>-<year>.pdf default name. Tests: InvoiceAcknowledgementTest for structure, the payments table, the no-payments and no-credit cases, and that a 200-payment receipt paginates without losing a row; AcknowledgementViewModelTest for the data gathering, ordering, credit maths, overpayment and missing-invoice cases. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - exported two real PDFs and checked them at file level. AC1: the Receipt button on each invoice row opens an acknowledgement showing tenant, room+bed, period, invoice amount, credit applied, total paid and balance; for invoice 8/2026 the generated PDF also carries a Payments table with Date '4 Sep 2026' and Mode 'CASH', so payment mode and date are both present. AC2: the SAF picker opens with a sensible default name (lodgy-receipt-8-2026.pdf) and writes to the chosen location - same pattern as LODGY-23/28. AC3: numbers match the records exactly - pulled the files and extracted their text: invoice 5/2026 rendered 3000 invoice / 800 credit / 2200 due against DB rows amountDue=3000.0 and credits.amount=800.0; invoice 8/2026 rendered 6000/6000/0. Both files are structurally valid (%PDF-1.4 header, %%EOF, correct page tree) and carry a '1 / 1' page footer."
     }
   ]
 }

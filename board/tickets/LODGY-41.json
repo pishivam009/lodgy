@@ -7,11 +7,11 @@
     "Each floor card shows counts like 'X vacant / Y occupied' (beds or rooms, consistent with how VacantViewScreen counts)",
     "Counts update live when a checkout/onboarding changes a bed's status, without needing to leave and reopen the floor list"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T17:58:37+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -34,6 +34,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Floor cards now show 'N vacant / M occupied'. FloorListViewModel combines the floors flow with BedDao.observeOccupancyByHostel (the LEFT-JOIN version, so a floor with no rooms or no beds yet still reports 0/0 instead of disappearing from the summary), producing a FloorListItem per row. Because both sides are Room Flows, a checkout or onboarding that flips a bed re-emits and the card updates in place - no leaving and reopening the screen. Counts are bed-level to match how VacantViewScreen counts, so the two screens are not silently measuring different things. FloorListViewModelTest covers per-floor counts and the empty-floor case. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. AC1: each floor card shows 'X vacant / Y occupied' - Ground read '0 vacant / 0 occupied' before any rooms existed, then '5 vacant / 1 occupied' once a tenant was in, matching how VacantViewScreen counts (bed level). A floor with no rooms still reports 0/0 rather than vanishing. AC2: counts are live - FloorListViewModel combines the floors flow with bedRepository.observeOccupancyByHostel(), a Room Flow that invalidates on any beds-table write, so an onboarding, transfer or checkout updates the card without leaving and reopening the list. Confirmed by the counts being correct immediately after a bed transfer and again after checkout."
     }
   ]
 }

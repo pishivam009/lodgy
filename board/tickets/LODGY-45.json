@@ -8,11 +8,11 @@
     "PDF is legible and organized (grouped by hostel/room/tenant), not a raw data dump",
     "Exported via SAF like other exports (LODGY-23/28), so it can be saved, printed, or shared"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T18:33:41+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -41,6 +41,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Printable records packet built on LODGY-56's renderer, the same one LODGY-37 uses - no second pipeline. pdf/DataPacket.kt structures the document hostel -> floor -> room+bed -> tenant, which is how a warden walks the property, rather than a flat dump in whatever order the database returned: per hostel a title, address and bed summary; per floor a heading; per tenancy a 'Room 204 - Bed B - Ravi' heading with phone, status, agreed rent, move-in (and move-out only when there is one), then a Period/Due/Paid/Status table of the whole invoice history - or a plain sentence where a tenancy has no invoices and where a hostel has no tenancies at all, so an empty property is still visibly present instead of silently missing. DataPacketViewModel gathers it with a scope of This hostel (default) or All hostels, counts beds from the bed rows, takes each bed's latest agreement so a moved-out tenancy still appears rather than vanishing, orders invoices oldest period first, and runs every amount through effectiveAmountDue() so the packet agrees with the rest of the app about credits. Reached from More -> Printable records (PDF), exported via the same SAF CreateDocument path as LODGY-23/28/37 as lodgy-records-<date>.pdf. Tests: DataPacketTest asserts the grouping order, the invoice table, the no-invoices and no-tenancies cases, move-out row presence, and that a 32-tenancy property paginates across pages without losing a tenancy; DataPacketViewModelTest covers scope switching, bed counts, invoice ordering with a credit applied, and beds that were never occupied. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - the export works, but it prints a factually wrong statement about a current resident. AC1 and AC3 pass: More > Printable records (PDF) offers 'This hostel' / 'All hostels' with record counts, and saves via SAF (lodgy-records-2026-09-04.pdf). AC2 is mostly good - the packet is genuinely organised rather than a dump: hostel name and address, a beds summary, then floor > room > tenant with phone, status, rent and dates, and a per-tenant invoice history table with correct credit-adjusted amounts, all legible with page footers, and it renders correctly in Hindi too. THE BUG: for a tenant who is ACTIVE and has merely given notice, the packet prints 'Moved out: 20 Sep 2026'. The same record says 'Status: ACTIVE' three lines above, so the document contradicts itself and tells anyone reading it that a current resident has already left. WHAT I DID: set a planned move-out date of 20 Sep 2026 on Ramesh Kumar (still ACTIVE, bed still OCCUPIED, exactly as LODGY-49 intends), then exported the printable records packet. WHAT I EXPECTED: either no move-out line, or one clearly labelled as a planned/notice date. WHAT HAPPENED: it is labelled 'Moved out', identically to a real completed checkout. ROOT CAUSE: pdf/DataPacket.kt:77 does tenancy.moveOutDate?.let { add(PdfBlock.KeyValue(labels.movedOut, it)) } with no check of the agreement's status. LODGY-49 now writes a planned moveOutDate onto ACTIVE agreements, so that field no longer means 'has moved out'. SUGGESTED FIX: branch on agreement status - label it 'Moved out' only for a CLOSED agreement, and use a separate 'Notice given / Leaving on' label while ACTIVE. This matters more than an ordinary display bug because the entire point of this ticket is a document the warden prints and hands to someone."
     }
   ]
 }

@@ -10,11 +10,11 @@
     "Notification does not repeat daily for the same still-vacant bed (once per bed until it's occupied again, or a sensible re-notify cadence, not a daily nag)",
     "Runtime POST_NOTIFICATIONS permission (Android 13+) is requested appropriately and the feature degrades gracefully if denied"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T19:17:05+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -43,6 +43,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built the shared notification plumbing and the vacancy check on top of it. notify/LodgyNotifications.kt owns the two channels, the permission check and the tap target, so every send goes through one place; every post is best-effort and wrapped, because a denied permission must leave a working app (AC 5) - the POST_NOTIFICATIONS request is made on Android 13+ at startup and a denial is simply accepted, with the settings screen saying plainly that Android is blocking them. VacancyCheckWorker runs daily via WorkManager, matching LODGY-15's existing periodic pattern. The threshold is data, not a constant: NotificationPreferences.vacancyThresholdDays defaults to 7, is clamped to 1-90, and is set from More -> Notifications. Long-vacant beds come from BedDao.getLongVacantBeds, which reads beds.updatedAt - for a VACANT bed that is when it was freed, the closest thing the schema has to 'vacant since', and the join names hostel, room and bed so the notification says which bed rather than just a count. AC 4 lives in notify/VacancyNudge.kt as a pure function: a bed is nudged once and then remembered, and the remembered set is pruned to beds that are STILL vacant - so a month-long vacancy produces one notification rather than thirty, while a bed that fills and later empties again is treated as new, which is exactly when the warden wants to hear about it. Tapping opens the Vacant beds view; because the app is PIN-gated the route travels as an intent extra and is replayed by LodgyNavHost after unlock rather than navigated to immediately, and the route constants are shared with the NavHost so a rename cannot silently break the tap. Tests: VacancyNudgeTest for first nudge, no repeat, forget-on-fill and re-nudge, and the empty case; NotificationSettingsViewModelTest for the threshold options and the blocked-permission state. assembleDebug and testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all five, with one honest caveat on how AC3/AC4 were verified. AC1: VacancyCheckWorker is scheduled and enqueued as periodic work (confirmed via WorkManager diagnostics: unique name 'vacancy-check', state ENQUEUED) and selects beds with getLongVacantBeds(cutoff) where cutoff = now - thresholdDays. AC2: More > Notifications lets the warden pick 3 / 7 / 14 / 30 days and defaults to 7 - the worker reads notificationPreferences.vacancyThresholdDays rather than a constant, and VacancyCheckWorkerTest asserts \"the warden's threshold decides the cutoff, not a constant\". AC3: the notification text is built from hostelName, roomNumber and bedLabel, and the worker's query joins beds->rooms->floors->hostels to supply them. AC4: no daily nag - already-notified bed ids are persisted and skipped, and are forgotten once a bed fills again ('a bed already nudged about is not nudged again', 'a bed that has since been filled is forgotten even though nothing is posted'). AC5: verified live - the POST_NOTIFICATIONS prompt appeared on first launch, and after revoking the permission and relaunching, the app started, unlocked and rendered the dashboard normally with no crash or SecurityException. CAVEAT: I could not observe an actual vacancy notification land. I backdated two beds to 30 days vacant, but WorkManager refuses to run periodic work ahead of schedule ('Delaying execution ... because it is being executed before schedule') and this emulator image is a production build with no root, so the clock cannot be advanced. AC3/AC4 therefore rest on worker unit tests plus code inspection rather than an observed notification - worth one manual confirmation on a real device before this ships."
     }
   ]
 }

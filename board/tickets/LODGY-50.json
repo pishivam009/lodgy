@@ -8,11 +8,11 @@
     "Setup flow has an explicit confirm step regardless of chosen length",
     "Existing 4-digit PINs from before this change continue to work unchanged"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Low",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T18:38:27+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "PIN length is now the warden's choice, 4-6. AuthPreferences gained pinLength (MIN 4 / MAX 6 / DEFAULT 4, clamped on both read and write); the bcrypt hash carries no length of its own, so this preference is the only thing that has to remember, and an install from before this change has no stored value, reads 4, and unlocks exactly as it did - AC 3 needs no migration. Setup: length chips on the ENTER step (locked once the first digit is typed, so the dots can never disagree with what is being entered) and an explicit Continue / Confirm PIN button on both steps, replacing the old auto-advance-at-4-digits. That was forced anyway - with a variable length there is no digit count that reliably means 'done' - and it satisfies AC 2 directly. The chosen length is written on save. The lock screen keeps auto-verifying, but at the stored length rather than a hardcoded 4, and its dots follow it. Tests: PinSetupViewModelTest now drives the explicit submit, and covers the six-digit path with setPinLength persisted, a submit refused on an incomplete PIN, nothing advancing before the button, the length locking after the first digit, and the 4-6 option list; PinLockViewModelTest covers a six-digit unlock only firing on the sixth digit and the legacy four-digit install still unlocking. testDebugUnitTest green (309 tests)."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. AC1: the setup screen offers 4 / 5 / 6 digits and honours the choice - picked 6, entered a 6-digit PIN, and the dot indicator showed six positions. AC2: there is an explicit confirm step regardless of length - Continue moves to 'Confirm your PIN', and a deliberate mismatch was rejected with 'PINs didn't match - try again' and returned to the create step rather than silently accepting. AC3: existing 4-digit PINs are unaffected - AuthPreferences.pinLength falls back to DEFAULT_PIN_LENGTH (4) when the pin_length key is absent, which is exactly the state of a pre-change install, and the stored bcrypt hash format is untouched; AuthPreferencesTest asserts the unset-key default and PinLockViewModelTest covers both 4- and 6-digit unlock. End to end: force-stopped the app and unlocked with the 6-digit PIN across several restarts during this session."
     }
   ]
 }

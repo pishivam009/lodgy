@@ -8,11 +8,11 @@
     "Reachable directly from the hostel screen, not just via each floor",
     "Tapping a room still opens its normal bed grid / edit flow"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T17:56:00+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Added a hostel-level All Rooms screen (ui/property/AllRoomsScreen.kt + AllRoomsViewModel.kt, route all_rooms/{hostelId}). RoomDao.getByHostelIdWithFloor returns rooms joined to their floor already ordered by floor sortOrder then room number, so each row carries its floor label without a per-room lookup, and BedDao.observeRoomOccupancyByHostel supplies the same vacant/total line the floor-scoped room list shows. Reachable from the hostel's own screen - an 'All rooms' action in FloorListScreen's app bar, so no floor has to be opened first. Tapping a room goes to its normal bed grid, the same destination the per-floor list uses. AllRoomsViewModelTest covers the cross-floor listing and bed counts, including a room with no beds yet. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. AC1: 'All rooms' lists every room across every floor with the floor label on each row (Ground / Room 101 / 2 vacant / 2 beds / DOUBLE). AC2: reachable directly from the hostel screen via the 'All rooms' top-bar action, no floor drill-down needed. AC3: tapping Room 102 from this view opened its normal bed grid with the usual All/Vacant/Occupied filters, identical to arriving via the floor route."
     }
   ]
 }

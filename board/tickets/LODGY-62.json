@@ -9,11 +9,11 @@
     "No status is ever conveyed by icon or color alone without a text label still available somewhere (for accessibility/screen readers and for anyone unfamiliar with the icon set) - this reduces reliance on translated text, it doesn't remove the translation entirely",
     "Icon set is consistent with the app's existing stroke-icon style (ui/icons/CommonIcons.kt)"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T22:00:00+00:00",
-  "updatedAt": "2026-09-03T17:33:30+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T22:00:00+00:00",
@@ -36,6 +36,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Added ui/icons/StatusIcons.kt (BedVacant/BedOccupied/Check/Half/Alert/Exit, all built with the existing strokeIcon helper so they match the app's stroke set) and a matching .icon extension next to LODGY-36's .level, so a state's colour and symbol are decided in the same place. StatusBadge now takes the icon, draws it ahead of the text, and passes the label as the icon's contentDescription - the text is never removed, so screen readers and anyone unfamiliar with the symbol still get it, and no status is icon- or colour-only. Converted: invoice status chips, tenant status badges (directory + profile), VacantViewScreen rows, and BedGridScreen tiles where the label is demoted to labelSmall beside a leading icon. StatusLevelTest extended to assert each state has a distinct icon. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all four. AC1: bed status leads with an icon on both BedGridScreen and VacantViewScreen - distinct occupied-bed and empty-bed glyphs carrying the LODGY-36 RAG colour, with the VACANT/OCCUPIED text present but secondary (smaller, and after the icon). AC2: consistent icon per state everywhere - invoices use Alert / Half / Check for Unpaid / Partial / Paid, tenants use Check for ACTIVE and Exit for VACATED, all mapped once in ui/common/StatusTokens.kt rather than per screen. AC3: nothing is icon- or colour-only - every badge still renders its text label, and the icons carry contentDescription (they surfaced as [VACANT]/[OCCUPIED]/[Paid]/[ACTIVE] in the accessibility tree), so screen readers and anyone unfamiliar with the icon set are covered. AC4: style is consistent - StatusIcons and CommonIcons are both built with the same shared strokeIcon() helper (24dp, stroke-only, no fill), so the new status glyphs match the existing set exactly."
     }
   ]
 }

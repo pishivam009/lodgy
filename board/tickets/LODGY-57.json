@@ -10,11 +10,11 @@
     "Changing a Room's type while it has an occupied bed shows a confirmation before applying",
     "Routine non-destructive edits (renaming a hostel, editing a phone number, etc.) are explicitly NOT changed - no new confirmation added where there's nothing destructive happening"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T16:29:22+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -37,6 +37,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed. (1) Room delete: RoomListViewModel.requestDelete() no longer deletes - it sets pendingDeleteRoom; new confirmDelete()/dismissPendingDelete(). RoomListScreen shows a Delete/Cancel AlertDialog; the occupied-bed hard block is unchanged and still takes precedence. (2) Room type change: RoomFormViewModel.save() now checks type-changed + hasOccupiedBed and raises showTypeChangeConfirm instead of persisting; confirmTypeChange()/dismissTypeChangeConfirm() added, save path refactored into a private persist(). Dialog in RoomFormScreen. (3) Floor delete: AUDITED, NO CODE CHANGE NEEDED - FloorListScreen already has the pendingDelete AlertDialog and floor_delete_body already states 'and any rooms/beds under it will be removed'. The ticket description called FloorListViewModel.delete() unguarded, which is true at the VM level but the screen gates it. (4) Note delete: untouched, used as the pattern. (5) No confirmations added to routine edits. New strings in values/ and values-hi/. Tests: 7 new/updated ViewModel tests (RoomListViewModelTest, RoomFormViewModelTest); full testDebugUnitTest suite + assembleDebug green. FLAG FOR PO: deleting a floor still cascades to rooms/beds with NO occupied-bed check, unlike room delete which hard-blocks. Out of this ticket's ACs so I did not add it - worth its own ticket if wardens can lose an active tenancy that way."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all five, each exercised on the emulator. AC1: the originally reported bug is fixed - deleting an ordinary vacant room (Room 103) now shows 'Delete this room? Room 103 and its beds will be removed. This can't be undone.' with Cancel/Delete, and the occupied-bed hard block still takes precedence. AC2: deleting a floor shows 'Delete this floor? First and any rooms/beds under it will be removed.' - it states the cascade plainly. AC3: note deletion still uses its existing pattern ('Delete this note? This can't be undone.'), unchanged. AC4: changing Room 102's type from DOUBLE to SINGLE while it had an occupied bed raised 'Change room type? This room has a bed with an active tenant. Changing its type will leave the bed count out of step with the new type. Continue?' before applying. AC5: confirmed nothing was over-applied - editing only the price on that same occupied room (5000 -> 5500) saved immediately with no dialog at all."
     }
   ]
 }

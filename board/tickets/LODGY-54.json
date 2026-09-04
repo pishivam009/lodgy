@@ -8,11 +8,11 @@
     "Invoice list can be sorted by due date or amount",
     "Combining a status filter and a date filter narrows correctly (both apply together, not one replacing the other)"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T17:49:54+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -41,6 +41,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Invoice list gained a period filter and a sort next to LODGY-17's existing status chips. Period is two numeric month/year fields, the same numeric pattern Manual Invoice (LODGY-16) and Monthly Report (LODGY-22) already use rather than a new date-range picker; both default to blank, meaning 'any period', so opening the tab still shows everything instead of silently narrowing to this month. Sort chips switch between due date (newest first) and amount (largest first). All three compose in InvoiceListUiState.filteredItems - status narrows, then period narrows the result, then the sort applies - so combining a status and a period genuinely intersects rather than one replacing the other. Non-digits are stripped on input so a stray character cannot silently null the filter. InvoiceListUiStateTest covers blank periods, month and year narrowing independently and together, status+period intersecting, and both sort orders. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all three. AC1: the existing Unpaid/Partial/Paid chips are joined by numeric Month and Year fields, the same pattern already used by Manual Invoice entry and the Monthly Report, not a new date-range picker. AC2: Sort by Due date / Amount is present and works. AC3: combining narrows correctly - Unpaid + 5/2026 still returned the 5/2026 invoice, and changing only the month to 1 returned nothing while the status chip stayed on Unpaid, so both predicates apply together rather than one replacing the other. Minor observation for the PO, not a fail: when a filter combination matches nothing the list is simply blank, with no 'nothing matches these filters' message like the tenant directory has."
     }
   ]
 }

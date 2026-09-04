@@ -9,11 +9,11 @@
     "Invoice list rows and the payment recording screen show room+bed, not just tenant name",
     "A vacated tenant's historical room+bed still displays (not blanked out after checkout)"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T17:24:58+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -36,6 +36,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Room+bed now travels with tenant identity everywhere. Added data/dao/BedLocation.kt (roomNumber + bedLabel) resolved in one beds-JOIN-rooms query via BedDao.getLocation/BedRepository.getLocation, and TenancyAgreementDao.getLatestByTenantId (ORDER BY status = 'ACTIVE' DESC, moveInDate DESC) so a vacated tenant still resolves to the bed they last occupied - that's AC 4. Shared ui/common/BedLocationLabel.kt renders it as the single 'Room 204 - Bed B' string (R.string.bed_location, en + hi) so no screen formats it itself. Consumers: TenantDirectoryScreen rows (location above the name, primary colour), TenantProfileScreen (directly under the name near the top), InvoiceListScreen rows, and RecordPaymentScreen's invoice header. Tests: TenantDirectoryViewModelTest and TenantProfileViewModelTest gained location cases (including closed-agreement and no-agreement-at-all); InvoiceListViewModelTest and RecordPaymentViewModelTest assert the enriched location. gradlew testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC1 and AC2 - the room+bed label is rendered, but it is stale: it shows the wrong value, or nothing at all, until the ViewModel happens to be recreated. AC3 and AC4 pass and are genuinely good: invoice rows and the Record Payment screen both show 'Room 102 - Bed A', and after checkout the vacated tenant still shows their historical room+bed with a VACATED badge rather than being blanked. THE BUG, two reproductions. (1) Onboard a tenant: the directory row shows name and phone but NO room+bed at all; force-stop and relaunch and 'Room 101 - Bed A' appears. (2) With that tenant in Room 101 Bed A, transfer them to Room 102 Bed A: the transfer is correct in the DB, but the tenant profile still reads 'Room 101 - Bed A' on return, and the directory row still reads 'Room 101 - Bed A' too. Both correct themselves only once the screen's ViewModel is recreated. ROOT CAUSE: the location is resolved once and never re-observed. TenantProfileViewModel.init (lines 42-48) does a single suspend read - getLatestByTenantId() then getLocation() - assigns _location and never refreshes, so a bedId change cannot reach it. TenantDirectoryViewModel.init recomputes items only inside tenantRepository.getAll().collect { ... locationOf(it.id) }, i.e. only when the TENANTS table emits; onboarding inserts the tenant row BEFORE the agreement is created, and a transfer touches only tenancy_agreements, so neither triggers a recompute. I confirmed the data layer is fine - the DAO join returns ('101','A') correctly and the label is right after a restart - so this is purely a refresh problem. SUGGESTED FIX: have both ViewModels observe tenancy_agreements (and beds) as Flows and derive location reactively, instead of reading it once per tenants-table emission."
     }
   ]
 }

@@ -8,11 +8,11 @@
     "Reconciled periods are visually distinguished from not-yet-reconciled ones in the Monthly Report / Payments views",
     "This is a manual attestation, not an automated diff against anything - it does not block or alter any data"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T18:50:12+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Reconciliation is a per-hostel, per-month attestation and nothing more. New ReconciliationMark entity (hostelId + periodMonth + periodYear, unique index on that triple so a period cannot be marked twice, CASCADE on hostel delete, optional note field reserved for later) with its own DAO and ReconciliationRepository; DB to version 3 with MIGRATION_2_3, again diffed against Room's exported schemas/3.json and matching it exactly. Surfaced on the Monthly Report as a 'Checked against paper records' switch, reading either 'You marked this month as matching your register' or 'Not checked against your register yet', and carried into the CSV export so a saved or printed report says whether it was reconciled. AC 3 is the important one and holds by construction: the mark lives in its own table, is written and read only by this switch, and no query anywhere filters, alters or gates on it - nothing is diffed against anything, and turning the switch back off deletes the row, so a mistaken attestation is reversible. MonthlyReportViewModelTest covers reading an existing mark, and that toggling writes then removes it. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC2 - only half the requirement is built. AC1 passes: the Monthly Report has a 'Checked against paper records' switch that marks a given month for a given hostel, the state persists (re-opened 9/2026 later and it still read 'You marked this month as matching your register'), and it is stored as its own reconciliation_marks row. AC3 passes: it is purely a manual attestation - flipping it altered no invoice, payment or total, and nothing is diffed or blocked. AC2 says 'Reconciled periods are visually distinguished from not-yet-reconciled ones in the Monthly Report / Payments views'. The Monthly Report does this (the switch plus 'You marked this month as matching your register.' vs 'Not checked against your register yet.'), and the CSV export carries it too. The Payments view does not. WHAT I DID: marked 8/2026 as reconciled, then opened the Invoices list. WHAT I EXPECTED: the 8/2026 invoice visually distinguished from the unreconciled 6/2026 and 7/2026 ones. WHAT HAPPENED: all three rows render identically - no badge, tint or marker of any kind. Confirmed in code: grepping for 'reconcil' across ui/ returns hits only in MonthlyReportScreen/ViewModel; nothing in the invoice list or its ViewModel consumes ReconciliationRepository. SUGGESTED FIX: surface the period's reconciled state on the invoice row (a small 'checked' marker keyed on the invoice's periodMonth/periodYear plus hostel). PO NOTE: if 'Monthly Report / Payments views' was only ever meant to mean the report screen, say so and I will pass this on the next round - I am reading the slash as naming two screens."
     }
   ]
 }

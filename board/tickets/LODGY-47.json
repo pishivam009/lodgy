@@ -8,11 +8,11 @@
     "New unit tests added for BackupManager (export/stageImport/applyStaged) and InvoiceGenerationWorker's doWork() logic, which currently have no dedicated tests",
     "Coverage gate in build.gradle.kts reviewed and raised if the new tests support it"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T05:44:27+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Coverage report first: this session's work had pulled the figure down to 85.3%, so the gaps this ticket names were joined by newer ones. Now 97.12% line coverage (2799/2882) with the gate raised from 0.80 to 0.93 - a few points below the measured figure, high enough that a whole feature landing untested trips it, loose enough that one uncovered branch does not block a build. One correction to the ticket's premise: BackupManager already has BackupManagerTest covering export, stageImport (including the zip-slip rejection), applyStaged and both stream-failure paths - it must have been added after this ticket was written, so no work was needed there. InvoiceGenerationWorker's doWork() IS reachable from a plain JVM test after all, with mocked Context/WorkerParameters - the exclusion claiming otherwise was wrong and is gone. New tests: InvoiceGenerationWorkerTest (bills today's agreements, skips other days, never double-bills a period, attaches pending credits), VacancyCheckWorkerTest and DuesReminderWorkerTest (both switches, the notified-set bookkeeping, the warden's threshold driving the cutoff, overdue vs future vs settled invoices, recurring vs one-off expenses), CreditRepositoryTest, ReconciliationRepositoryTest, NotificationPreferencesTest, ThemePreferencesTest, AuthPreferences pin-length round-trip and clamping, BedRepository's new aggregate queries, TenancyAgreementRepository's transferBed and setPlannedMoveOut, both new WorkScheduler jobs, and the BedFilter matcher. Exclusions rewritten to be honest rather than convenient: added only things with no JVM-reachable logic - Compose-only files (FilterChipRow, StatusBadge, AppRoot, icon sets), Migrations (raw SQL needing an instrumented MigrationTestHelper; each migration's SQL is instead diffed against Room's exported schema JSON when written), and thin Android wrappers (LodgyPdfRenderer, LodgyNotifications, HistoryCsvReader, PhotoStorage) whose logic was deliberately extracted into the testable PdfLayout/VacancyNudge/DuesNudge/HistoryCsv. To make that split real, ui/common/StatusBadge.kt was divided into StatusTokens.kt (pure level/icon/filter mapping, tested) and StatusBadge.kt (composables only, excluded). jacocoCoverageVerification passes at the new gate."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. AC1: ./gradlew jacocoTestReport produces the report and it does identify the thin spots - overall LINE coverage is now 97.12% (2802 covered / 83 missed), the remaining misses being one-line synthetic lambdas and Compose helpers. AC2: both named gaps are closed - BackupManagerTest.kt has 7 tests covering export, stageImport and applyStaged, and InvoiceGenerationWorkerTest.kt has 5 tests exercising doWork(). AC3: the gate was reviewed and raised - git history shows minimum 0.80 -> 0.93, with an in-file comment explaining the choice (measured 97.1%, set a few points below so a whole untested feature trips it but one uncovered branch does not block a build). jacocoCoverageVerification passes and the full testDebugUnitTest suite is green."
     }
   ]
 }

@@ -9,11 +9,11 @@
     "Notifications are actionable - tapping one opens the relevant invoice or expense, not just the app's home screen",
     "Warden can turn this category of notification off from the More tab without turning off the vacant-room notifications from LODGY-59"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-03T19:17:05+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -42,6 +42,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "DuesReminderWorker runs daily alongside the vacancy check and covers both halves of the ticket. Overdue invoices: anything not PAID whose dueDate is before the start of today, with the outstanding figure computed through the same effectiveAmountDue() as the rest of the app - an invoice already settled by a credit or a payment whose status row has not caught up is skipped rather than nagged about. Recurring expenses: notify/DuesNudge.kt reads the day component of the last-logged incurredOn on any expense with isRecurring set - a direct read of the existing flag with no pattern inference across entries, as the ticket resolved - and fires within three days ahead of that day, never after it has passed; a 31st expense is clamped to the last day of a shorter month rather than being skipped in February. Both are actionable per AC 3: an invoice notification opens that invoice's Record payment screen and an expense notification opens that expense's form, carried as an intent extra and replayed after the PIN gate. AC 4 is a separate switch: NotificationPreferences.duesEnabled is independent of vacancyEnabled, each worker reads only its own, so turning this category off in More -> Notifications leaves LODGY-59's vacancy nudges running. Needed ExpenseCategory.labelRes split out of the composable label() so the worker resolves the same translated string through a plain Context instead of duplicating the mapping, and ExpenseRepository.getAll() since the check is not scoped to the selected hostel. Tests: DuesNudgeTest for the lead window, the already-passed case, the month-end clamp and startOfDay; NotificationSettingsViewModelTest for the independent switches. assembleDebug and testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all four, AC3 confirmed live. AC1: DuesReminderWorker notifies on invoices past their due date that are still Unpaid/Partial, and correctly leaves alone ones not yet due, already paid, or already covered once payments AND credits are counted (so a credited invoice is not nagged about). AC2: recurring expenses are driven by a direct read of the isRecurring flag against incurredOn's day-of-month, notified a few days ahead - 'a one-off expense is never notified, however recently it was logged' confirms there is no pattern inference across entries. AC3: verified end to end on the emulator - launched with the notification route extra and, after the PIN gate, the app replayed the route and landed on the Vacant Beds screen rather than the home screen; the route is deliberately deferred until past the lock, and DuesReminderWorkerTest asserts the invoice and expense taps carry routeToRecordPayment(invoiceId) and routeToExpense(expenseId). AC4: More > Notifications has a 'Payments and expenses' switch independent of the 'Long-vacant rooms' one, and turning it off skips both dues and expense checks without touching vacancy. Same caveat as LODGY-59: periodic work could not be forced to run on this emulator (no root to advance the clock), so AC1/AC2 rest on unit tests plus code inspection rather than an observed notification."
     }
   ]
 }

@@ -7,11 +7,11 @@
     "Tenant directory can filter to Active-only (hide vacated) and sort by name or room",
     "Filter/sort state resets sensibly and doesn't silently hide data the warden forgot was filtered"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T17:41:01+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -40,6 +40,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Tenant directory now has a filter (Active only / All, defaulting to Active only) and a sort (Name / Room). AC 2 is handled by never hiding anything silently: both chip rows are always on screen showing the live selection, and whenever the filter drops rows the list is preceded by 'N vacated tenant(s) hidden by this filter', so the default can be the helpful one without a warden losing track of it. Room sort uses roomSortKey(), which orders numeric rooms numerically ('204' before '1005' - a plain string sort gets this backwards), then text-labelled rooms like 'G-2', then tenants with no room at all; name sort is case-insensitive. Added the shared ui/common/FilterChipRow.kt (horizontally scrolling so a long option set never clips) which LODGY-53/54/55 will reuse. TenantDirectoryViewModelTest covers the default filter and its hidden count, switching to ALL, case-insensitive name sort, and the three-way room ordering. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. AC1: the tenant directory has an Active only / All filter and a Sort by Name / Room control; sorting by Room uses the real bed location (roomSortKey in TenantDirectoryViewModel handles numeric room prefixes and puts tenants with no room last). AC2: verified the important half live - after checking Ramesh out, the default Active-only view showed the explicit banner '1 vacated tenant(s) hidden by this filter', so hidden data is announced rather than silently dropped; switching to All brought the vacated tenant back. Minor UX nit for the PO, not a fail: when the filter hides everything, that banner sits above the empty-state text 'No tenants yet. Tap + to onboard your first one.', which reads oddly since there IS a tenant."
     }
   ]
 }

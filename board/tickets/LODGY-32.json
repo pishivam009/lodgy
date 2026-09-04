@@ -9,11 +9,11 @@
     "Switching applies immediately without restarting the app",
     "Preference persists across app restarts"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T17:37:06+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -42,6 +42,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Dark mode landed on top of LODGY-36's tokens. data/prefs/ThemePreferences.kt stores LIGHT/DARK/SYSTEM in its own DataStore (unknown/absent value reads as SYSTEM); ui/theme/ThemeViewModel.kt exposes it as a StateFlow and writes changes back. MainActivity collects it and resolves SYSTEM through isSystemInDarkTheme() before handing darkTheme to LodgyTheme, which already picks DarkStatusColors for the same flag - so dark mode adjusts LODGY-36's RAG tokens rather than defining any of its own. The picker is More -> Appearance; it applies on tap with no confirm and no activity recreate (unlike the language switcher, which has to go through AppCompatDelegate), because both the dialog and MainActivity read the same DataStore flow. Darkened LodgySecondary/LodgyError into DarkColors so the dark scheme is not carrying light-scheme accents. Renamed LanguageOptionRow to OptionRow now that both dialogs use it. ThemeViewModelTest covers stored value, the SYSTEM fallback, and persistence. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC1 - the PIN lock screen is broken in dark mode, and it is the first screen the warden sees on every single launch. AC2, AC3 and AC4 all pass: More > Appearance offers Light/Dark/System default, selecting Dark recoloured the app instantly with no restart, and the choice survived a force-stop. But AC1 says 'adequate contrast on all screens' and PinLockScreen is not. WHAT I DID: set Appearance to Dark, force-stopped the app, relaunched. WHAT I EXPECTED: the lock screen in dark, like every other screen. WHAT HAPPENED: a broken mixed state - a light/near-white page background with dark-grey keypad buttons and near-black digits drawn on them. The digits 1-0 are barely readable and 'Enter your PIN' is pale grey on white. It does not settle after loading; it stays that way until you unlock. ROOT CAUSE (found in code): LodgyTheme (ui/theme/Theme.kt) calls MaterialTheme(...) directly and never wraps content in a Surface. Nothing therefore paints a themed window background - the light background is coming from the static android:windowBackground in the XML theme - and LocalContentColor is never set to onSurface, so text falls back to near-black. Every other screen hides this because it uses a Scaffold, which supplies both its own background and its content colour. PinLockScreen has no Scaffold (grep: 0 occurrences; PinSetupScreen has 2, which is why first-run setup looked fine). SUGGESTED FIX: wrap the content of LodgyTheme in a Surface(color = colorScheme.background) so the theme paints its own ground and sets content colour, rather than bolting a Scaffold onto this one screen. Please re-check the PIN setup screen in dark once fixed - it renders correctly today only because it happens to use a Scaffold."
     }
   ]
 }

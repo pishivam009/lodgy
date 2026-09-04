@@ -10,11 +10,11 @@
     "Color choices remain distinguishable for common color-vision deficiencies (not color-alone - pair with icon/label, see LODGY-62)",
     "LODGY-32 (dark mode) consumes and adjusts these same tokens rather than defining its own"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T17:31:03+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -43,6 +43,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built the RAG token set. ui/theme/StatusColors.kt defines StatusLevel (GOOD/WARN/BAD plus NEUTRAL for a state that is neither, i.e. a vacated tenant), StatusPalette (accent + container + onContainer) and Light/DarkStatusColors, handed down through LodgyTheme via LocalStatusColors so LODGY-32 flips the whole app by swapping one value rather than editing call sites. ui/common/StatusBadge.kt holds the single StatusLevel mapping for BedStatus/InvoiceStatus/TenantStatus plus the one StatusBadge composable every screen now draws. Consumers converted: BedGridScreen tiles (green vacant / red occupied instead of primaryContainer-vs-surface), VacantViewScreen rows, InvoiceListScreen's StatusChip (was an untinted SuggestionChip), TenantDirectoryScreen rows and TenantProfileScreen. Green is pulled toward teal and amber toward orange to stay separable under red-green CVD, and every badge still carries its text label - colour is never the only cue (LODGY-62 adds the icon on top of these same tokens). New StatusLevelTest covers the mappings and that each level resolves to a distinct palette in both schemes. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS on emulator (Pixel-class 1080x2400 @420dpi). AC1: single RAG token set in ui/theme/StatusColors.kt (StatusLevel GOOD/WARN/BAD/NEUTRAL + StatusPalette), exposed via LocalStatusColors and consumed through ui/common/StatusTokens.kt - no per-screen status colours anywhere. AC2: verified live - Room 102 bed grid and the Vacant Beds screen both render VACANT green / OCCUPIED red from the same tokens. AC3: verified live - Unpaid=red, Partial=amber, Paid=green on the invoice list; ACTIVE=green and VACATED=neutral on the tenant directory after checking Ramesh out. AC4: green is pulled to teal and amber to orange for red-green CVD separation, and every state also carries an icon + text label (see LODGY-62). AC5: LodgyTheme provides DarkStatusColors; re-checked the bed grid and invoice list in Dark and the RAG pairs stay correct and legible. Observation for the PO, not a fail: NotesTimelineScreen.kt:47-51 still hardcodes three note-TYPE dot colours as fixed hex that do not adapt to dark mode. Note type is a category, not a RAG status, so it is outside this ticket's ACs - flagging in case you want a follow-up."
     }
   ]
 }

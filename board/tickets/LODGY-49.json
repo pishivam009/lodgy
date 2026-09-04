@@ -8,11 +8,11 @@
     "Home dashboard's 'Upcoming move-outs' tile (LODGY-20) now genuinely populates from real data",
     "The planned date does not auto-checkout the tenant - checkout (LODGY-14) remains an explicit separate action on or after that date"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T18:01:30+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -35,6 +35,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Notice/planned move-out now exists, so LODGY-20's Upcoming move-outs tile has a real data source. TenancyAgreementRepository.setPlannedMoveOut() writes moveOutDate on the agreement and changes nothing else - status stays ACTIVE, the bed stays OCCUPIED, no deposit settlement - which is exactly the shape the dashboard query already looked for (ACTIVE + moveOutDate in the future), so that tile needed no change to start populating. Passing null withdraws the notice. Surfaced on TenantProfileScreen for active tenants only, as a 'Notice given' card with a date picker (same Material DatePickerDialog pattern as the note and expense forms), a Withdraw notice action once a date is set, and a line stating plainly that recording notice does not check the tenant out. TenantProfileViewModel only reports moveOutDate as a pending notice when the latest agreement is ACTIVE - on a CLOSED one that field is the historical checkout date, not a notice. TenantProfileViewModelTest covers all four cases including that close() is never called. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all three verified live. AC1: the tenant profile has a 'Notice given' card with Set date; picked 20 Sep 2026 for an ACTIVE tenant and it recorded without any checkout, with a 'Withdraw notice' action appearing to clear it. AC2: the dashboard's Upcoming move-outs tile went from 0 to 1 and now lists 'Ramesh Kumar / 20 Sep 2026' - populated from real data, not a placeholder. AC3: no auto-checkout - the tenant stayed ACTIVE with the bed still OCCUPIED after the notice date was set, and the card states plainly 'Recording notice does not check the tenant out - do that separately on the day'. Checkout remained a separate explicit action, which I then ran independently and which behaved correctly (agreement CLOSED, bed VACANT, deposit refund 8500 after a 1500 damage deduction, history preserved). Cross-reference for the developer: the planned date this ticket introduces is what LODGY-45's printable packet mislabels as 'Moved out' - that fix is tracked on LODGY-45, nothing to change here."
     }
   ]
 }

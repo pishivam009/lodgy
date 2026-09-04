@@ -11,11 +11,11 @@
     "Rent amount can be updated at transfer time if the new bed/room has a different price - future invoices use the new rent, past invoices are untouched",
     "The transfer is visible in the tenant's notes/timeline as an event, including old room/bed -> new room/bed"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-03T18:06:02+00:00",
+  "updatedAt": "2026-09-04T07:46:28+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -44,6 +44,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Transfer flow built as ui/tenant/TransferScreen.kt + TransferViewModel.kt, reached from a 'Move to another bed' action on the tenant profile (active tenants only), route transfer/{tenantId}. The core of AC 2: TenancyAgreementRepository.transferBed() does dao.update(agreement.copy(bedId = ..., agreedRent = ...)) on the SAME row - there is no close() and no create(), so invoices and payments keyed to that agreement id remain one continuous tenancy, and the tenant record itself is never touched, so notes and history stay put. Bed flips reuse LODGY-9's BedRepository.setOccupied/setVacant, taking the new bed first and only then releasing the old one, so no window exists where the tenancy points at a bed nobody owns; a transfer onto the tenant's current bed is refused outright rather than freeing the bed they are still in. Rent is prefilled from the agreement, re-prices to the target room's pricePerBed when a bed is picked, and stays editable - invoices are immutable snapshots (DESIGN.md 3) so past ones are untouched and only future generation uses the new figure; the field says so. The move writes a GENERAL note naming old -> new location, with the text built in the composable from R.string.transfer_note so it lands in the warden's language rather than whatever the VM happened to have. Vacant options come from a new BedDao.getVacantBedsByHostel (one join, ordered floor/room/bed) rather than the nested per-room loop BedPickerViewModel still uses - the onboarding picker was left alone deliberately, since rewriting it is not this ticket's risk to take. TransferViewModelTest covers loading, no-active-tenancy, re-pricing and override, the same-agreement guarantee (asserting close and create are never called), the timeline note, and the same-bed refusal. testDebugUnitTest green."
+    },
+    {
+      "timestamp": "2026-09-04T07:46:28+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC1 - the transfer works, but a warden cannot reach it on an ordinary phone. AC2-AC6 all pass and I verified them against the database after forcing the screen open: the SAME agreement row continued with bedId updated in place (id fad3f142... unchanged, still exactly one agreement row - no checkout, no second agreement); the old bed flipped to VACANT and the new one to OCCUPIED with no double-booking or orphan; the tenant's notes, invoices and payments all stayed on the one tenant; rent updated 5000 -> 6000 for future invoices with the existing 5/2026 invoice untouched; and a timeline entry 'Moved from Room 101 - Bed A to Room 102 - Bed A.' was written. THE PROBLEM: AC1 says 'a tenant profile action lets the warden move an active tenant'. On the emulator at its stock 1080x2400 @ 420dpi (411x914dp - an ordinary Pixel-class phone, not an unusual device) the tenant profile is cut off after 'Pay several months at once'. 'Record a credit', 'Move to another bed' and 'Checkout tenant' are all below the fold and there is NO WAY TO SCROLL to them - I swiped repeatedly with no movement. ROOT CAUSE: TenantProfileScreen.kt:88 - the root Column is Modifier.padding(padding).padding(16.dp).fillMaxSize() with no verticalScroll(rememberScrollState()), so overflowing content is simply clipped. PROOF it is layout and not logic: dropping the display to 280dpi revealed all three cards and the transfer then worked perfectly. SUGGESTED FIX: add .verticalScroll(rememberScrollState()) to that Column. Note this same clipping currently hides Checkout, so it is also a regression against the already-delivered LODGY-14 on default settings, and it blocks LODGY-35 in exactly the same way - one fix clears all three."
     }
   ]
 }
