@@ -17,13 +17,19 @@
   "status": "Todo",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:27:10+00:00",
-  "updatedAt": "2026-09-04T12:27:10+00:00",
+  "updatedAt": "2026-09-04T13:37:18+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:27:10+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Requested by the PO: daily auto-backup, last-backup time on the home screen with a one-tap backup icon. Filed with a recommended design and the silent-failure risk called out, because an auto-backup a warden wrongly believes is running is worse than no auto-backup."
+    },
+    {
+      "timestamp": "2026-09-04T13:37:18+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "Cross-reference: LODGY-76 (forgotten PIN) is another argument for this ticket. A warden locked out of their own app loses everything only if there is no recent backup - with a daily automatic one, a forgotten PIN costs them the app state and nothing else."
     }
   ]
 }

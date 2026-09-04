@@ -1,0 +1,29 @@
+{
+  "id": "LODGY-76",
+  "epic": "Auth",
+  "priority": "High",
+  "title": "A warden who forgets their PIN is locked out of their own data forever",
+  "description": "Product Owner question: what happens if the warden forgets their PIN. Checked in code, and the answer today is that they lose everything. THERE IS NO RECOVERY OF ANY KIND. A grep for 'forgot', 'reset' or 'recover' across the whole app returns nothing. There is no security question, no recovery code, no way back. And because Lodgy is deliberately accountless and offline - no email, no server - none of the usual escape hatches exist either. The only route back into the app is to clear its data or reinstall, which destroys every hostel, tenant, invoice and payment on the device. For a warden without a recent backup, years of records end because they mistyped something once too often and then blanked. THE SAVING GRACE, and the reason this is fixable cheaply: the PIN gates the UI, not the data. AppRootViewModel simply chooses between Locked and Unlocked; the Room database is NOT encrypted (no SQLCipher, confirmed - and DESIGN.md 5 records that as an accepted MVP decision). So the records survive a forgotten PIN perfectly well. What is missing is any sanctioned way to get at them. This is a lockout problem, not a cryptography problem, which means it can be solved without weakening anything that is actually protecting data today. THE HONEST TENSION, which the PO should decide with eyes open: every recovery path is also a bypass. A 'forgot PIN' button that wipes and restarts is safe but destroys data. One that reveals or resets the PIN makes the lock decorative, since anyone holding the phone can use it too. Given the real threat model - one warden's own phone, guarding tenant contact details and rent records from casual snooping, not from a determined attacker - the tester's recommendation is to bias towards not losing data, because the realistic disaster here is a locked-out warden, not a thief. OPTIONS, roughly cheapest first: (a) EXPORT WITHOUT UNLOCKING. Let the lock screen offer 'forgot PIN - save a backup first', which runs the existing LODGY-28 export straight to SAF without entering the app, then offers to reset. The warden loses the app state but keeps every record, and can restore after setting a new PIN. This is the smallest change that turns a catastrophe into an inconvenience, and it reuses code that already exists. (b) RECOVERY CODE. Show a one-time code at PIN setup, tell the warden to write it down, accept it in place of the PIN. Standard, but wardens who will not retype a paper register will not store a code either, and it is only as safe as where they put it. (c) BIOMETRIC AS A SECOND KEY. Already built (LODGY-5) - if fingerprint is enrolled it can unlock. Not a fix on its own: it is optional, it can be un-enrolled, and DESIGN.md 4.1 is explicit that biometrics never replace the PIN. But it does mean an affected warden should be told to try it. (d) SECURITY QUESTION. Weakest option - answers are guessable by exactly the people physically near the phone, which is the whole threat model. Recommend against. RELATED: LODGY-46 finding 3 (Medium, OPEN) notes there is no backoff or lockout on repeated PIN attempts. That and this ticket pull in opposite directions and should be decided together - adding a lockout without adding recovery would make this failure permanent faster.",
+  "acceptanceCriteria": [
+    "Product decision recorded on which recovery route is taken, and why the rejected ones were rejected",
+    "A warden who cannot remember their PIN has some sanctioned way to avoid losing their records - at minimum, taking a backup out of the app without unlocking it",
+    "The lock screen makes that route discoverable at the moment it is needed, rather than assuming the warden knows it exists",
+    "If the route resets the PIN, it is explicit about what is lost and what is kept, and confirms before doing anything destructive",
+    "Whatever is added does not silently become a bypass anyone holding the phone can use to read tenant data",
+    "If biometric unlock is enrolled, the warden is pointed at it before any destructive step",
+    "Decided together with LODGY-46 finding 3 on attempt lockout, since a lockout without recovery makes this worse",
+    "USER-MANUAL.md documents what to do, since the warden will be reading it in a panic"
+  ],
+  "status": "Todo",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T13:37:18+00:00",
+  "updatedAt": "2026-09-04T13:37:18+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T13:37:18+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed after the PO asked what happens on a forgotten PIN. Verified in code: no recovery path exists at all, and being accountless and offline there is no email or server fallback either, so the only way back in is clearing data and losing everything. Mitigating factor also verified - the PIN gates the UI, not the data, and the database is not encrypted, so the records survive and only access to them is lost. Filed High because the failure is total and permanent for anyone without a recent backup."
+    }
+  ]
+}
