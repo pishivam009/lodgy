@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-82",
+  "epic": "Rent & Payments",
+  "title": "Rooms used by the warden or a caretaker need zero rent and no dues chasing",
+  "description": "User-reported: some rooms or beds are occupied by the warden themselves or by a caretaker. These should carry no rent, stay out of the payment cycle, and optionally be recorded as an expense at the warden's discretion. WHAT HAPPENS TODAY: such a bed has to be either left marked vacant, which corrupts occupancy and invites the long-vacancy notification to nag about a bed that is actually in use, or set up as a real tenancy, which generates a monthly invoice that is never paid, shows as overdue on the dashboard, and triggers the overdue-rent notification every day. Both are wrong, and the second is actively harmful because it pollutes the money figures a warden relies on. There is no third option. WHAT IT TOUCHES: invoice generation must skip these agreements; the overdue notification and the dashboard's overdue count must exclude them; occupancy should count the bed as occupied, since it genuinely is; the monthly report should not carry phantom dues; and the vacancy notification must not treat it as empty. THE EXPENSE HALF IS SEPARABLE and probably should be separate. Recording forgone rent as an expense is a bookkeeping choice the user explicitly framed as discretionary ('as per warden discretion'), so the safe order is: first stop the app from being wrong about these rooms, then optionally let a warden log the notional cost. Shipping the first half alone already fixes the damage. OPEN QUESTION for the PO: whether this is a flag on the tenancy (a non-revenue occupancy) or a distinct occupancy type. A flag is less invasive and reuses the tenancy record so the room's history still reads normally; a separate type risks a second code path through everything that touches occupancy.",
+  "acceptanceCriteria": [
+    "A room or bed can be marked as used by the warden or a caretaker, with no rent",
+    "No invoices are generated for it, so it never appears as dues or overdue anywhere",
+    "It is excluded from overdue notifications and from the dashboard's overdue count",
+    "It counts as occupied for occupancy and vacancy purposes, and never triggers the long-vacant nudge",
+    "The monthly report and PDF exports show no phantom dues for it",
+    "Optionally, and separately decided, the warden can record the forgone rent as an expense",
+    "Existing data is unaffected and no migration is required beyond whatever the flag itself needs"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T20:10:57+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from real warden feedback relayed by the PO. Checked against the code before filing; findings recorded in the description."
+    }
+  ]
+}

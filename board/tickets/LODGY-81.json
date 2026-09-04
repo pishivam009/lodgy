@@ -1,0 +1,27 @@
+{
+  "id": "LODGY-81",
+  "epic": "Reporting & Dashboard",
+  "title": "Home and the tenant list should cover all hostels, not only the selected one",
+  "description": "User-reported: the home screen should show data for all hostels rather than the selected one, and the same for the tenant list. CHECKED IN CODE, and the two halves are in different states. The DASHBOARD is genuinely hostel-scoped: DashboardViewModel collects hostelPreferences.selectedHostelId and calls loadMetrics(hostelId), so today's collections, overdue invoices, vacant beds and upcoming move-outs all describe one property. A warden with three hostels has no single view of their business. The TENANT DIRECTORY, by contrast, already spans every hostel - TenantDirectoryViewModel has no hostelId at all. So half of this request is already satisfied, and the tenant half may be about something else: with rooms from several properties in one list, two hostels can both have a Room 101 and the rows do not say which is which. Worth confirming with the reporting wardens which they meant. DESIGN QUESTION the PO should settle: whether Home becomes all-hostels ALWAYS, or gains an all-hostels option alongside the per-hostel view. Dropping the per-hostel view would remove the hostel switcher's main purpose and make it harder to answer 'how is Sunrise doing'; adding a mode is safer but means every tile must state which scope it is showing, or the numbers become ambiguous - and an ambiguous money figure on the home screen is worse than a narrow one. Related: LODGY-70 makes the room view all-hostels and hits the same room-number ambiguity.",
+  "acceptanceCriteria": [
+    "A warden with several hostels can see combined figures for all of them from Home",
+    "It is always unambiguous whether a figure covers one hostel or all of them - no unlabelled totals",
+    "The per-hostel view remains reachable, so 'how is this property doing' is still answerable",
+    "Tenant rows identify which hostel a tenant belongs to, since room numbers repeat across properties",
+    "Confirmed with the reporting wardens which part of the tenant list was actually the problem, given it already spans hostels",
+    "Consistent with LODGY-70's approach to the same ambiguity rather than solving it differently"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T20:10:57+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from real warden feedback relayed by the PO. Checked against the code before filing; findings recorded in the description."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "LODGY-78",
+  "epic": "Backup & Restore",
+  "title": "Export reports failure on a successful backup when the app has no photos",
+  "description": "User-reported: 'export import failed'. Reproduced on the emulator and root-caused - the backup is written correctly and the failure message is wrong, which is the worst possible shape for this bug. OBSERVED: tapped Export, chose a location, and the screen showed 'Backup could not be saved. Try again.' Meanwhile /sdcard/Download held a valid 10,808-byte zip that opens cleanly, contains lodgy.db, and passes testzip(). Repeated it - a second attempt wrote a second good file and again reported failure. ROOT CAUSE, in BackupManager.export(): the whole write is wrapped as openOutputStream(destination)?.use { ... } ?: return@runCatching false. The elvis is there to catch a null OutputStream, but it also fires when the lambda ITSELF evaluates to null - and the last expression inside is photosDir.listFiles()?.forEach { ... }. When filesDir/photos does not exist, listFiles() returns null, the ?.forEach short-circuits to null, use() returns null, the elvis fires and export() returns false after having already written a perfectly good zip. WHEN IT BITES: any install that has never saved a tenant photo, because PhotoStorage only creates the directory on first use. That is exactly a new warden taking their first backup - the person most in need of trusting it. Confirmed on the device: files/ contains only datastore and profileInstalled, no photos directory. WHY IT MATTERS MORE THAN A WRONG TOAST: a warden told the backup failed will retry, and eventually conclude backups do not work and stop taking them. The one safety net in an offline app is abandoned because of a message. It also means nobody can currently trust a 'success' signal either, since the two have been shown to disagree. FIX: separate the two conditions - capture the stream in a val and null-check that alone, or make the block return an explicit Boolean rather than relying on its last expression. While in there, note that runCatching(...).getOrDefault(false) swallows the real exception; whatever replaces it should make a genuine failure diagnosable rather than silent. IMPORT was not reached in this session because export blocked the path; verify it as part of this ticket rather than assuming it is fine.",
+  "acceptanceCriteria": [
+    "Exporting from an install with no photos reports success, because it succeeded",
+    "The success or failure message always matches what actually happened on disk",
+    "A genuine failure - unwritable location, cancelled picker, no space - still reports failure and is diagnosable rather than silently swallowed",
+    "Export still includes photos when they exist, and the resulting zip still restores",
+    "Import is exercised end to end on a real device: export, wipe or reinstall, import, and confirm hostels, tenants, invoices, payments and photos all return",
+    "A test covers the no-photos-directory case specifically, since that is the trigger"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T20:10:57+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from real warden feedback relayed by the PO. Reproduced on the emulator and root-caused before filing."
+    }
+  ]
+}

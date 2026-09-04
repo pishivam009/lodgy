@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-79",
+  "epic": "Property Setup",
+  "title": "Floors and beds do not fit shops, warehouses or flats - and floor may not deserve to be a layer",
+  "description": "Two related pieces of user feedback, filed together because they are the same underlying question. (1) 'The floor data in the middle is useless, it should just be a metadata field, not a whole layer.' (2) 'Wardens are also using this for shops, warehouses and flats they own - there too, floor and bed do not make sense.' WHAT THE MODEL ASSUMES TODAY: Hostel > Floor > Room > Bed, four levels, each a table, with tenancy attached to a BED. That encodes a hostel-specific assumption - that the rentable unit is a bed in a shared room. For a shop, a warehouse or a whole flat, the rentable unit IS the property, and the warden is forced to invent a fake floor and a fake single bed to rent anything at all. THIS IS THE LARGEST TICKET ON THE BOARD and should not be started before a product decision. It touches the schema (DESIGN.md 3), every property screen, the tenancy model, invoicing, occupancy, the dashboard, the PDF exports and the CSV import. It also needs a Room migration for existing installs, which is a hard constraint here - the warden's only copy of their data is on the phone, so this can never ship with a destructive migration. THE TWO ASKS ARE DIFFERENT IN SIZE AND SHOULD BE SEPARATED WHEN SCOPED. Collapsing FLOOR into a label on Room is the smaller of the two: floor is already display-and-grouping only, it carries just a label and a sortOrder, and nothing depends on its identity except grouping and the occupancy rollups. Making BED optional is the deep one, because tenancy is keyed to bedId - everything from invoices to the vacancy notifications reaches a tenant through a bed. A MIDDLE PATH WORTH CONSIDERING before a full remodel: keep the schema and let a property TYPE drive how much of it the UI shows. A 'shop' or 'flat' would auto-create one implicit floor and one implicit unit, and simply never show those layers - the warden sees a property and a tenant. That delivers most of the user value with no migration and no change to invoicing, and it can be reversed if the full remodel later proves necessary. Recommend evaluating this against the full restructure rather than assuming the schema must change. Related: LODGY-41 puts vacant/occupied counts on floor cards, and LODGY-70 adds an all-hostels room view - both assume the current hierarchy and would need revisiting.",
+  "acceptanceCriteria": [
+    "Product decision recorded: collapse the hierarchy in the schema, or keep it and hide layers by property type",
+    "A warden renting a shop, warehouse or whole flat can do so without inventing a fake floor and a fake bed",
+    "Floor stops being a mandatory step in setup for properties where it means nothing",
+    "Existing hostels are unaffected - the bed-level model still works where it genuinely applies",
+    "If the schema changes, a real Room migration is written and tested against a populated v4 database, and no data is lost - never fallbackToDestructiveMigration",
+    "Invoicing, occupancy, the dashboard, the PDF packet and the CSV import all still work for both property shapes",
+    "The impact on LODGY-41 and LODGY-70 is assessed before either is built on the old assumption"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T20:10:57+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from real warden feedback relayed by the PO. Checked against the code before filing; findings recorded in the description."
+    }
+  ]
+}

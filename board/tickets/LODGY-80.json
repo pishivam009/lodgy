@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-80",
+  "epic": "Usability",
+  "title": "Older wardens cannot find the back button or a way home",
+  "description": "User-reported from real wardens: 'some old wardens could not find the back button and how to go to the home screen'. They asked for a verbose back button and a home button on each screen. WHY IT HAPPENS: every inner screen uses a bare chevron icon in the top-left as its only way back, with no label. That is the Android convention and it is invisible to someone who has not internalised it. There is also no way to jump home from a deep screen - only repeated back presses - and the bottom navigation disappears on inner screens, so the one persistent landmark in the app vanishes exactly when someone is lost. This is a genuine accessibility problem, not a preference. The users are the actual target audience and they could not complete navigation. WORTH DECIDING RATHER THAN ASSUMING, and the reason this is not a one-line change: a text label next to every back chevron costs top-bar width, and Hindi labels are longer than English ones, so screens with long titles will need a plan for what gives. Options include a labelled back control, keeping the bottom navigation visible on inner screens so Home is always one tap, or an explicit home action in the top bar. The bottom-nav option is arguably the strongest - it makes Home reachable everywhere without spending top-bar width - but it changes the app's whole navigation feel and interacts with the slide transitions from LODGY-61. Verify the fix with the wardens who reported it, not only in review - the whole point is that what reads as obvious to a developer was not obvious to them.",
+  "acceptanceCriteria": [
+    "Going back is discoverable without knowing the chevron convention - it is labelled or otherwise unmistakable",
+    "Home is reachable from any screen without repeated back presses",
+    "The chosen approach works in Hindi, where labels are longer, without truncating screen titles",
+    "Existing back behaviour, including the system back gesture, keeps working - this adds a route rather than replacing one",
+    "Consistent across every screen, so the same gesture works everywhere rather than on some screens only",
+    "Interaction with LODGY-61's slide transitions is checked, particularly if the bottom navigation becomes visible on inner screens",
+    "Re-tested with the wardens who raised it"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T20:10:57+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from real warden feedback relayed by the PO. Checked against the code before filing; findings recorded in the description."
+    }
+  ]
+}
