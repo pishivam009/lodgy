@@ -1,0 +1,30 @@
+{
+  "id": "LODGY-77",
+  "epic": "Auth",
+  "priority": "Medium",
+  "title": "Slow down repeated wrong PIN attempts (security review finding 3)",
+  "description": "The last open item from the LODGY-46 security review, which recorded it as 'OPEN, recommend a ticket' - this is that ticket. It was deliberately not fixed during the review because the fix adds a way for a warden to lock themselves out of their own records, which needed a product decision first. That decision is now unblocked by LODGY-76. THE FINDING: PinLockViewModel verifies the PIN and clears the field on failure, with no delay, no attempt counter and no lockout. Anyone holding the phone can try PINs as fast as they can tap, and nothing at all slows a scripted attempt driven over ADB. A 4-digit PIN is 10,000 possibilities - not hand-guessable in one sitting, but thin, and LODGY-50 made 5 and 6 digits available precisely because 4 is the weak end. WHY IT WAS HELD BACK, AND WHY IT IS SAFE NOW: a delay or lockout with no recovery route would have made a forgotten PIN fail faster and harder - the warden's own honest fumbling looks identical to an attack. LODGY-76 now adds a sanctioned way out (export a backup from the lock screen, then reset), so a warden who trips the delay is inconvenienced rather than trapped. Build this AFTER LODGY-76, not before, or the combination is worse than either alone. SUGGESTED SHAPE, from the review: count consecutive failures in AuthPreferences and impose an increasing delay - free for the first few attempts, then seconds, then longer - persisted so that force-stopping the app or rebooting the phone does not reset the counter, which is the obvious way around a naive in-memory implementation. A successful unlock clears it. DELIBERATELY NOT A HARD LOCKOUT. Slowing attempts defeats the realistic attack (someone tapping, or a script) at almost no cost to a warden who mistypes twice. A permanent lockout after N tries adds real risk of a warden destroying their own access, and buys little against an attacker who already has the phone and an unencrypted database they could read with a cable anyway (DESIGN.md 5). The point is proportionality, not maximum severity. The delay must be visible - a warden who cannot tell the difference between 'wrong PIN' and 'the app is making me wait' will assume the app is broken and may reinstall it, destroying their data.",
+  "acceptanceCriteria": [
+    "Consecutive failed PIN attempts impose an increasing delay before another attempt is accepted, rather than allowing unlimited immediate retries",
+    "The first few attempts are unpenalised, so an ordinary mistype costs the warden nothing",
+    "The failure count survives a force-stop and a reboot, so restarting the app is not a way around the delay",
+    "A successful unlock resets the count immediately",
+    "The lock screen says clearly that it is waiting and roughly how long, so a delayed warden does not conclude the app is broken",
+    "No permanent lockout - the warden is always eventually able to try again",
+    "Biometric unlock, where enrolled, still works and is not penalised by failed PIN attempts",
+    "LODGY-76's forgot-PIN route stays reachable while a delay is in effect - a warden who has genuinely forgotten must not be made to wait out a penalty to reach their escape hatch",
+    "Built after LODGY-76, and docs/SECURITY-REVIEW.md finding 3 is updated from OPEN to resolved with what was actually done"
+  ],
+  "status": "Todo",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T13:49:35+00:00",
+  "updatedAt": "2026-09-04T13:49:35+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T13:49:35+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed to close the last open item from the LODGY-46 security review, which explicitly recommended a ticket and never got one. Held back at the time because a lockout without a recovery route makes a forgotten PIN permanent faster; LODGY-76 now provides that route, so this is unblocked - but it must be built after it, not before. Specced as a graduated delay rather than a hard lockout, on the grounds of proportionality: the data sits in an unencrypted database that anyone with the phone and a cable could already read."
+    }
+  ]
+}

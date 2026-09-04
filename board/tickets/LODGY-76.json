@@ -18,7 +18,7 @@
   "status": "Todo",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:37:18+00:00",
-  "updatedAt": "2026-09-04T13:41:35+00:00",
+  "updatedAt": "2026-09-04T13:49:35+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T13:37:18+00:00",
@@ -31,6 +31,12 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "DECIDED: option (a) - export a backup from the lock screen without unlocking, then offer to reset the PIN. Recovery code, security question and bare reset all rejected, reasons recorded in the description. Acceptance criteria rewritten from the option-comparison set to the buildable one. The trade-off is accepted with eyes open: this lets anyone holding the phone take a backup without the PIN, which is a real widening but a small one given the database is already unencrypted and extractable with a cable. Also noted that this unblocks LODGY-46 finding 3 - attempt lockout was held back because a lockout without recovery makes the lockout permanent, and that objection is now answered."
+    },
+    {
+      "timestamp": "2026-09-04T13:49:35+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "Cross-reference: LODGY-77 now tracks the PIN attempt-delay from security review finding 3, and depends on this ticket shipping first. Note its AC that the forgot-PIN route added here must stay reachable while a delay is in effect - a warden who has genuinely forgotten must not have to wait out a penalty to reach their way out."
     }
   ]
 }
