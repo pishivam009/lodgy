@@ -73,5 +73,10 @@ four roles (each a Claude Code skill under `.claude/skills/`):
 Low-fidelity wireframes for every screen in the app, organized by epic,
 were built before any UI code:
 
-- [Wireframe set](https://claude.ai/code/artifact/90f2f9b6-b4ab-49f7-b4a3-db3730230a8b) — every screen, organized by epic
-- [Warden's Guide](https://claude.ai/code/artifact/a7741ef9-03a3-4451-bd53-6bec2d2404f0) — the same screens walked through task by task, for the actual end user
+- [`docs/design/wireframes.html`](docs/design/wireframes.html) — every screen, organized by epic
+- [`docs/design/wardens-guide.html`](docs/design/wardens-guide.html) — the same screens walked through task by task, for the actual end user
+
+Both are self-contained pages checked into the repo — GitHub renders `.html`
+as source, so clone (or download the raw file) and open them in a browser. No
+login and no build step; the guide picks up webfonts when online and falls
+back to system fonts when not.
