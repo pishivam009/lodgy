@@ -51,3 +51,12 @@ fun PaymentMode.label(): String = stringResource(
         PaymentMode.OTHER -> R.string.payment_mode_other
     },
 )
+
+@Composable
+fun RoomFill.label(): String = stringResource(
+    when (this) {
+        RoomFill.EMPTY -> R.string.room_occupancy_empty
+        RoomFill.PARTIAL -> R.string.room_occupancy_partial
+        RoomFill.FULL -> R.string.room_occupancy_full
+    },
+)

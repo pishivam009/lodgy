@@ -1,0 +1,44 @@
+{
+  "id": "LODGY-67",
+  "epic": "Property Setup",
+  "priority": "Medium",
+  "title": "All rooms as RAG-coloured tiles instead of a list",
+  "description": "Product Owner request: the All rooms view should drop the one-per-row list in favour of tiles, colour-coded by how full each room is, so a whole property reads at a glance rather than by scrolling. Colours follow the existing RAG token set (LODGY-36) rather than inventing a new language: green for a room with every bed free, amber for a partly filled room, red for a room with no beds left. NOTE ON THE REQUEST WORDING: the ask read 'empty rooms should look green, partially filled as amber, and vacant as red'. Empty and vacant are the same thing, so that cannot be literal. Built to the only self-consistent reading, which is also the one that matches the app's existing bed-level convention where vacant is green and occupied is red: green = wholly empty, amber = partly filled, red = full. Flagged here so the PO can correct it if the intent was different. No schema change: AllRoomsViewModel already exposes totalBeds and occupiedBeds per room, so this is presentation only and needs no migration.",
+  "acceptanceCriteria": [
+    "All rooms renders as a grid of tiles rather than a vertical list, sized so a whole floor is visible without scrolling on a normal phone",
+    "Tile colour follows occupancy: every bed free = green, some beds free = amber, no beds free = red, drawn from the LODGY-36 status tokens rather than new colours",
+    "Colour is never the only cue - each tile also carries an icon and readable text (room number, free/total beds, and a status word), per LODGY-62",
+    "A summary line shows how many rooms are empty, partly filled and full, so the screen answers 'where is there space' without reading every tile",
+    "Tapping a tile still opens that room's bed grid, exactly as the list rows did",
+    "Correct in dark mode, and legible in Hindi where the status words are longer",
+    "A room with no beds yet is handled sensibly rather than dividing by zero or reading as full"
+  ],
+  "status": "Testing",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:12:41+00:00",
+  "updatedAt": "2026-09-04T12:25:56+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:12:41+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Requested by the PO: tiles instead of a list on All rooms, RAG-coloured by occupancy, for overall visibility. Wording ambiguity between 'empty' and 'vacant' recorded in the description."
+    },
+    {
+      "timestamp": "2026-09-04T12:12:41+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Presentation-only change - the ViewModel already carries totalBeds/occupiedBeds, so no schema change and no migration needed."
+    },
+    {
+      "timestamp": "2026-09-04T12:25:56+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built. AllRoomsScreen is now a LazyVerticalGrid of tiles (GridCells.Adaptive minSize 108dp, so a small phone gets three per row and a larger one more) instead of a LazyColumn of rows. Tile colour, icon and text all come from a new RoomFill enum in ui/common/StatusTokens.kt - EMPTY/PARTIAL/FULL mapping onto the existing StatusLevel GOOD/WARN/BAD, so this consumes the LODGY-36 tokens rather than defining colours. Named RoomFill, not RoomOccupancy, because data.dao already exports a RoomOccupancy projection and the two would have collided. Each tile carries room number, floor, 'N of M free' and a status word plus an icon, so colour is never the only cue (LODGY-62). Added a summary row above the grid - 'N Empty / N Part full / N Full' - for the overall-visibility part of the ask. New strings in values/ and values-hi/. BACKWARD COMPATIBILITY: presentation only. No entity, DAO or query changed, DB stays at version 4, no migration needed, and an existing install upgrades with its data untouched. VERIFIED ON EMULATOR at stock 420dpi: Sunrise PG shows 101 green Empty, 102 amber Part full, 103 green Empty with the summary reading 2/1/0; Moonlight shows 501 red Full with 0/0/1. Tapping a tile still opens that room's bed grid. Re-checked in dark mode - the tokens adjust and stay legible. TESTS: 10 new (RoomFillTest covers all three states, the single-bed room, the no-beds-yet case, the defensive occupied>total case, the RAG mapping and icon distinctness; AllRoomsViewModelTest gains summary-bucket and per-item fill assertions). Full suite 422 pass / 0 fail. Coverage 97.00% line overall, with every new class at 100% line."
+    }
+  ]
+}

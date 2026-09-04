@@ -2,6 +2,7 @@ package com.lodgy.app.ui.property
 
 import androidx.lifecycle.SavedStateHandle
 import com.lodgy.app.data.dao.RoomOccupancy
+import com.lodgy.app.ui.common.RoomFill
 import com.lodgy.app.data.dao.RoomWithFloor
 import com.lodgy.app.data.entity.Hostel
 import com.lodgy.app.data.entity.RoomType
@@ -57,5 +58,42 @@ class AllRoomsViewModelTest {
 
         assertEquals(2, state.items.first().vacantBeds)
         assertEquals(0, state.items.last().totalBeds)
+    }
+
+    @Test
+    fun `summary counts each room into exactly one bucket`() {
+        val state = viewModel(
+            rooms = listOf(
+                room("r1", "101", "Ground"),
+                room("r2", "102", "Ground"),
+                room("r3", "103", "Ground"),
+                room("r4", "104", "Ground"),
+            ),
+            occupancy = listOf(
+                RoomOccupancy("r1", totalBeds = 2, occupiedBeds = 0),
+                RoomOccupancy("r2", totalBeds = 2, occupiedBeds = 1),
+                RoomOccupancy("r3", totalBeds = 2, occupiedBeds = 2),
+                RoomOccupancy("r4", totalBeds = 0, occupiedBeds = 0),
+            ),
+        ).uiState.value
+
+        assertEquals(2, state.emptyRooms)
+        assertEquals(1, state.partialRooms)
+        assertEquals(1, state.fullRooms)
+        assertEquals(state.items.size, state.emptyRooms + state.partialRooms + state.fullRooms)
+    }
+
+    @Test
+    fun `each room carries the fill state its tile is coloured by`() {
+        val state = viewModel(
+            rooms = listOf(room("r1", "101", "Ground"), room("r2", "102", "Ground")),
+            occupancy = listOf(
+                RoomOccupancy("r1", totalBeds = 2, occupiedBeds = 2),
+                RoomOccupancy("r2", totalBeds = 2, occupiedBeds = 1),
+            ),
+        ).uiState.value
+
+        assertEquals(RoomFill.FULL, state.items.first().occupancy)
+        assertEquals(RoomFill.PARTIAL, state.items.last().occupancy)
     }
 }

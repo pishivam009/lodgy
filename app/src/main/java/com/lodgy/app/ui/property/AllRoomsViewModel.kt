@@ -8,6 +8,8 @@ import com.lodgy.app.data.dao.RoomWithFloor
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.data.repository.RoomRepository
+import com.lodgy.app.ui.common.RoomFill
+import com.lodgy.app.ui.common.roomFillOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,13 +21,18 @@ import kotlinx.coroutines.launch
 
 data class AllRoomsItem(val room: RoomWithFloor, val totalBeds: Int, val occupiedBeds: Int) {
     val vacantBeds: Int get() = totalBeds - occupiedBeds
+    val occupancy: RoomFill get() = roomFillOf(totalBeds, occupiedBeds)
 }
 
 data class AllRoomsUiState(
     val hostelName: String = "",
     val items: List<AllRoomsItem> = emptyList(),
     val loading: Boolean = true,
-)
+) {
+    val emptyRooms: Int get() = items.count { it.occupancy == RoomFill.EMPTY }
+    val partialRooms: Int get() = items.count { it.occupancy == RoomFill.PARTIAL }
+    val fullRooms: Int get() = items.count { it.occupancy == RoomFill.FULL }
+}
 
 @HiltViewModel
 class AllRoomsViewModel @Inject constructor(

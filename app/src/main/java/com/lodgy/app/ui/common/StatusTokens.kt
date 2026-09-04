@@ -48,3 +48,29 @@ val InvoiceStatus.icon: ImageVector
 
 val TenantStatus.icon: ImageVector
     get() = if (this == TenantStatus.ACTIVE) StatusIcons.Check else StatusIcons.Exit
+
+/** How full one room is, as the three states a warden actually acts on: somewhere to put someone,
+ *  somewhere to put one more, or nowhere. A room with no beds yet is EMPTY rather than FULL - it
+ *  has nobody in it, and reading it as full would hide a room still being set up. */
+enum class RoomFill { EMPTY, PARTIAL, FULL }
+
+fun roomFillOf(totalBeds: Int, occupiedBeds: Int): RoomFill = when {
+    occupiedBeds <= 0 -> RoomFill.EMPTY
+    occupiedBeds >= totalBeds -> RoomFill.FULL
+    else -> RoomFill.PARTIAL
+}
+
+/** Vacant is the good state here, same as it is for a single bed (LODGY-36). */
+val RoomFill.level: StatusLevel
+    get() = when (this) {
+        RoomFill.EMPTY -> StatusLevel.GOOD
+        RoomFill.PARTIAL -> StatusLevel.WARN
+        RoomFill.FULL -> StatusLevel.BAD
+    }
+
+val RoomFill.icon: ImageVector
+    get() = when (this) {
+        RoomFill.EMPTY -> StatusIcons.BedVacant
+        RoomFill.PARTIAL -> StatusIcons.Half
+        RoomFill.FULL -> StatusIcons.BedOccupied
+    }

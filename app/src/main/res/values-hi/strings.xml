@@ -208,6 +208,11 @@
     <string name="floor_bed_summary">%1$d खाली / %2$d भरे</string>
     <string name="all_rooms_title">सभी कमरे</string>
     <string name="all_rooms_empty">इस हॉस्टल में अभी कोई कमरा नहीं है।</string>
+    <string name="all_rooms_free_of_total">%2$d में %1$d खाली</string>
+    <string name="all_rooms_summary_part">%1$d %2$s</string>
+    <string name="room_occupancy_empty">खाली</string>
+    <string name="room_occupancy_partial">आंशिक</string>
+    <string name="room_occupancy_full">भरा</string>
     <string name="all_rooms_action">सभी कमरे</string>
     <string name="expense_filter_all_categories">सभी</string>
     <string name="expense_sort_date">तारीख़</string>

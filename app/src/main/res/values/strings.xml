@@ -210,6 +210,11 @@
     <string name="floor_bed_summary">%1$d vacant / %2$d occupied</string>
     <string name="all_rooms_title">All rooms</string>
     <string name="all_rooms_empty">No rooms in this hostel yet.</string>
+    <string name="all_rooms_free_of_total">%1$d of %2$d free</string>
+    <string name="all_rooms_summary_part">%1$d %2$s</string>
+    <string name="room_occupancy_empty">Empty</string>
+    <string name="room_occupancy_partial">Part full</string>
+    <string name="room_occupancy_full">Full</string>
     <string name="all_rooms_action">All rooms</string>
     <string name="expense_filter_all_categories">All</string>
     <string name="expense_sort_date">Date</string>
