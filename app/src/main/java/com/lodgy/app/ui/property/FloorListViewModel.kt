@@ -26,14 +26,20 @@ data class FloorListItem(val floor: Floor, val totalBeds: Int, val occupiedBeds:
 data class FloorListUiState(
     val hostelName: String = "",
     val items: List<FloorListItem> = emptyList(),
+    /** Set when a delete was refused because tenants still live under the floor, with their names
+     *  so the block can say who is in the way rather than failing generically. */
+    val blockedDelete: BlockedFloorDelete? = null,
+    val pendingDeleteFloor: Floor? = null,
 ) {
     val floors: List<Floor> get() = items.map { it.floor }
 }
 
+data class BlockedFloorDelete(val floor: Floor, val tenantNames: List<String>)
+
 @HiltViewModel
 class FloorListViewModel @Inject constructor(
     private val floorRepository: FloorRepository,
-    bedRepository: BedRepository,
+    private val bedRepository: BedRepository,
     hostelRepository: HostelRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -64,5 +70,32 @@ class FloorListViewModel @Inject constructor(
 
     fun moveUp(floor: Floor) = viewModelScope.launch { floorRepository.moveUp(floor, hostelId) }
     fun moveDown(floor: Floor) = viewModelScope.launch { floorRepository.moveDown(floor, hostelId) }
-    fun delete(floor: Floor) = viewModelScope.launch { floorRepository.delete(floor) }
+    /** Deleting a floor cascades to its rooms and beds, but Bed <- TenancyAgreement is NO ACTION,
+     *  so removing a bed an agreement still points at makes SQLite reject the whole delete and the
+     *  app dies. Blocked here rather than caught afterwards: by the time the constraint fires the
+     *  warden has already confirmed an action that was never going to complete. */
+    fun requestDelete(floor: Floor) {
+        viewModelScope.launch {
+            val tenants = bedRepository.activeTenantNamesOnFloor(floor.id)
+            _uiState.update {
+                if (tenants.isEmpty()) {
+                    it.copy(pendingDeleteFloor = floor)
+                } else {
+                    it.copy(blockedDelete = BlockedFloorDelete(floor, tenants))
+                }
+            }
+        }
+    }
+
+    fun confirmDelete() {
+        val floor = _uiState.value.pendingDeleteFloor ?: return
+        viewModelScope.launch {
+            floorRepository.delete(floor)
+            _uiState.update { it.copy(pendingDeleteFloor = null) }
+        }
+    }
+
+    fun dismissPendingDelete() = _uiState.update { it.copy(pendingDeleteFloor = null) }
+
+    fun dismissBlockedDelete() = _uiState.update { it.copy(blockedDelete = null) }
 }

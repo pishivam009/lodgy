@@ -139,11 +139,19 @@ fun RoomListScreen(
         )
     }
 
-    uiState.blockedDeleteRoom?.let { room ->
+    uiState.blockedDeleteRoom?.let { blocked ->
         AlertDialog(
             onDismissRequest = viewModel::dismissBlockedDelete,
             title = { Text(stringResource(R.string.room_delete_blocked_title)) },
-            text = { Text(stringResource(R.string.room_delete_blocked_body, room.roomNumber)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.room_delete_blocked_body,
+                        blocked.room.roomNumber,
+                        blocked.tenantNames.joinToString(", "),
+                    ),
+                )
+            },
             confirmButton = {
                 TextButton(onClick = viewModel::dismissBlockedDelete) { Text(stringResource(R.string.ok)) }
             },

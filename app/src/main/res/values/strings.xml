@@ -50,6 +50,8 @@
     <string name="floor_delete_title">Delete this floor?</string>
     <string name="floor_delete_body">"%1$s and any rooms/beds under it will be removed."</string>
     <string name="floor_delete_confirm">Delete</string>
+    <string name="floor_delete_blocked_title">Can\'t delete this floor</string>
+    <string name="floor_delete_blocked_body">%1$s still has tenants living on it: %2$s. Check them out first, or move them to another room.</string>
     <string name="floor_form_title_add">Add Floor</string>
     <string name="floor_form_title_edit">Edit Floor</string>
     <string name="floor_field_label">Floor name</string>
@@ -65,7 +67,7 @@
     <string name="room_number_prefix">Room %1$s</string>
     <string name="room_price_per_bed">₹%1$.0f / bed</string>
     <string name="room_delete_blocked_title">Can\'t delete this room</string>
-    <string name="room_delete_blocked_body">Room %1$s has a bed with an active tenant. Check that tenant out first.</string>
+    <string name="room_delete_blocked_body">Room %1$s is occupied by %2$s. Check them out first, or move them to another room.</string>
     <string name="room_delete_confirm_title">Delete this room?</string>
     <string name="room_delete_confirm_body">Room %1$s and its beds will be removed. This can\'t be undone.</string>
     <string name="room_delete_confirm">Delete</string>

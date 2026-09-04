@@ -47,7 +47,6 @@ fun FloorListScreen(
     viewModel: FloorListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var pendingDelete by remember { mutableStateOf<Floor?>(null) }
 
     Scaffold(
         topBar = {
@@ -91,25 +90,44 @@ fun FloorListScreen(
                         onEdit = { onEditFloor(item.floor) },
                         onMoveUp = { viewModel.moveUp(item.floor) },
                         onMoveDown = { viewModel.moveDown(item.floor) },
-                        onDelete = { pendingDelete = item.floor },
+                        onDelete = { viewModel.requestDelete(item.floor) },
                     )
                 }
             }
         }
     }
 
-    pendingDelete?.let { floor ->
+    uiState.pendingDeleteFloor?.let { floor ->
         AlertDialog(
-            onDismissRequest = { pendingDelete = null },
+            onDismissRequest = viewModel::dismissPendingDelete,
             title = { Text(stringResource(R.string.floor_delete_title)) },
             text = { Text(stringResource(R.string.floor_delete_body, floor.label)) },
             confirmButton = {
-                TextButton(onClick = { viewModel.delete(floor); pendingDelete = null }) {
+                TextButton(onClick = viewModel::confirmDelete) {
                     Text(stringResource(R.string.floor_delete_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) { Text(stringResource(R.string.cancel)) }
+                TextButton(onClick = viewModel::dismissPendingDelete) { Text(stringResource(R.string.cancel)) }
+            },
+        )
+    }
+
+    uiState.blockedDelete?.let { blocked ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissBlockedDelete,
+            title = { Text(stringResource(R.string.floor_delete_blocked_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.floor_delete_blocked_body,
+                        blocked.floor.label,
+                        blocked.tenantNames.joinToString(", "),
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = viewModel::dismissBlockedDelete) { Text(stringResource(R.string.ok)) }
             },
         )
     }

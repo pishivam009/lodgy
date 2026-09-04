@@ -41,6 +41,13 @@ class BedRepository @Inject constructor(private val bedDao: BedDao) {
     suspend fun hasOccupiedBed(roomId: String): Boolean =
         bedDao.getByRoomId(roomId).first().any { it.status == BedStatus.OCCUPIED }
 
+    /** Who is living under this floor. Empty means the floor is safe to delete. */
+    suspend fun activeTenantNamesOnFloor(floorId: String): List<String> =
+        bedDao.getActiveTenantNamesOnFloor(floorId)
+
+    suspend fun activeTenantNamesInRoom(roomId: String): List<String> =
+        bedDao.getActiveTenantNamesInRoom(roomId)
+
     suspend fun generateForRoom(roomId: String, bedCount: Int) {
         val now = System.currentTimeMillis()
         repeat(bedCount) { index ->

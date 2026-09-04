@@ -14,6 +14,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 
@@ -51,10 +52,13 @@ class FloorListViewModelTest {
         coEvery { floorRepository.moveDown(f0, "h1") } returns Unit
         coEvery { floorRepository.delete(f0) } returns Unit
 
+        coEvery { bedRepository.activeTenantNamesOnFloor("f0") } returns emptyList()
+
         val viewModel = viewModel(listOf(f0))
         viewModel.moveUp(f0)
         viewModel.moveDown(f0)
-        viewModel.delete(f0)
+        viewModel.requestDelete(f0)
+        viewModel.confirmDelete()
 
         coVerify { floorRepository.moveUp(f0, "h1") }
         coVerify { floorRepository.moveDown(f0, "h1") }
@@ -84,5 +88,85 @@ class FloorListViewModelTest {
         assertEquals(listOf("Terrace"), state.floors.map { it.label })
         assertEquals(0, state.items.single().totalBeds)
         assertEquals(0, state.items.single().vacantBeds)
+    }
+
+    /** The crash this ticket exists for: deleting a floor whose bed still has an ACTIVE tenancy
+     *  used to reach the DAO and die on a FOREIGN KEY constraint. It must not reach the DAO. */
+    @Test
+    fun `a floor with a tenant on it is blocked, and never reaches the repository`() {
+        val f0 = Floor(id = "f0", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        coEvery { bedRepository.activeTenantNamesOnFloor("f0") } returns listOf("Ramesh Kumar")
+
+        val viewModel = viewModel(listOf(f0))
+        viewModel.requestDelete(f0)
+
+        assertEquals(f0, viewModel.uiState.value.blockedDelete?.floor)
+        assertNull(viewModel.uiState.value.pendingDeleteFloor)
+        coVerify(exactly = 0) { floorRepository.delete(any()) }
+    }
+
+    @Test
+    fun `the block names every tenant in the way, so the warden knows who to check out`() {
+        val f0 = Floor(id = "f0", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        coEvery { bedRepository.activeTenantNamesOnFloor("f0") } returns listOf("Priya", "Suresh")
+
+        val viewModel = viewModel(listOf(f0))
+        viewModel.requestDelete(f0)
+
+        assertEquals(listOf("Priya", "Suresh"), viewModel.uiState.value.blockedDelete?.tenantNames)
+    }
+
+    @Test
+    fun `an empty floor is confirmed rather than blocked`() {
+        val f0 = Floor(id = "f0", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        coEvery { bedRepository.activeTenantNamesOnFloor("f0") } returns emptyList()
+
+        val viewModel = viewModel(listOf(f0))
+        viewModel.requestDelete(f0)
+
+        assertEquals(f0, viewModel.uiState.value.pendingDeleteFloor)
+        assertNull(viewModel.uiState.value.blockedDelete)
+        coVerify(exactly = 0) { floorRepository.delete(any()) }
+    }
+
+    /** Confirming is the only thing that deletes - requesting alone must not. */
+    @Test
+    fun `nothing is deleted until the warden confirms`() {
+        val f0 = Floor(id = "f0", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        coEvery { bedRepository.activeTenantNamesOnFloor("f0") } returns emptyList()
+        coEvery { floorRepository.delete(f0) } returns Unit
+
+        val viewModel = viewModel(listOf(f0))
+        viewModel.requestDelete(f0)
+        coVerify(exactly = 0) { floorRepository.delete(f0) }
+
+        viewModel.confirmDelete()
+        coVerify(exactly = 1) { floorRepository.delete(f0) }
+        assertNull(viewModel.uiState.value.pendingDeleteFloor)
+    }
+
+    @Test
+    fun `cancelling a pending delete leaves the floor alone`() {
+        val f0 = Floor(id = "f0", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        coEvery { bedRepository.activeTenantNamesOnFloor("f0") } returns emptyList()
+
+        val viewModel = viewModel(listOf(f0))
+        viewModel.requestDelete(f0)
+        viewModel.dismissPendingDelete()
+
+        assertNull(viewModel.uiState.value.pendingDeleteFloor)
+        coVerify(exactly = 0) { floorRepository.delete(any()) }
+    }
+
+    @Test
+    fun `dismissing the block clears it`() {
+        val f0 = Floor(id = "f0", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        coEvery { bedRepository.activeTenantNamesOnFloor("f0") } returns listOf("Ramesh Kumar")
+
+        val viewModel = viewModel(listOf(f0))
+        viewModel.requestDelete(f0)
+        viewModel.dismissBlockedDelete()
+
+        assertNull(viewModel.uiState.value.blockedDelete)
     }
 }

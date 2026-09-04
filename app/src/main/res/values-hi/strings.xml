@@ -48,6 +48,8 @@
     <string name="floor_delete_title">इस मंज़िल को हटाएं?</string>
     <string name="floor_delete_body">"%1$s और इसके नीचे के सभी कमरे/बेड हटा दिए जाएंगे।"</string>
     <string name="floor_delete_confirm">हटाएं</string>
+    <string name="floor_delete_blocked_title">यह मंज़िल नहीं हटा सकते</string>
+    <string name="floor_delete_blocked_body">%1$s पर अब भी किरायेदार रह रहे हैं: %2$s। पहले उन्हें चेकआउट करें, या दूसरे कमरे में भेजें।</string>
     <string name="floor_form_title_add">मंज़िल जोड़ें</string>
     <string name="floor_form_title_edit">मंज़िल बदलें</string>
     <string name="floor_field_label">मंज़िल का नाम</string>
@@ -63,7 +65,7 @@
     <string name="room_number_prefix">कमरा %1$s</string>
     <string name="room_price_per_bed">₹%1$.0f / बेड</string>
     <string name="room_delete_blocked_title">यह कमरा नहीं हटाया जा सकता</string>
-    <string name="room_delete_blocked_body">कमरा %1$s में एक बेड पर सक्रिय किरायेदार है। पहले उस किरायेदार को चेकआउट करें।</string>
+    <string name="room_delete_blocked_body">कमरा %1$s में %2$s रह रहे हैं। पहले उन्हें चेकआउट करें, या दूसरे कमरे में भेजें।</string>
     <string name="room_delete_confirm_title">यह कमरा हटाएं?</string>
     <string name="room_delete_confirm_body">कमरा %1$s और इसके बेड हटा दिए जाएंगे। इसे वापस नहीं किया जा सकता।</string>
     <string name="room_delete_confirm">हटाएं</string>

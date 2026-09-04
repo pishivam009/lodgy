@@ -78,7 +78,7 @@ class RoomListViewModelTest {
 
     @Test
     fun `requestDelete asks for confirmation instead of deleting a room outright`() {
-        coEvery { bedRepository.hasOccupiedBed("r1") } returns false
+        coEvery { bedRepository.activeTenantNamesInRoom("r1") } returns emptyList()
 
         val viewModel = viewModel()
         viewModel.requestDelete(room)
@@ -89,7 +89,7 @@ class RoomListViewModelTest {
 
     @Test
     fun `confirmDelete deletes the pending room and clears the prompt`() {
-        coEvery { bedRepository.hasOccupiedBed("r1") } returns false
+        coEvery { bedRepository.activeTenantNamesInRoom("r1") } returns emptyList()
         coEvery { roomRepository.delete(room) } returns Unit
 
         val viewModel = viewModel()
@@ -102,7 +102,7 @@ class RoomListViewModelTest {
 
     @Test
     fun `dismissPendingDelete leaves the room untouched`() {
-        coEvery { bedRepository.hasOccupiedBed("r1") } returns false
+        coEvery { bedRepository.activeTenantNamesInRoom("r1") } returns emptyList()
 
         val viewModel = viewModel()
         viewModel.requestDelete(room)
@@ -123,18 +123,19 @@ class RoomListViewModelTest {
 
     @Test
     fun `requestDelete blocks deletion when the room still has an occupied bed`() {
-        coEvery { bedRepository.hasOccupiedBed("r1") } returns true
+        coEvery { bedRepository.activeTenantNamesInRoom("r1") } returns listOf("Ramesh Kumar")
 
         val viewModel = viewModel()
         viewModel.requestDelete(room)
 
         coVerify(exactly = 0) { roomRepository.delete(any()) }
-        assertEquals(room, viewModel.uiState.value.blockedDeleteRoom)
+        assertEquals(room, viewModel.uiState.value.blockedDeleteRoom?.room)
+        assertEquals(listOf("Ramesh Kumar"), viewModel.uiState.value.blockedDeleteRoom?.tenantNames)
     }
 
     @Test
     fun `dismissBlockedDelete clears the blocked room`() {
-        coEvery { bedRepository.hasOccupiedBed("r1") } returns true
+        coEvery { bedRepository.activeTenantNamesInRoom("r1") } returns listOf("Ramesh Kumar")
         val viewModel = viewModel()
         viewModel.requestDelete(room)
 

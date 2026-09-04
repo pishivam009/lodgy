@@ -92,4 +92,28 @@ interface BedDao {
             "INNER JOIN floors ON floors.id = rooms.floorId WHERE beds.id = :bedId",
     )
     suspend fun getHostelId(bedId: String): String?
+
+    /** Tenants whose ACTIVE tenancy sits on a bed under this floor. These are what actually block a
+     *  floor delete: the cascade would remove the beds, but Bed <- TenancyAgreement is NO ACTION, so
+     *  SQLite refuses and the delete crashes. Naming them lets the block say who is in the way. */
+    @Query(
+        "SELECT DISTINCT tenants.name FROM tenancy_agreements " +
+            "INNER JOIN beds ON beds.id = tenancy_agreements.bedId " +
+            "INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "INNER JOIN tenants ON tenants.id = tenancy_agreements.tenantId " +
+            "WHERE rooms.floorId = :floorId AND tenancy_agreements.status = 'ACTIVE' " +
+            "ORDER BY tenants.name",
+    )
+    suspend fun getActiveTenantNamesOnFloor(floorId: String): List<String>
+
+    /** Same question for one room, so the room-level block can name names too rather than saying
+     *  only that "a bed" is occupied. */
+    @Query(
+        "SELECT DISTINCT tenants.name FROM tenancy_agreements " +
+            "INNER JOIN beds ON beds.id = tenancy_agreements.bedId " +
+            "INNER JOIN tenants ON tenants.id = tenancy_agreements.tenantId " +
+            "WHERE beds.roomId = :roomId AND tenancy_agreements.status = 'ACTIVE' " +
+            "ORDER BY tenants.name",
+    )
+    suspend fun getActiveTenantNamesInRoom(roomId: String): List<String>
 }

@@ -30,7 +30,7 @@ data class RoomListUiState(
     val floorLabel: String = "",
     val items: List<RoomListItem> = emptyList(),
     val filter: RoomFilter = RoomFilter.ALL,
-    val blockedDeleteRoom: Room? = null,
+    val blockedDeleteRoom: BlockedRoomDelete? = null,
     val pendingDeleteRoom: Room? = null,
 ) {
     val filteredItems: List<RoomListItem>
@@ -40,6 +40,8 @@ data class RoomListUiState(
             RoomFilter.FULL -> items.filter { it.isFull }
         }
 }
+
+data class BlockedRoomDelete(val room: Room, val tenantNames: List<String>)
 
 @HiltViewModel
 class RoomListViewModel @Inject constructor(
@@ -77,8 +79,9 @@ class RoomListViewModel @Inject constructor(
 
     fun requestDelete(room: Room) {
         viewModelScope.launch {
-            if (bedRepository.hasOccupiedBed(room.id)) {
-                _uiState.update { it.copy(blockedDeleteRoom = room) }
+            val tenants = bedRepository.activeTenantNamesInRoom(room.id)
+            if (tenants.isNotEmpty()) {
+                _uiState.update { it.copy(blockedDeleteRoom = BlockedRoomDelete(room, tenants)) }
             } else {
                 _uiState.update { it.copy(pendingDeleteRoom = room) }
             }
