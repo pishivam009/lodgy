@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-70",
+  "epic": "Property Setup",
+  "title": "All rooms should span every hostel, with a hostel filter, and move to the Property tab",
+  "description": "Product Owner request, three changes to All rooms: show rooms across all hostels rather than only the selected one; add a filter to narrow to a hostel; and move the entry point to the Property tab. CURRENT STATE: AllRoomsViewModel takes a hostelId from the nav route and queries getByHostelIdWithFloor(hostelId), so the screen is hostel-scoped by construction. Reaching it means Property > pick a hostel > All rooms, which is exactly the drill-down LODGY-40 set out to remove - it just removed one level of it rather than two. Widening the query and adding a filter finishes that job. IMPLEMENTATION NOTES: the repository needs an all-hostels equivalent of getByHostelIdWithFloor, and the room rows need to carry their hostel so tiles can be grouped or labelled - a room number alone is ambiguous once two properties are on screen, since both can have a 101. The occupancy flow observeRoomOccupancyByHostel is likewise per-hostel and needs the same widening. The RAG tiles and summary from LODGY-67 carry over unchanged; the summary should follow the filter rather than always reporting the whole estate. OPEN QUESTION for the PO: with the screen no longer hostel-scoped, whether the hostel-level 'All rooms' action disappears entirely or stays as a shortcut that opens the screen pre-filtered to that hostel. The second keeps the useful path from a hostel you are already inside.",
+  "acceptanceCriteria": [
+    "All rooms lists rooms from every hostel by default, not only the selected one",
+    "A hostel filter narrows the view, including an all-hostels option, and the empty/part-full/full summary reflects the current filter rather than the whole estate",
+    "Each tile identifies which hostel its room belongs to, so two properties with a room 101 are not confusable",
+    "The screen is reachable directly from the Property tab without first opening a hostel",
+    "Tapping a tile still opens that room's bed grid regardless of which hostel it is in",
+    "Correct in dark mode and in Hindi, and the tiles stay legible once a hostel name is added to them",
+    "A warden with a single hostel sees no regression - the filter is unobtrusive and the screen still reads as it does today"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:35:58+00:00",
+  "updatedAt": "2026-09-04T12:35:58+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:35:58+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed at the Product Owner's request: All rooms should span every hostel with a hostel filter, and move to the Property tab. Notes which repository and occupancy queries are hostel-scoped today and need widening."
+    }
+  ]
+}

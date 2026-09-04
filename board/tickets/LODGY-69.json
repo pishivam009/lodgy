@@ -1,0 +1,29 @@
+{
+  "id": "LODGY-69",
+  "epic": "Tenant Onboarding",
+  "title": "Assign a tenant by tapping a bed, from the bed grid and from All rooms",
+  "description": "Product Owner request: tapping a bed should offer two choices - view details, or assign a tenant - so onboarding can start from the bed the warden is looking at, rather than only from the Tenants tab. Should work from the bed grid inside a floor and from the All rooms tiles. WHY THIS MATTERS: today onboarding runs Tenants > + > Pick a Vacant Bed, which asks the warden to find the bed in a list after they have already been looking straight at it in Property. The bed picker (BedPickerScreen) stays as the entry point from the Tenants tab; this adds the reverse direction. CURRENT STATE: beds on BedGridScreen are not clickable at all - the tiles render status but have no onClick, so there is nothing to extend and the interaction has to be added. From All rooms a tile opens the room's bed grid, so the bed-level action can live in one place if the grid is the target for both. RESOLVED BY THE PO: an OCCUPIED bed does not show the two-option sheet at all - it goes straight to the assigned tenant's profile, which is already where every operation on that tenancy lives (notes, notice, transfer, credit, checkout). So the sheet is a vacant-bed interaction, and an occupied bed is a single tap through to the person in it. That is better than a sheet with a disabled option: it removes a decision instead of showing the warden something they cannot use. OPEN QUESTIONS still for the PO: (1) what 'view description' shows for a VACANT bed, where there is no tenancy - probably the room's own details (type, price per bed, amenities), since the bed itself has only a label and a status. If that is all it is, consider whether the option earns its place or whether a vacant bed should simply assign. (2) Whether assign from here skips the bed-picker step and jumps straight to the tenant form with the bed pre-selected, which is the whole point of the shortcut.",
+  "acceptanceCriteria": [
+    "Beds are tappable on BedGridScreen, which they are not today",
+    "Tapping a VACANT bed presents the two choices rather than acting immediately - view details, or assign a tenant",
+    "Assign leads into the existing onboarding flow with that bed already chosen, so the warden is not asked to pick it again",
+    "The same interaction is reachable for a bed arrived at via All rooms, so both routes behave identically",
+    "Tapping an OCCUPIED bed goes straight to the assigned tenant's profile, with no intermediate sheet, so every operation on that tenancy is one tap away",
+    "A bed can never be assigned twice - the assign path is unreachable for an occupied bed, so no second tenancy can be created on one bed",
+    "A bed whose tenancy is somehow missing does not dead-end or crash - it falls back to the vacant behaviour rather than navigating to a profile that is not there",
+    "The existing Tenants tab onboarding route via BedPickerScreen keeps working unchanged"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:35:58+00:00",
+  "updatedAt": "2026-09-04T12:35:58+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:35:58+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed at the Product Owner's request: assign a tenant by tapping a bed, from the bed grid and from All rooms. PO clarified mid-filing that an occupied bed should go straight to the assigned tenant's profile rather than showing a sheet - folded in, so the two-option sheet is a vacant-bed interaction only."
+    }
+  ]
+}

@@ -13,10 +13,10 @@
     "Correct in dark mode, and legible in Hindi where the status words are longer",
     "A room with no beds yet is handled sensibly rather than dividing by zero or reading as full"
   ],
-  "status": "Testing",
+  "status": "Done",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:12:41+00:00",
-  "updatedAt": "2026-09-04T12:25:56+00:00",
+  "updatedAt": "2026-09-04T12:35:58+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:12:41+00:00",
@@ -39,6 +39,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built. AllRoomsScreen is now a LazyVerticalGrid of tiles (GridCells.Adaptive minSize 108dp, so a small phone gets three per row and a larger one more) instead of a LazyColumn of rows. Tile colour, icon and text all come from a new RoomFill enum in ui/common/StatusTokens.kt - EMPTY/PARTIAL/FULL mapping onto the existing StatusLevel GOOD/WARN/BAD, so this consumes the LODGY-36 tokens rather than defining colours. Named RoomFill, not RoomOccupancy, because data.dao already exports a RoomOccupancy projection and the two would have collided. Each tile carries room number, floor, 'N of M free' and a status word plus an icon, so colour is never the only cue (LODGY-62). Added a summary row above the grid - 'N Empty / N Part full / N Full' - for the overall-visibility part of the ask. New strings in values/ and values-hi/. BACKWARD COMPATIBILITY: presentation only. No entity, DAO or query changed, DB stays at version 4, no migration needed, and an existing install upgrades with its data untouched. VERIFIED ON EMULATOR at stock 420dpi: Sunrise PG shows 101 green Empty, 102 amber Part full, 103 green Empty with the summary reading 2/1/0; Moonlight shows 501 red Full with 0/0/1. Tapping a tile still opens that room's bed grid. Re-checked in dark mode - the tokens adjust and stay legible. TESTS: 10 new (RoomFillTest covers all three states, the single-bed room, the no-beds-yet case, the defensive occupied>total case, the RAG mapping and icon distinctness; AllRoomsViewModelTest gains summary-bucket and per-item fill assertions). Full suite 422 pass / 0 fail. Coverage 97.00% line overall, with every new class at 100% line."
+    },
+    {
+      "timestamp": "2026-09-04T12:35:58+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all seven, and I went at the cases the developer had not covered rather than re-running the three-room happy path. AC1: bulk-added 14 rooms to a second floor plus a long-named one, giving 18 across two floors - the adaptive grid fits three per row and shows every room on one screen at stock 420dpi with no scrolling, which is the point of the ticket. AC2: verified all three colours against real data - Sunrise 101 green Empty, 102 amber Part full, and Moonlight 501 red Full. Colours resolve through the LODGY-36 tokens rather than literals, confirmed in code. AC3: every tile carries an icon, the room number, floor, 'N of M free' and a status word, so nothing is conveyed by colour alone; the icons are distinct per state and a unit test asserts that. AC4: the summary row reads '17 Empty / 1 Part full / 0 Full' and the three buckets always sum to the room count - checked against 18 rooms and again after injecting a nineteenth. AC5: tapping a tile still opens that room's bed grid, verified on Moonlight 501. AC6: re-checked in dark mode (tokens adjust, tiles stay legible) and in Hindi, which was the real risk - the status words become खाली / आंशिक / भरा and the free-count becomes '2 में 2 खाली', and neither the tiles nor the non-wrapping summary row overflow or truncate. AC7: this one is not reachable through the UI, since every room type generates beds, so I injected a bedless room directly into the database. It renders as Empty in green with '0 of 0 free', counts into the Empty bucket, and does not crash or divide by zero - correct, since a room still being set up should not read as full. Synthetic row removed after. ALSO CHECKED, not in the ACs: a deliberately long room number (ANNEXE-B-201-EXTRA) truncates with an ellipsis inside its tile instead of pushing the icon out or wrapping the layout. Backward compatibility confirmed as claimed - no entity, DAO or query changed, DB still at version 4, and the existing install on the emulator upgraded in place with all its data intact. Build: 422 tests pass, 0 fail; line coverage 97.00% overall with every new class at 100%. One observation for the PO, not a fail: floor labels stay as the warden typed them ('Ground', 'First') while the rest of the tile is Hindi. That matches DESIGN.md 4.9 - warden-entered data is stored and shown as typed - so it is correct as specified, but it does read as half-translated."
     }
   ]
 }
