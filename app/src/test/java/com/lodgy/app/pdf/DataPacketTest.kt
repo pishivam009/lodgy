@@ -14,6 +14,7 @@ class DataPacketTest {
         phone = "Phone",
         status = "Status",
         rent = "Agreed rent",
+        amenitiesLabel = "Amenities",
         movedIn = "Moved in",
         movedOut = "Moved out",
         noticeGiven = "Leaving on (notice given)",
@@ -27,10 +28,11 @@ class DataPacketTest {
         generatedOn = "Generated on",
     )
 
-    private fun tenancy(name: String, room: String, invoices: Int = 1, movedOut: String? = null, planned: Boolean = false) = PacketTenancy(
+    private fun tenancy(name: String, room: String, invoices: Int = 1, movedOut: String? = null, planned: Boolean = false, amenities: String = "") = PacketTenancy(
         tenantName = name,
         phone = "999",
         roomAndBed = room,
+        amenities = amenities,
         status = "ACTIVE",
         agreedRent = "5000",
         moveInDate = "1 Jan 2026",
@@ -180,4 +182,26 @@ class DataPacketTest {
         assertFalse(keys.contains("Leaving on (notice given)"))
     }
 
+    @Test
+    fun `amenities appear on the room when recorded, so they are readable outside the edit form`() {
+        val content = buildDataPacket(
+            hostels = listOf(hostel("Sunrise PG", listOf(PacketFloor("Ground", listOf(
+                tenancy("Ramesh", "Room 102", amenities = "AC, attached bath"),
+            ))))),
+            labels = labels, generatedOn = "5 Sep 2026",
+        )
+        val kv = content.blocks.filterIsInstance<PdfBlock.KeyValue>()
+        assertTrue(kv.any { it.label == "Amenities" && it.value == "AC, attached bath" })
+    }
+
+    @Test
+    fun `a room with no amenities prints no amenities line at all`() {
+        val content = buildDataPacket(
+            hostels = listOf(hostel("Sunrise PG", listOf(PacketFloor("Ground", listOf(
+                tenancy("Ramesh", "Room 102"),
+            ))))),
+            labels = labels, generatedOn = "5 Sep 2026",
+        )
+        assertFalse(content.blocks.filterIsInstance<PdfBlock.KeyValue>().any { it.label == "Amenities" })
+    }
 }

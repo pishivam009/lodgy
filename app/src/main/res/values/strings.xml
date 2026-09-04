@@ -79,6 +79,8 @@
     <string name="room_field_number">Room number</string>
     <string name="room_field_price">Price per bed</string>
     <string name="room_field_amenities">Amenities</string>
+    <string name="room_amenities_label">Amenities: %1$s</string>
+    <string name="packet_amenities">Amenities</string>
     <string name="room_form_save">Save Room</string>
     <string name="room_type_single">SINGLE</string>
     <string name="room_type_double">DOUBLE</string>

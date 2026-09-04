@@ -58,6 +58,7 @@ fun BedGridScreen(onBack: () -> Unit, viewModel: BedGridViewModel = hiltViewMode
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
+            RoomDetails(uiState)
             BedFilterChips(
                 selected = uiState.filter,
                 onSelect = viewModel::onFilterChange,
@@ -114,6 +115,29 @@ private fun BedTile(bed: Bed) {
                 Icon(bed.status.icon, contentDescription = label, tint = palette.onContainer, modifier = Modifier.size(16.dp))
                 Text(label, style = MaterialTheme.typography.labelSmall, color = palette.onContainer)
             }
+        }
+    }
+}
+
+/** The room's own details, read-only. Before this, the only way to see what a room had was to open
+ *  its edit form - a screen whose whole purpose is changing things - so answering "does 204 have an
+ *  attached bathroom?" risked editing the record you came to read (LODGY-71). */
+@Composable
+private fun RoomDetails(uiState: BedGridUiState) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            stringResource(R.string.room_price_per_bed, uiState.pricePerBed),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        if (uiState.amenities.isNotBlank()) {
+            Text(
+                stringResource(R.string.room_amenities_label, uiState.amenities),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

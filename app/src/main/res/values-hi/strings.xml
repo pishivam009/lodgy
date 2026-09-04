@@ -77,6 +77,8 @@
     <string name="room_field_number">कमरा नंबर</string>
     <string name="room_field_price">प्रति बेड कीमत</string>
     <string name="room_field_amenities">सुविधाएं</string>
+    <string name="room_amenities_label">सुविधाएँ: %1$s</string>
+    <string name="packet_amenities">सुविधाएँ</string>
     <string name="room_form_save">कमरा सेव करें</string>
     <string name="room_type_single">सिंगल</string>
     <string name="room_type_double">डबल</string>

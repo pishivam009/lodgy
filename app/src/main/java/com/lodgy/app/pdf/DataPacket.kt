@@ -5,6 +5,9 @@ data class PacketTenancy(
     val tenantName: String,
     val phone: String,
     val roomAndBed: String,
+    /** Blank when the warden recorded none; the packet omits the line entirely rather than
+     *  printing an empty label. */
+    val amenities: String = "",
     val status: String,
     val agreedRent: String,
     val moveInDate: String,
@@ -32,6 +35,7 @@ data class PacketLabels(
     val phone: String,
     val status: String,
     val rent: String,
+    val amenitiesLabel: String,
     val movedIn: String,
     val movedOut: String,
     val noticeGiven: String,
@@ -77,6 +81,9 @@ fun buildDataPacket(
                     add(PdfBlock.KeyValue(labels.phone, tenancy.phone))
                     add(PdfBlock.KeyValue(labels.status, tenancy.status))
                     add(PdfBlock.KeyValue(labels.rent, tenancy.agreedRent))
+                    if (tenancy.amenities.isNotBlank()) {
+                        add(PdfBlock.KeyValue(labels.amenitiesLabel, tenancy.amenities))
+                    }
                     add(PdfBlock.KeyValue(labels.movedIn, tenancy.moveInDate))
                     tenancy.moveOutDate?.let {
                         val label = if (tenancy.moveOutIsPlanned) labels.noticeGiven else labels.movedOut

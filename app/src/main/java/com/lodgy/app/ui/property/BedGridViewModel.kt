@@ -19,6 +19,11 @@ import kotlinx.coroutines.launch
 data class BedGridUiState(
     val roomNumber: String = "",
     val roomType: String = "",
+    val pricePerBed: Double = 0.0,
+    /** Free text as the warden typed it. Captured since LODGY-8 and, until LODGY-71, readable
+     *  nowhere except the edit form - so checking what a room had meant opening a screen whose
+     *  purpose is changing it. */
+    val amenities: String = "",
     val beds: List<Bed> = emptyList(),
     val filter: BedFilter = BedFilter.ALL,
 ) {
@@ -40,7 +45,14 @@ class BedGridViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val room = roomRepository.getById(roomId)
-            _uiState.update { it.copy(roomNumber = room?.roomNumber.orEmpty(), roomType = room?.type?.name.orEmpty()) }
+            _uiState.update {
+                it.copy(
+                    roomNumber = room?.roomNumber.orEmpty(),
+                    roomType = room?.type?.name.orEmpty(),
+                    pricePerBed = room?.pricePerBed ?: 0.0,
+                    amenities = room?.amenities.orEmpty(),
+                )
+            }
         }
         viewModelScope.launch {
             bedRepository.getByRoomId(roomId).collect { beds ->
