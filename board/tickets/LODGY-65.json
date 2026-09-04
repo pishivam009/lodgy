@@ -13,13 +13,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:05:59+00:00",
-  "updatedAt": "2026-09-04T12:05:59+00:00",
+  "updatedAt": "2026-09-04T13:04:11+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:05:59+00:00",
       "actor": "Tester",
       "action": "created",
       "note": "Filed at the Product Owner's request to confirm updates as well as deletes. Flagged rather than implemented because it directly contradicts LODGY-57 AC5, which was built and accepted - needs an explicit PO call."
+    },
+    {
+      "timestamp": "2026-09-04T13:04:11+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: LODGY-57 AC5 stands - routine field edits get no confirmation. The rule is now written into DESIGN.md 4.12 alongside the other UI invariants: confirm every destructive action, and confirm an update only when it silently changes money, occupancy or history the warden cannot see on the screen they are on. REMAINING SCOPE, so this stays in Todo rather than closing: the four updates that meet that bar are not confirmed today - editing a room's price per bed, editing a tenant's agreed rent, editing an invoice amount with payments already against it, and renaming a hostel that reconciliation marks and exported PDFs already refer to. AC3 no longer applies since AC5 was upheld."
     }
   ]
 }

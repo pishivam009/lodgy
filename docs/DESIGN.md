@@ -372,6 +372,15 @@ and each is invisible on the screen that introduces it.
   tenant profile clipped Record a credit, Move to another bed and Checkout on
   an ordinary phone, which read as three separate missing features
   (LODGY-34, LODGY-35, and a regression against LODGY-14).
+- **Confirm what cannot be seen, not every edit.** A destructive action always
+  confirms. An *update* confirms only when it silently changes money, occupancy
+  or history that the warden cannot see on the screen they are on — a room's
+  price per bed, an agreed rent, an invoice amount with payments already against
+  it. Renaming a hostel or fixing a phone number does not confirm, and that is
+  deliberate: a dialog on every edit teaches wardens to dismiss dialogs without
+  reading them, which costs exactly the ones that matter (LODGY-57 AC5, upheld
+  under LODGY-65).
+
 - **Derive UI state from observed queries, not one-shot reads.** A value read
   once in a ViewModel's `init` cannot notice later writes. Room's `Flow`
   queries are the source of truth, and a screen that shows data from a table
@@ -382,6 +391,36 @@ and each is invisible on the screen that introduces it.
   to be recreated (LODGY-33). The same rule is why a write should not also
   optimistically set the state it just persisted: that is a second source of
   truth waiting to disagree.
+
+### 4.13 What "delete" means
+
+Delete is **permanent**. There is no deleted flag, no recycle bin and no undo
+screen — considered under LODGY-66 and declined.
+
+Soft delete was rejected on cost, not on principle. Every read in the app would
+have to filter, across fifteen DAOs including the joins and aggregates behind
+occupancy, the dashboard, the monthly report and the PDF exports; a single
+missed clause silently inflates a total, which is a bug nobody notices. Undoing
+a cascade would need its own grouping record to know what one action removed, so
+it is a feature rather than a flag. A soft-deleted room keeps its number, so
+recreating it collides. And it breaks the orphan-photo sweep (4.x, LODGY-51),
+which would delete the photos of a tenant the bin still claims is restorable.
+
+What protects the warden instead, in order of how much work each does:
+
+1. **Prevention.** A delete that would take tenancies or financial history with
+   it is blocked, not confirmed — the pattern room delete already uses and floor
+   delete is getting (LODGY-63, LODGY-64). What stays deletable is small and
+   cheap to recreate.
+2. **Money is voided, never deleted.** A wrong invoice or payment is reversed
+   into a visible corrected record. That is ordinary bookkeeping and it sidesteps
+   undo entirely.
+3. **A backup before the dangerous ones.** Cascading deletes write a backup
+   first, and a daily automatic backup runs regardless (LODGY-68). This is the
+   real safety net, and unlike a bin it also survives a lost phone.
+
+If a bin is ever revisited, size it as an epic across every DAO and export path,
+not as a column on a few tables.
 
 ## 5. Explicit non-goals
 - No auto-sent WhatsApp/SMS (tap-to-send only — no paid API, no backend).
@@ -446,6 +485,8 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Orphaned photo cleanup | Photos are written on pick, so abandoned forms leaked files into every backup | LODGY-51 |
 | Occupancy stays a current-state figure, disclosed in the UI | Snapshots would add a second source of truth for a number read as a rough gauge | LODGY-52 |
 | APK-size work declined | Already small enough; minification risk not worth it, and it was constraining the PDF choice | LODGY-48 |
+| Soft delete declined; delete stays permanent | Filtering every read across 15 DAOs to buy an undo a backup already provides — see 4.13 | LODGY-66 |
+| Confirmations on destructive actions and invisible-change updates only | A dialog on every edit trains wardens to dismiss dialogs unread | LODGY-65 |
 | Theme wraps content in a `Surface` | Without it no themed background is painted, so Scaffold-less screens break in dark mode only — see 4.12 | LODGY-32 |
 | Growable screens scroll | Clipped content reads as a missing feature, not a layout fault — see 4.12 | LODGY-34, LODGY-35 |
 | UI state comes from observed queries | A one-shot read in `init` cannot see later writes, so labels went stale — see 4.12 | LODGY-33 |

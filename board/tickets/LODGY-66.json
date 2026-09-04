@@ -9,17 +9,25 @@
     "If (b): scope is written up honestly across all 15 DAOs, the cascade-grouping needed for a correct undo, the uniqueness question, and the effect on LODGY-51's photo cleanup and LODGY-28's backup size",
     "Either way DESIGN.md gains a short statement of what 'delete' means in Lodgy, so future tickets inherit the answer rather than re-asking it"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:05:59+00:00",
-  "updatedAt": "2026-09-04T12:05:59+00:00",
+  "updatedAt": "2026-09-04T13:04:11+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:05:59+00:00",
       "actor": "Tester",
       "action": "created",
       "note": "Filed at the Product Owner's request to evaluate soft delete with an undo bin. Written as a decision ticket with a recommendation against doing it globally, and a cheaper alternative that addresses the same fear."
+    },
+    {
+      "timestamp": "2026-09-04T13:04:11+00:00",
+      "actor": "Product Owner",
+      "action": "status_change",
+      "note": "DECIDED: no soft delete. Delete stays permanent. The protections are prevention (LODGY-63/64 block deletes that would take tenancies or money), voiding rather than deleting financial records, and backup before cascading deletes plus the daily automatic backup (LODGY-68) - which unlike a bin also survives a lost phone. Recorded in DESIGN.md as a new section 4.13 'What delete means', with the reasoning kept so this is not re-litigated, and a decision-log row. AC2's auto-export requirement is already specced as LODGY-68. All acceptance criteria met.",
+      "from": "Todo",
+      "to": "Testing"
     }
   ]
 }

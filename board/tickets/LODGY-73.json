@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-73",
+  "epic": "Notifications",
+  "priority": "Medium",
+  "title": "Notify the warden when the month's invoices are generated",
+  "description": "Raised while auditing what Lodgy actually notifies about, and confirmed by the PO as a gap rather than a deliberate silence. InvoiceGenerationWorker runs daily and creates the month's invoice for every active agreement on its billing cycle day, and posts nothing - a grep for notification calls in that worker returns zero. So the one event that creates the warden's work for the month happens invisibly, while overdue rent and recurring expenses both notify. The warden's first sign that invoices exist is opening the Payments tab and finding them, which means the collection cycle starts whenever they happen to look rather than when it actually begins. SHAPE: one summary notification per generation run, not one per invoice - a hostel with thirty tenants must not produce thirty notifications. Something like 'March invoices ready - 12 invoices, ₹60,000 due', tapping through to the invoice list. Reuse the existing dues channel rather than adding a third, since it is the same audience and the same switch should govern it; if the PO wants it separately toggleable that is a third channel and should be said explicitly. A run that generates nothing must stay silent.",
+  "acceptanceCriteria": [
+    "When the generation worker creates one or more invoices, the warden gets a single summary notification for that run",
+    "The notification says how many invoices were created and the total amount due, not just that something happened",
+    "Tapping it opens the invoice list",
+    "A run that creates no invoices posts nothing at all",
+    "Many invoices in one run still produce exactly one notification, never one per invoice",
+    "It respects the existing payments-and-expenses switch, so a warden who turned that off is not notified",
+    "Generation itself is unchanged - this only adds the notification, and an invoice is still created exactly once per agreement per period"
+  ],
+  "status": "Todo",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T13:04:11+00:00",
+  "updatedAt": "2026-09-04T13:04:11+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T13:04:11+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed after the PO confirmed that silent invoice generation is a gap. Specced as one summary notification per run rather than per invoice, on the existing dues channel."
+    }
+  ]
+}

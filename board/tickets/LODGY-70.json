@@ -16,7 +16,7 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-04T12:53:34+00:00",
+  "updatedAt": "2026-09-04T13:04:11+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
@@ -29,6 +29,12 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "Cross-reference: LODGY-72 adds a vacancy filter to this same screen, driven from the Home tile. Design the hostel filter and the fill filter together - two separately-conceived filter rows on one screen will not sit well, and both need to feed the LODGY-67 summary row consistently."
+    },
+    {
+      "timestamp": "2026-09-04T13:04:11+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: the per-hostel 'All rooms' action stays, opening the screen pre-filtered to that hostel. It is the useful path when the warden is already inside a property, and it costs nothing once the filter exists."
     }
   ]
 }

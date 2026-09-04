@@ -16,13 +16,19 @@
   "status": "Todo",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:53:34+00:00",
-  "updatedAt": "2026-09-04T12:53:34+00:00",
+  "updatedAt": "2026-09-04T13:04:11+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:53:34+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed at the PO's request. Two findings recorded up front: the tile is already tappable and today opens VacantViewScreen, so this redirects an existing tap and risks orphaning LODGY-21's screen; and All rooms has no filter at all yet, so the vacancy filter has to be built and should be designed together with LODGY-70's hostel filter. Also flagged the beds-versus-rooms count mismatch, which is the most likely thing to look like a bug after shipping."
+    },
+    {
+      "timestamp": "2026-09-04T13:04:11+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: VacantViewScreen is removed. The Home tile becomes its only-ever entry point and now goes to All rooms filtered to rooms with space, so LODGY-21's screen would otherwise be unreachable. Removing it deliberately rather than orphaning it. NOTE FOR THE BUILD: this loses the per-floor bed-level breakdown that screen provided - the floor filter and the All/Vacant/Occupied chips - which the PO has accepted. Its route, ViewModel and tests come out with it, and anything still pointing at VACANT_VIEW_ROUTE must be repointed, including the vacancy notification's tap target from LODGY-59."
     }
   ]
 }

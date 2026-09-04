@@ -16,13 +16,19 @@
   "status": "Todo",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:43:19+00:00",
-  "updatedAt": "2026-09-04T12:43:19+00:00",
+  "updatedAt": "2026-09-04T13:04:11+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:43:19+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed after the PO flagged that amenities are recorded but not viewable. Verified in code: the only two UI references are the write forms, and there is no read-only surface anywhere including the PDF packet and CSV export. Split out of LODGY-69 so amenities do not end up visible solely inside a bed sheet."
+    },
+    {
+      "timestamp": "2026-09-04T13:04:11+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: amenities stay free text. No move to structured tags, so no filtering by amenity is planned - the display work here will not be redone later. Scope is display only, as written."
     }
   ]
 }

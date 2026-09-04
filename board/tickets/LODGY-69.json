@@ -20,7 +20,7 @@
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-04T12:43:19+00:00",
+  "updatedAt": "2026-09-04T13:04:11+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
@@ -39,6 +39,12 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "Open question resolved: view description shows type, price and amenities. The PO's underlying concern was that amenities are recorded but viewable nowhere - verified in code and filed as LODGY-71, because this sheet must not become the only place they appear."
+    },
+    {
+      "timestamp": "2026-09-04T13:04:11+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: a compact panel is enough for 'view description' - no full screen. It shows the room's type, price per bed and amenities, plus the tenancy summary when the bed is occupied."
     }
   ]
 }
