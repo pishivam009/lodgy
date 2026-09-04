@@ -6,6 +6,7 @@ import com.lodgy.app.data.entity.TenancyAgreement
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.coVerify
 import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -62,5 +63,45 @@ class TenancyAgreementRepositoryTest {
         assertEquals(AgreementStatus.CLOSED, updated.captured.status)
         assertEquals(999L, updated.captured.moveOutDate)
         assertEquals(1800.0, updated.captured.depositRefundAmount!!, 0.0001)
+    }
+
+    @Test
+    fun `transferBed moves the tenancy without closing it or starting a new one`() = runTest {
+        val active = agreement("a1", AgreementStatus.ACTIVE)
+        val updated = slot<TenancyAgreement>()
+        coEvery { dao.update(capture(updated)) } returns Unit
+
+        repository.transferBed(active, "new-bed", 5500.0)
+
+        assertEquals(active.id, updated.captured.id)
+        assertEquals("new-bed", updated.captured.bedId)
+        assertEquals(5500.0, updated.captured.agreedRent, 0.0001)
+        assertEquals(AgreementStatus.ACTIVE, updated.captured.status)
+        assertNull(updated.captured.moveOutDate)
+        coVerify(exactly = 0) { dao.insert(any()) }
+    }
+
+    @Test
+    fun `setPlannedMoveOut records notice while leaving the tenancy active`() = runTest {
+        val active = agreement("a1", AgreementStatus.ACTIVE)
+        val updated = slot<TenancyAgreement>()
+        coEvery { dao.update(capture(updated)) } returns Unit
+
+        repository.setPlannedMoveOut(active, 9_000L)
+
+        assertEquals(9_000L, updated.captured.moveOutDate)
+        assertEquals(AgreementStatus.ACTIVE, updated.captured.status)
+        assertNull(updated.captured.depositRefundAmount)
+    }
+
+    @Test
+    fun `setPlannedMoveOut with null withdraws the notice`() = runTest {
+        val withNotice = agreement("a1", AgreementStatus.ACTIVE).copy(moveOutDate = 9_000L)
+        val updated = slot<TenancyAgreement>()
+        coEvery { dao.update(capture(updated)) } returns Unit
+
+        repository.setPlannedMoveOut(withNotice, null)
+
+        assertNull(updated.captured.moveOutDate)
     }
 }

@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <cache-path name="camera_temp" path="." />
+    <!-- Only the camera scratch directory, not all of cacheDir: the restore staging area under
+         cacheDir holds a decrypted copy of the whole database during an import, and nothing about
+         handing the camera an output file requires the rest of the cache to be shareable. -->
+    <cache-path name="camera_temp" path="camera/" />
 </paths>

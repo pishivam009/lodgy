@@ -1,6 +1,11 @@
 package com.lodgy.app.data.repository
 
 import com.lodgy.app.data.dao.BedDao
+import com.lodgy.app.data.dao.BedLocation
+import com.lodgy.app.data.dao.FloorOccupancy
+import com.lodgy.app.data.dao.RoomOccupancy
+import com.lodgy.app.data.dao.VacantBedDetail
+import com.lodgy.app.data.dao.VacantBedRow
 import com.lodgy.app.data.entity.Bed
 import com.lodgy.app.data.entity.BedStatus
 import io.mockk.coEvery
@@ -9,6 +14,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -76,5 +82,35 @@ class BedRepositoryTest {
         repository.setOccupied("missing")
 
         coVerify(exactly = 0) { bedDao.update(any()) }
+    }
+
+    @Test
+    fun `the aggregate and lookup queries pass straight through to the dao`() = runTest {
+        val roomOccupancy = listOf(RoomOccupancy("r1", totalBeds = 3, occupiedBeds = 1))
+        val floorOccupancy = listOf(FloorOccupancy("f1", totalBeds = 6, occupiedBeds = 4))
+        val vacantRows = listOf(VacantBedRow("b1", "A", "101", 5000.0, "Ground"))
+        val longVacant = listOf(VacantBedDetail("b1", "A", "101", "Ground", "Sunrise", 0L))
+
+        coEvery { bedDao.getLocation("b1") } returns BedLocation("101", "A")
+        every { bedDao.observeOccupancyByFloor("f1") } returns flowOf(roomOccupancy)
+        every { bedDao.observeOccupancyByHostel("h1") } returns flowOf(floorOccupancy)
+        every { bedDao.observeRoomOccupancyByHostel("h1") } returns flowOf(roomOccupancy)
+        coEvery { bedDao.getVacantBedsByHostel("h1") } returns vacantRows
+        coEvery { bedDao.getLongVacantBeds(500L) } returns longVacant
+        coEvery { bedDao.getVacantBedIds() } returns listOf("b1")
+
+        assertEquals(BedLocation("101", "A"), repository.getLocation("b1"))
+        assertEquals(roomOccupancy, repository.observeOccupancyByFloor("f1").first())
+        assertEquals(floorOccupancy, repository.observeOccupancyByHostel("h1").first())
+        assertEquals(roomOccupancy, repository.observeRoomOccupancyByHostel("h1").first())
+        assertEquals(vacantRows, repository.getVacantBedsByHostel("h1"))
+        assertEquals(longVacant, repository.getLongVacantBeds(500L))
+        assertEquals(listOf("b1"), repository.getVacantBedIds())
+    }
+
+    @Test
+    fun `occupancy rows derive vacant beds from the totals`() {
+        assertEquals(2, RoomOccupancy("r1", totalBeds = 3, occupiedBeds = 1).vacantBeds)
+        assertEquals(2, FloorOccupancy("f1", totalBeds = 6, occupiedBeds = 4).vacantBeds)
     }
 }

@@ -57,7 +57,9 @@ class PhotoStorageTest {
 
         assertTrue(result === expectedUri)
         assertTrue(authoritySlot.captured == "com.lodgy.app.fileprovider")
-        assertTrue(fileSlot.captured.parentFile == cacheDir)
+        // Under cacheDir/camera specifically: that subdirectory is the only path the FileProvider
+        // is allowed to share, so a file written anywhere else in the cache could not be handed out.
+        assertTrue(fileSlot.captured.parentFile == File(cacheDir, "camera"))
         assertTrue(fileSlot.captured.name.endsWith(".jpg"))
     }
 

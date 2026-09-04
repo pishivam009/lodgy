@@ -100,12 +100,20 @@ val jacocoExclusions = listOf(
     "**/*Screen.*", "**/*ScreenKt*.*", "**/ComposableSingletons*.*",
     "**/ui/theme/**", "**/ui/icons/**", "**/ui/nav/**",
     "**/PhotoPickerField*.*", "**/PinKeypad*.*", "**/EnumLabels*.*", "**/MoreScreen*.*",
+    "**/FilterChipRow*.*", "**/StatusBadge*.*", "**/AppRoot.*", "**/AppRootKt*.*", "**/AuthIcons*.*", "**/ContactIcons*.*",
+    "**/StatusIcons*.*",
     // Room DAOs (interfaces, no logic) and entities (plain data holders)
     "**/data/dao/**", "**/data/entity/**", "**/LodgyDatabase.*",
     "**/LodgyApplication.*", "**/MainActivity.*",
-    // CoroutineWorker needs a real WorkerParameters/work-testing+Robolectric harness to construct;
-    // not reachable from a plain JVM unit test. WorkScheduler (the request-building half) is covered.
-    "**/InvoiceGenerationWorker*.*",
+    // Migrations are raw SQL against a real SQLite file - they need an instrumented
+    // MigrationTestHelper, not a JVM test. Each one's SQL is instead diffed against Room's own
+    // exported schema JSON when it is written.
+    "**/Migrations*.*",
+    // Thin wrappers over Android graphics/notification/IO APIs with no branching of their own -
+    // the logic they call was pulled out precisely so it could be tested here (PdfLayout,
+    // VacancyNudge, DuesNudge, HistoryCsv).
+    "**/LodgyPdfRenderer*.*", "**/LodgyNotifications*.*", "**/HistoryCsvReader*.*",
+    "**/PhotoStorage*.*",
 )
 
 tasks.register<JacocoReport>("jacocoTestReport") {
@@ -148,8 +156,11 @@ tasks.register<JacocoCoverageVerification>("jacocoCoverageVerification") {
     violationRules {
         rule {
             limit {
+                // Measured 97.1% after LODGY-47. Set a few points below that: high enough that a
+                // whole feature landing untested trips it, loose enough that one uncovered branch
+                // does not block a build.
                 counter = "LINE"
-                minimum = "0.80".toBigDecimal()
+                minimum = "0.93".toBigDecimal()
             }
         }
     }

@@ -29,4 +29,36 @@ class WorkSchedulerTest {
         val intervalMillis = requestSlot.captured.workSpec.intervalDuration
         assertEquals(TimeUnit.DAYS.toMillis(1), intervalMillis)
     }
+
+    @Test
+    fun `schedules a unique daily vacancy check that keeps any existing one`() {
+        val workManager: WorkManager = mockk()
+        val requestSlot = slot<PeriodicWorkRequest>()
+        every {
+            workManager.enqueueUniquePeriodicWork("vacancy-check", ExistingPeriodicWorkPolicy.KEEP, capture(requestSlot))
+        } returns mockk(relaxed = true)
+
+        workManager.scheduleVacancyCheck()
+
+        verify {
+            workManager.enqueueUniquePeriodicWork("vacancy-check", ExistingPeriodicWorkPolicy.KEEP, any<PeriodicWorkRequest>())
+        }
+        assertEquals(TimeUnit.DAYS.toMillis(1), requestSlot.captured.workSpec.intervalDuration)
+    }
+
+    @Test
+    fun `schedules a unique daily dues reminder that keeps any existing one`() {
+        val workManager: WorkManager = mockk()
+        val requestSlot = slot<PeriodicWorkRequest>()
+        every {
+            workManager.enqueueUniquePeriodicWork("dues-reminder", ExistingPeriodicWorkPolicy.KEEP, capture(requestSlot))
+        } returns mockk(relaxed = true)
+
+        workManager.scheduleDuesReminder()
+
+        verify {
+            workManager.enqueueUniquePeriodicWork("dues-reminder", ExistingPeriodicWorkPolicy.KEEP, any<PeriodicWorkRequest>())
+        }
+        assertEquals(TimeUnit.DAYS.toMillis(1), requestSlot.captured.workSpec.intervalDuration)
+    }
 }

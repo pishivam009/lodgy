@@ -8,6 +8,8 @@ import com.lodgy.app.ui.theme.DarkStatusColors
 import com.lodgy.app.ui.theme.LightStatusColors
 import com.lodgy.app.ui.theme.StatusLevel
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
@@ -49,5 +51,15 @@ class StatusLevelTest {
             assertEquals(colors.bad, colors[StatusLevel.BAD])
         }
         assertNotEquals(LightStatusColors.good.container, DarkStatusColors.good.container)
+    }
+
+    @Test
+    fun `the bed filter admits exactly the states it names`() {
+        assertTrue(BedFilter.ALL.matches(BedStatus.VACANT))
+        assertTrue(BedFilter.ALL.matches(BedStatus.OCCUPIED))
+        assertTrue(BedFilter.VACANT.matches(BedStatus.VACANT))
+        assertFalse(BedFilter.VACANT.matches(BedStatus.OCCUPIED))
+        assertTrue(BedFilter.OCCUPIED.matches(BedStatus.OCCUPIED))
+        assertFalse(BedFilter.OCCUPIED.matches(BedStatus.VACANT))
     }
 }

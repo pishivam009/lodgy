@@ -12,9 +12,11 @@ import kotlinx.coroutines.withContext
 
 class PhotoStorage @Inject constructor(@ApplicationContext private val context: Context) {
 
-    /** A content:// Uri the system camera app can write a full-size photo into. */
+    /** A content:// Uri the system camera app can write a full-size photo into. Kept in its own
+     *  cacheDir subdirectory, which is the only path the FileProvider is configured to share. */
     fun createCameraOutputUri(): Uri {
-        val file = File(context.cacheDir, "camera_${System.currentTimeMillis()}.jpg")
+        val cameraDir = File(context.cacheDir, "camera").apply { mkdirs() }
+        val file = File(cameraDir, "camera_${System.currentTimeMillis()}.jpg")
         return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
     }
 

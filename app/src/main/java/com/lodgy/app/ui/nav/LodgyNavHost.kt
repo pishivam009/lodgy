@@ -20,6 +20,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.lodgy.app.notify.ROUTE_EXPENSE_FORM
+import com.lodgy.app.notify.isSupportedNotificationRoute
 import com.lodgy.app.notify.ROUTE_RECORD_PAYMENT
 import com.lodgy.app.notify.ROUTE_VACANT_VIEW
 import com.lodgy.app.ui.property.AllRoomsScreen
@@ -98,7 +99,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
     // A notification's destination, opened once the warden is through the lock screen. Keyed on
     // the route so a second notification during the same session still lands.
     LaunchedEffect(pendingRoute) {
-        pendingRoute?.let(navController::navigate)
+        pendingRoute?.takeIf(::isSupportedNotificationRoute)?.let(navController::navigate)
     }
 
     val backStackEntry by navController.currentBackStackEntryAsState()
