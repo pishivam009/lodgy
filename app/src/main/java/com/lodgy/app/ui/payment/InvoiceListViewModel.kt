@@ -10,6 +10,7 @@ import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.InvoiceRepository
 import com.lodgy.app.data.repository.PaymentRepository
+import com.lodgy.app.data.repository.ReconciliationRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +18,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -35,6 +37,8 @@ data class InvoiceListItem(
     /** True when some of this invoice's money arrived as part of one lump sum covering several
      *  months - the exceptional pattern LODGY-42 exists to make visible. */
     val partOfMultiPeriodPayment: Boolean = false,
+    /** The warden has attested this invoice's period against their paper register (LODGY-43). */
+    val periodReconciled: Boolean = false,
 ) {
     val effectiveDue: Double get() = effectiveAmountDue(invoice.amountDue, creditTotal)
 }
@@ -77,6 +81,7 @@ class InvoiceListViewModel @Inject constructor(
     private val paymentRepository: PaymentRepository,
     private val bedRepository: BedRepository,
     private val creditRepository: CreditRepository,
+    private val reconciliationRepository: ReconciliationRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InvoiceListUiState())
@@ -84,9 +89,13 @@ class InvoiceListViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            invoiceRepository.getAll()
-                .map { invoices -> invoices.sortedByDescending { it.createdAt }.map { invoice -> enrich(invoice) } }
-                .collect { items -> _uiState.update { it.copy(items = items) } }
+            combine(
+                invoiceRepository.getAll(),
+                reconciliationRepository.observeAll(),
+            ) { invoices, marks ->
+                val reconciled = marks.map { Triple(it.hostelId, it.periodMonth, it.periodYear) }.toSet()
+                invoices.sortedByDescending { it.createdAt }.map { enrich(it, reconciled) }
+            }.collect { items -> _uiState.update { it.copy(items = items) } }
         }
     }
 
@@ -98,11 +107,15 @@ class InvoiceListViewModel @Inject constructor(
 
     fun onSortChange(sort: InvoiceSort) = _uiState.update { it.copy(sort = sort) }
 
-    private suspend fun enrich(invoice: Invoice): InvoiceListItem {
+    private suspend fun enrich(
+        invoice: Invoice,
+        reconciledPeriods: Set<Triple<String, Int, Int>>,
+    ): InvoiceListItem {
         val agreement = tenancyAgreementRepository.getById(invoice.tenancyAgreementId)
         val tenant = agreement?.let { tenantRepository.getById(it.tenantId) }
         val payments = paymentRepository.getByInvoiceId(invoice.id).first()
         val totalPaid = payments.sumOf { it.amount }
+        val hostelId = agreement?.let { bedRepository.getHostelId(it.bedId) }
         return InvoiceListItem(
             invoice = invoice,
             tenantName = tenant?.name.orEmpty(),
@@ -110,6 +123,8 @@ class InvoiceListViewModel @Inject constructor(
             totalPaid = totalPaid,
             creditTotal = creditRepository.getByInvoiceId(invoice.id).sumOf { it.amount },
             partOfMultiPeriodPayment = payments.any { it.multiPeriodGroupId != null },
+            periodReconciled = hostelId != null &&
+                Triple(hostelId, invoice.periodMonth, invoice.periodYear) in reconciledPeriods,
         )
     }
 }

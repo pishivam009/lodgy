@@ -10,11 +10,11 @@
     "Credit history is visible on the tenant's notes/timeline",
     "Reports (Monthly Report, CSV export) reflect the adjusted amounts by summing invoice + credit rows, not by reading a pre-adjusted cached total"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-04T11:00:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -51,6 +51,14 @@
       "from": "Testing",
       "to": "In Progress",
       "note": "FAIL on AC2 - the credit feature is well built but unreachable on a default-density phone. AC1, AC3, AC4 and AC5 all pass. AC1: there is a real credits table (id, tenantId, invoiceId, amount, reason, createdAt) and the invoice's own amountDue is NOT mutated - after an 800 credit the invoice row still reads amountDue 3000.0. AC3: the invoice list shows 'Credit: 800' as a labelled line with the effective 2200 beneath it, and the receipt PDF renders 'Invoice amount 3000 / Credit applied 800 / Amount due 2200' as separate lines rather than one silently shrunken total. AC4: the timeline shows 'Credit 800 - Plumbing repair'. AC5: reports sum invoice + credit rows - the Monthly Report for 5/2026 shows Total collected 2200, Credits 800, Total dues 0, and the CSV export carries a distinct \"Credits\",\"800.00\" row. THE PROBLEM: AC2 says the warden can record a credit against a tenant. The 'Record a credit' card sits on the tenant profile below the fold, and that screen does not scroll - at the emulator's stock 1080x2400 @ 420dpi the profile is clipped after 'Pay several months at once' and swiping does nothing. Same single root cause as LODGY-34: TenantProfileScreen.kt:88, root Column has no verticalScroll(rememberScrollState()). I only reached the credit form by dropping the display to 280dpi. This should clear as soon as that one modifier is added - no changes needed to the credit feature itself."
+    },
+    {
+      "timestamp": "2026-09-04T11:00:02+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed by the same one-line change as LODGY-34 - no changes to the credit feature, which QA had already passed on AC1/AC3/AC4/AC5. TenantProfileScreen's root Column now scrolls, so 'Record a credit' is reachable at stock 420dpi. VERIFIED ON EMULATOR at default density: the card is reachable by scrolling on an ACTIVE tenant's profile. Build and full suite green: 412 tests pass (4 new), ./gradlew testDebugUnitTest and assembleDebug both successful. Tests touched for the new signatures: TenantProfileViewModelTest and TenantDirectoryViewModelTest now mock the observed agreement flows, InvoiceListViewModelTest gains the ReconciliationRepository mock, and DataPacketTest gains the noticeGiven label. Note on two profile tests: they assert state after setPlannedMoveOut, which previously passed only because the ViewModel wrote the value optimistically. Rather than keep that second source of truth - the exact bug class LODGY-33 is about - the mocks now use a MutableStateFlow that re-emits on write, which is how Room actually behaves."
     }
   ]
 }

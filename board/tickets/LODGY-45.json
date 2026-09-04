@@ -8,11 +8,11 @@
     "PDF is legible and organized (grouped by hostel/room/tenant), not a raw data dump",
     "Exported via SAF like other exports (LODGY-23/28), so it can be saved, printed, or shared"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-04T11:00:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -49,6 +49,14 @@
       "from": "Testing",
       "to": "In Progress",
       "note": "FAIL - the export works, but it prints a factually wrong statement about a current resident. AC1 and AC3 pass: More > Printable records (PDF) offers 'This hostel' / 'All hostels' with record counts, and saves via SAF (lodgy-records-2026-09-04.pdf). AC2 is mostly good - the packet is genuinely organised rather than a dump: hostel name and address, a beds summary, then floor > room > tenant with phone, status, rent and dates, and a per-tenant invoice history table with correct credit-adjusted amounts, all legible with page footers, and it renders correctly in Hindi too. THE BUG: for a tenant who is ACTIVE and has merely given notice, the packet prints 'Moved out: 20 Sep 2026'. The same record says 'Status: ACTIVE' three lines above, so the document contradicts itself and tells anyone reading it that a current resident has already left. WHAT I DID: set a planned move-out date of 20 Sep 2026 on Ramesh Kumar (still ACTIVE, bed still OCCUPIED, exactly as LODGY-49 intends), then exported the printable records packet. WHAT I EXPECTED: either no move-out line, or one clearly labelled as a planned/notice date. WHAT HAPPENED: it is labelled 'Moved out', identically to a real completed checkout. ROOT CAUSE: pdf/DataPacket.kt:77 does tenancy.moveOutDate?.let { add(PdfBlock.KeyValue(labels.movedOut, it)) } with no check of the agreement's status. LODGY-49 now writes a planned moveOutDate onto ACTIVE agreements, so that field no longer means 'has moved out'. SUGGESTED FIX: branch on agreement status - label it 'Moved out' only for a CLOSED agreement, and use a separate 'Notice given / Leaving on' label while ACTIVE. This matters more than an ordinary display bug because the entire point of this ticket is a document the warden prints and hands to someone."
+    },
+    {
+      "timestamp": "2026-09-04T11:00:02+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed. pdf/DataPacket.kt no longer assumes a moveOutDate means a completed departure: PacketTenancy gains `moveOutIsPlanned`, PacketLabels gains `noticeGiven`, and the block picks the label by that flag. DataPacketScreen passes `moveOutIsPlanned = tenancy.active`, using the `active` flag already carried on PacketTenancyData - so an ACTIVE agreement with a notice date reads as notice, and only a CLOSED one reads as a departure. New strings packet_notice_given in values/ ('Leaving on (notice given)') and values-hi/. VERIFIED ON EMULATOR with one export that exercises BOTH branches in a single document: Ramesh Kumar (VACATED, real checkout) prints 'Moved out: 4 Sep 2026', and Suresh (ACTIVE, notice set for 25 Sep 2026) prints 'Leaving on (notice given): 25 Sep 2026'. The self-contradiction QA found - a record saying ACTIVE three lines above 'Moved out' - is gone. Added two DataPacketTest cases asserting each branch emits the right label and not the other. Build and full suite green: 412 tests pass (4 new), ./gradlew testDebugUnitTest and assembleDebug both successful. Tests touched for the new signatures: TenantProfileViewModelTest and TenantDirectoryViewModelTest now mock the observed agreement flows, InvoiceListViewModelTest gains the ReconciliationRepository mock, and DataPacketTest gains the noticeGiven label. Note on two profile tests: they assert state after setPlannedMoveOut, which previously passed only because the ViewModel wrote the value optimistically. Rather than keep that second source of truth - the exact bug class LODGY-33 is about - the mocks now use a MutableStateFlow that re-emits on write, which is how Room actually behaves."
     }
   ]
 }

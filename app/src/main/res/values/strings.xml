@@ -109,6 +109,7 @@
     <string name="monthly_report_occupancy_current">Occupancy (today)</string>
     <string name="monthly_report_occupancy_current_note">Occupancy is measured from the beds as they stand today, not as they stood in this period — the app does not keep a history of bed occupancy.</string>
     <string name="reconciliation_title">Checked against paper records</string>
+    <string name="reconciliation_badge">Checked against register</string>
     <string name="reconciliation_done">You marked this month as matching your register.</string>
     <string name="reconciliation_pending">Not checked against your register yet.</string>
     <string name="history_import_title">Import past history</string>
@@ -160,6 +161,7 @@
     <string name="packet_status">Status</string>
     <string name="packet_moved_in">Moved in</string>
     <string name="packet_moved_out">Moved out</string>
+    <string name="packet_notice_given">Leaving on (notice given)</string>
     <string name="packet_invoices">Invoice history</string>
     <string name="packet_no_tenants">No tenancies recorded for this hostel.</string>
     <string name="packet_generated_on">Generated on</string>

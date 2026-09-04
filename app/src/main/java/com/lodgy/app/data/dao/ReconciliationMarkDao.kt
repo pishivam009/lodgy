@@ -24,4 +24,7 @@ interface ReconciliationMarkDao {
 
     @Query("SELECT * FROM reconciliation_marks WHERE hostelId = :hostelId")
     fun getByHostelId(hostelId: String): Flow<List<ReconciliationMark>>
+
+    @Query("SELECT * FROM reconciliation_marks")
+    fun observeAll(): Flow<List<ReconciliationMark>>
 }

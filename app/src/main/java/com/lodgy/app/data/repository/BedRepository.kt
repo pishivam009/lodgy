@@ -19,6 +19,8 @@ class BedRepository @Inject constructor(private val bedDao: BedDao) {
 
     suspend fun getLocation(bedId: String): BedLocation? = bedDao.getLocation(bedId)
 
+    suspend fun getHostelId(bedId: String): String? = bedDao.getHostelId(bedId)
+
     fun observeOccupancyByFloor(floorId: String): Flow<List<RoomOccupancy>> =
         bedDao.observeOccupancyByFloor(floorId)
 

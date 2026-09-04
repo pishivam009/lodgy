@@ -1,6 +1,7 @@
 package com.lodgy.app.pdf
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -15,6 +16,7 @@ class DataPacketTest {
         rent = "Agreed rent",
         movedIn = "Moved in",
         movedOut = "Moved out",
+        noticeGiven = "Leaving on (notice given)",
         invoicesHeading = "Invoice history",
         columnPeriod = "Period",
         columnDue = "Amount due",
@@ -25,7 +27,7 @@ class DataPacketTest {
         generatedOn = "Generated on",
     )
 
-    private fun tenancy(name: String, room: String, invoices: Int = 1, movedOut: String? = null) = PacketTenancy(
+    private fun tenancy(name: String, room: String, invoices: Int = 1, movedOut: String? = null, planned: Boolean = false) = PacketTenancy(
         tenantName = name,
         phone = "999",
         roomAndBed = room,
@@ -33,6 +35,7 @@ class DataPacketTest {
         agreedRent = "5000",
         moveInDate = "1 Jan 2026",
         moveOutDate = movedOut,
+        moveOutIsPlanned = planned,
         invoiceRows = List(invoices) { listOf("9/2026", "5000", "5000", "PAID") },
     )
 
@@ -145,4 +148,36 @@ class DataPacketTest {
             pages.sumOf { page -> page.count { it.style == PdfLineStyle.HEADING && it.cells.single().contains(" - Tenant ") } },
         )
     }
+    @Test
+    fun `a planned move-out on an active tenancy is labelled as notice, not as moved out`() {
+        val content = buildDataPacket(
+            hostels = listOf(
+                hostel("Sunrise PG", listOf(PacketFloor("Ground", listOf(
+                    tenancy("Ramesh", "Room 102", movedOut = "20 Sep 2026", planned = true),
+                )))),
+            ),
+            labels = labels,
+            generatedOn = "4 Sep 2026",
+        )
+        val keys = content.blocks.filterIsInstance<PdfBlock.KeyValue>().map { it.label }
+        assertTrue(keys.contains("Leaving on (notice given)"))
+        assertFalse(keys.contains("Moved out"))
+    }
+
+    @Test
+    fun `a closed tenancy still reads as moved out`() {
+        val content = buildDataPacket(
+            hostels = listOf(
+                hostel("Sunrise PG", listOf(PacketFloor("Ground", listOf(
+                    tenancy("Ramesh", "Room 102", movedOut = "20 Sep 2026", planned = false),
+                )))),
+            ),
+            labels = labels,
+            generatedOn = "4 Sep 2026",
+        )
+        val keys = content.blocks.filterIsInstance<PdfBlock.KeyValue>().map { it.label }
+        assertTrue(keys.contains("Moved out"))
+        assertFalse(keys.contains("Leaving on (notice given)"))
+    }
+
 }

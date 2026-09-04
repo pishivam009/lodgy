@@ -63,6 +63,7 @@ fun DataPacketScreen(onBack: () -> Unit, viewModel: DataPacketViewModel = hiltVi
         rent = stringResource(R.string.agreement_field_rent),
         movedIn = stringResource(R.string.packet_moved_in),
         movedOut = stringResource(R.string.packet_moved_out),
+        noticeGiven = stringResource(R.string.packet_notice_given),
         invoicesHeading = stringResource(R.string.packet_invoices),
         columnPeriod = stringResource(R.string.acknowledgement_period),
         columnDue = stringResource(R.string.acknowledgement_amount_due),
@@ -98,6 +99,7 @@ fun DataPacketScreen(onBack: () -> Unit, viewModel: DataPacketViewModel = hiltVi
                             agreedRent = context.getString(R.string.currency_amount, tenancy.agreedRent),
                             moveInDate = dateFormat.format(Date(tenancy.moveInDate)),
                             moveOutDate = tenancy.moveOutDate?.let { dateFormat.format(Date(it)) },
+                            moveOutIsPlanned = tenancy.active,
                             invoiceRows = tenancy.invoices.map { invoice ->
                                 listOf(
                                     context.getString(

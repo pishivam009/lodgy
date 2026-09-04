@@ -12,6 +12,7 @@ import com.lodgy.app.testutil.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -38,7 +39,7 @@ class TenantDirectoryViewModelTest {
     @Test
     fun `blank query returns every active tenant`() {
         every { tenantRepository.getAll() } returns flowOf(listOf(tenant("Ravi", "999"), tenant("Sita", "888")))
-        coEvery { agreementRepository.getLatestByTenantId(any()) } returns null
+        every { agreementRepository.observeAll() } returns flowOf(emptyList())
 
         assertEquals(2, viewModel().uiState.value.items.size)
     }
@@ -46,7 +47,7 @@ class TenantDirectoryViewModelTest {
     @Test
     fun `query filters by name case-insensitively or by phone`() {
         every { tenantRepository.getAll() } returns flowOf(listOf(tenant("Ravi Kumar", "9990001111"), tenant("Sita Devi", "8880002222")))
-        coEvery { agreementRepository.getLatestByTenantId(any()) } returns null
+        every { agreementRepository.observeAll() } returns flowOf(emptyList())
 
         val viewModel = viewModel()
         viewModel.onQueryChange("ravi")
@@ -60,7 +61,7 @@ class TenantDirectoryViewModelTest {
     @Test
     fun `each row carries the room and bed from the tenant's latest agreement`() {
         every { tenantRepository.getAll() } returns flowOf(listOf(tenant("Ravi", "999", id = "t1")))
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns agreement("t1", "b1")
+        every { agreementRepository.observeAll() } returns flowOf(listOf(agreement("t1", "b1")))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("204", "B")
 
         assertEquals(BedLocation("204", "B"), viewModel().uiState.value.items.single().location)
@@ -69,7 +70,7 @@ class TenantDirectoryViewModelTest {
     @Test
     fun `a tenant who never had an agreement has no location rather than failing`() {
         every { tenantRepository.getAll() } returns flowOf(listOf(tenant("Ravi", "999", id = "t1")))
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns null
+        every { agreementRepository.observeAll() } returns flowOf(emptyList())
 
         assertNull(viewModel().uiState.value.items.single().location)
     }
@@ -79,7 +80,7 @@ class TenantDirectoryViewModelTest {
         every { tenantRepository.getAll() } returns flowOf(
             listOf(tenant("Ravi", "999", id = "t1"), tenant("Old", "111", id = "t2", status = TenantStatus.VACATED)),
         )
-        coEvery { agreementRepository.getLatestByTenantId(any()) } returns null
+        every { agreementRepository.observeAll() } returns flowOf(emptyList())
 
         val state = viewModel().uiState.value
 
@@ -93,7 +94,7 @@ class TenantDirectoryViewModelTest {
         every { tenantRepository.getAll() } returns flowOf(
             listOf(tenant("Ravi", "999", id = "t1"), tenant("Old", "111", id = "t2", status = TenantStatus.VACATED)),
         )
-        coEvery { agreementRepository.getLatestByTenantId(any()) } returns null
+        every { agreementRepository.observeAll() } returns flowOf(emptyList())
 
         val viewModel = viewModel()
         viewModel.onFilterChange(TenantFilter.ALL)
@@ -107,7 +108,7 @@ class TenantDirectoryViewModelTest {
         every { tenantRepository.getAll() } returns flowOf(
             listOf(tenant("sita", "1", id = "t1"), tenant("Ravi", "2", id = "t2")),
         )
-        coEvery { agreementRepository.getLatestByTenantId(any()) } returns null
+        every { agreementRepository.observeAll() } returns flowOf(emptyList())
 
         assertEquals(listOf("Ravi", "sita"), viewModel().uiState.value.items.map { it.tenant.name })
     }
@@ -122,10 +123,7 @@ class TenantDirectoryViewModelTest {
                 tenant("Unassigned", "4", id = "t4"),
             ),
         )
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns agreement("t1", "b1")
-        coEvery { agreementRepository.getLatestByTenantId("t2") } returns agreement("t2", "b2")
-        coEvery { agreementRepository.getLatestByTenantId("t3") } returns agreement("t3", "b3")
-        coEvery { agreementRepository.getLatestByTenantId("t4") } returns null
+        every { agreementRepository.observeAll() } returns flowOf(listOf(agreement("t1", "b1"), agreement("t2", "b2"), agreement("t3", "b3")))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("1005", "A")
         coEvery { bedRepository.getLocation("b2") } returns BedLocation("204", "A")
         coEvery { bedRepository.getLocation("b3") } returns BedLocation("G-2", "A")
@@ -138,4 +136,37 @@ class TenantDirectoryViewModelTest {
             viewModel.uiState.value.items.map { it.tenant.name },
         )
     }
+    @Test
+    fun `a transfer updates the row's room and bed without recreating the view model`() {
+        val agreements = MutableStateFlow(listOf(agreement("t1", "b1")))
+        every { tenantRepository.getAll() } returns flowOf(listOf(tenant("Ravi", "999", id = "t1")))
+        every { agreementRepository.observeAll() } returns agreements
+        coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
+        coEvery { bedRepository.getLocation("b2") } returns BedLocation("102", "A")
+
+        val viewModel = viewModel()
+        assertEquals("101", viewModel.uiState.value.items.single().location?.roomNumber)
+
+        // Only tenancy_agreements changes on a transfer - the tenants table is untouched.
+        agreements.value = listOf(agreement("t1", "b2"))
+
+        assertEquals("102", viewModel.uiState.value.items.single().location?.roomNumber)
+    }
+
+    @Test
+    fun `an agreement created after the tenant row still resolves a location`() {
+        val agreements = MutableStateFlow(emptyList<TenancyAgreement>())
+        every { tenantRepository.getAll() } returns flowOf(listOf(tenant("Ravi", "999", id = "t1")))
+        every { agreementRepository.observeAll() } returns agreements
+        coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
+
+        val viewModel = viewModel()
+        assertNull(viewModel.uiState.value.items.single().location)
+
+        // Onboarding writes the tenant first, then the agreement.
+        agreements.value = listOf(agreement("t1", "b1"))
+
+        assertEquals("101", viewModel.uiState.value.items.single().location?.roomNumber)
+    }
+
 }

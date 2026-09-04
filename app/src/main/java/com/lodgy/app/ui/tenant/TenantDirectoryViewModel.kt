@@ -60,10 +60,23 @@ class TenantDirectoryViewModel @Inject constructor(
     val uiState: StateFlow<TenantDirectoryUiState> = _uiState.asStateFlow()
 
     init {
+        // Combined rather than driven by tenants alone: onboarding inserts the tenant row before
+        // its agreement, and a transfer touches only tenancy_agreements, so watching tenants by
+        // itself leaves the room/bed label blank on onboarding and stale after a move.
         viewModelScope.launch {
-            tenantRepository.getAll().collect { tenants ->
-                allItems.value = tenants.map { TenantDirectoryItem(it, locationOf(it.id)) }
-            }
+            combine(
+                tenantRepository.getAll(),
+                tenancyAgreementRepository.observeAll(),
+            ) { tenants, agreements ->
+                val latestByTenant = agreements.groupBy { it.tenantId }
+                    .mapValues { (_, forTenant) -> forTenant.latest() }
+                tenants.map { tenant ->
+                    TenantDirectoryItem(
+                        tenant = tenant,
+                        location = latestByTenant[tenant.id]?.let { bedRepository.getLocation(it.bedId) },
+                    )
+                }
+            }.collect { allItems.value = it }
         }
         viewModelScope.launch {
             combine(allItems, query, filter, sort) { items, q, activeFilter, activeSort ->
@@ -91,11 +104,6 @@ class TenantDirectoryViewModel @Inject constructor(
                 )
             }.collect { _uiState.value = it }
         }
-    }
-
-    private suspend fun locationOf(tenantId: String): BedLocation? {
-        val agreement = tenancyAgreementRepository.getLatestByTenantId(tenantId) ?: return null
-        return bedRepository.getLocation(agreement.bedId)
     }
 
     fun onQueryChange(value: String) {

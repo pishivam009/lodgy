@@ -2,13 +2,16 @@ package com.lodgy.app.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColors = lightColorScheme(
@@ -42,7 +45,15 @@ fun LodgyTheme(
         MaterialTheme(
             colorScheme = colorScheme,
             typography = LodgyTypography,
-            content = content,
-        )
+        ) {
+            // Without this the theme paints no ground of its own: the window falls back to the
+            // static android:windowBackground and content colour falls back to near-black, which
+            // renders any screen that isn't wrapped in a Scaffold unreadable in dark mode.
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background,
+                content = content,
+            )
+        }
     }
 }

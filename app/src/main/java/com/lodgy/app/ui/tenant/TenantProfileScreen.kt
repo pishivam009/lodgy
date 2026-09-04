@@ -5,6 +5,8 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -86,7 +88,11 @@ fun TenantProfileScreen(
     ) { padding ->
         val current = tenant ?: return@Scaffold
         Column(
-            modifier = Modifier.padding(padding).padding(16.dp).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {

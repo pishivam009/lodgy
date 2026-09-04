@@ -9,6 +9,9 @@ data class PacketTenancy(
     val agreedRent: String,
     val moveInDate: String,
     val moveOutDate: String?,
+    /** A planned move-out on a still-ACTIVE agreement is notice given, not a departure - printing
+     *  it as "moved out" contradicts the status line directly above it (LODGY-49). */
+    val moveOutIsPlanned: Boolean = false,
     /** Date, period, amount, paid - one row per invoice. */
     val invoiceRows: List<List<String>>,
 )
@@ -31,6 +34,7 @@ data class PacketLabels(
     val rent: String,
     val movedIn: String,
     val movedOut: String,
+    val noticeGiven: String,
     val invoicesHeading: String,
     val columnPeriod: String,
     val columnDue: String,
@@ -74,7 +78,10 @@ fun buildDataPacket(
                     add(PdfBlock.KeyValue(labels.status, tenancy.status))
                     add(PdfBlock.KeyValue(labels.rent, tenancy.agreedRent))
                     add(PdfBlock.KeyValue(labels.movedIn, tenancy.moveInDate))
-                    tenancy.moveOutDate?.let { add(PdfBlock.KeyValue(labels.movedOut, it)) }
+                    tenancy.moveOutDate?.let {
+                        val label = if (tenancy.moveOutIsPlanned) labels.noticeGiven else labels.movedOut
+                        add(PdfBlock.KeyValue(label, it))
+                    }
                     add(PdfBlock.Paragraph(labels.invoicesHeading))
                     if (tenancy.invoiceRows.isEmpty()) {
                         add(PdfBlock.Paragraph(labels.noInvoices))

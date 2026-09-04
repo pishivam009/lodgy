@@ -14,6 +14,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -41,7 +42,7 @@ class TenantProfileViewModelTest {
     @Test
     fun `observes and exposes the tenant by id`() {
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns null
+        every { agreementRepository.observeByTenantId("t1") } returns flowOf(emptyList())
 
         val viewModel = viewModel()
 
@@ -52,7 +53,7 @@ class TenantProfileViewModelTest {
     @Test
     fun `resolves room and bed from the latest agreement, including a closed one`() {
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns TenancyAgreement(tenantId = "t1", bedId = "b1", agreedRent = 0.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = 5L, depositRefundAmount = null, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)
+        every { agreementRepository.observeByTenantId("t1") } returns flowOf(listOf(TenancyAgreement(tenantId = "t1", bedId = "b1", agreedRent = 0.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = 5L, depositRefundAmount = null, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
 
         assertEquals(BedLocation("101", "A"), viewModel().location.value)
@@ -61,7 +62,7 @@ class TenantProfileViewModelTest {
     @Test
     fun `no agreement leaves the location empty`() {
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns null
+        every { agreementRepository.observeByTenantId("t1") } returns flowOf(emptyList())
 
         assertNull(viewModel().location.value)
     }
@@ -69,7 +70,7 @@ class TenantProfileViewModelTest {
     @Test
     fun `an active agreement's planned move-out date is surfaced`() {
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns activeAgreement(moveOutDate = 5_000L)
+        every { agreementRepository.observeByTenantId("t1") } returns flowOf(listOf(activeAgreement(moveOutDate = 5_000L)))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
 
         assertEquals(5_000L, viewModel().plannedMoveOut.value)
@@ -78,7 +79,7 @@ class TenantProfileViewModelTest {
     @Test
     fun `a closed agreement's move-out date is history, not a pending notice`() {
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns TenancyAgreement(tenantId = "t1", bedId = "b1", agreedRent = 0.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = 5_000L, depositRefundAmount = null, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)
+        every { agreementRepository.observeByTenantId("t1") } returns flowOf(listOf(TenancyAgreement(tenantId = "t1", bedId = "b1", agreedRent = 0.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = 5_000L, depositRefundAmount = null, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
 
         assertNull(viewModel().plannedMoveOut.value)
@@ -87,11 +88,15 @@ class TenantProfileViewModelTest {
     @Test
     fun `setting notice records the date without closing the agreement`() {
         val agreement = activeAgreement()
+        // Mirrors Room: the write re-emits on the observed query, which is what updates the state.
+        val agreements = MutableStateFlow(listOf(agreement))
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns agreement
+        every { agreementRepository.observeByTenantId("t1") } returns agreements
         coEvery { agreementRepository.getActiveByTenantId("t1") } returns agreement
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
-        coEvery { agreementRepository.setPlannedMoveOut(any(), any()) } returns Unit
+        coEvery { agreementRepository.setPlannedMoveOut(any(), any()) } answers {
+            agreements.value = listOf(agreement.copy(moveOutDate = secondArg()))
+        }
 
         val viewModel = viewModel()
         viewModel.setPlannedMoveOut(9_000L)
@@ -104,11 +109,14 @@ class TenantProfileViewModelTest {
     @Test
     fun `withdrawing notice clears the date`() {
         val agreement = activeAgreement(moveOutDate = 9_000L)
+        val agreements = MutableStateFlow(listOf(agreement))
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns agreement
+        every { agreementRepository.observeByTenantId("t1") } returns agreements
         coEvery { agreementRepository.getActiveByTenantId("t1") } returns agreement
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
-        coEvery { agreementRepository.setPlannedMoveOut(any(), any()) } returns Unit
+        coEvery { agreementRepository.setPlannedMoveOut(any(), any()) } answers {
+            agreements.value = listOf(agreement.copy(moveOutDate = secondArg()))
+        }
 
         val viewModel = viewModel()
         viewModel.setPlannedMoveOut(null)

@@ -39,4 +39,7 @@ interface TenancyAgreementDao {
 
     @Query("SELECT * FROM tenancy_agreements")
     suspend fun getAll(): List<TenancyAgreement>
+
+    @Query("SELECT * FROM tenancy_agreements")
+    fun observeAll(): Flow<List<TenancyAgreement>>
 }

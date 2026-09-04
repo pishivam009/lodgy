@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +40,9 @@ import com.lodgy.app.ui.common.icon
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.common.level
 import com.lodgy.app.ui.icons.CommonIcons
+import com.lodgy.app.ui.icons.StatusIcons
+import com.lodgy.app.ui.theme.LodgyStatus
+import com.lodgy.app.ui.theme.StatusLevel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -184,6 +188,24 @@ private fun InvoiceRow(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            if (item.periodReconciled) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        StatusIcons.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = LodgyStatus.colors[StatusLevel.GOOD].accent,
+                    )
+                    Text(
+                        stringResource(R.string.reconciliation_badge),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = LodgyStatus.colors[StatusLevel.GOOD].accent,
+                    )
+                }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(

@@ -12,6 +12,10 @@ class ReconciliationRepository @Inject constructor(private val dao: Reconciliati
 
     fun getByHostelId(hostelId: String): Flow<List<ReconciliationMark>> = dao.getByHostelId(hostelId)
 
+    /** The invoice list spans every hostel, so it matches marks itself rather than asking per
+     *  hostel - and observes them so toggling the switch on the report updates the list. */
+    fun observeAll(): Flow<List<ReconciliationMark>> = dao.observeAll()
+
     suspend fun mark(hostelId: String, periodMonth: Int, periodYear: Int, note: String?): ReconciliationMark {
         val now = System.currentTimeMillis()
         val existing = dao.getForPeriod(hostelId, periodMonth, periodYear)

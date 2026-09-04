@@ -9,11 +9,11 @@
     "Invoice list rows and the payment recording screen show room+bed, not just tenant name",
     "A vacated tenant's historical room+bed still displays (not blanked out after checkout)"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "High",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-04T11:00:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -44,6 +44,14 @@
       "from": "Testing",
       "to": "In Progress",
       "note": "FAIL on AC1 and AC2 - the room+bed label is rendered, but it is stale: it shows the wrong value, or nothing at all, until the ViewModel happens to be recreated. AC3 and AC4 pass and are genuinely good: invoice rows and the Record Payment screen both show 'Room 102 - Bed A', and after checkout the vacated tenant still shows their historical room+bed with a VACATED badge rather than being blanked. THE BUG, two reproductions. (1) Onboard a tenant: the directory row shows name and phone but NO room+bed at all; force-stop and relaunch and 'Room 101 - Bed A' appears. (2) With that tenant in Room 101 Bed A, transfer them to Room 102 Bed A: the transfer is correct in the DB, but the tenant profile still reads 'Room 101 - Bed A' on return, and the directory row still reads 'Room 101 - Bed A' too. Both correct themselves only once the screen's ViewModel is recreated. ROOT CAUSE: the location is resolved once and never re-observed. TenantProfileViewModel.init (lines 42-48) does a single suspend read - getLatestByTenantId() then getLocation() - assigns _location and never refreshes, so a bedId change cannot reach it. TenantDirectoryViewModel.init recomputes items only inside tenantRepository.getAll().collect { ... locationOf(it.id) }, i.e. only when the TENANTS table emits; onboarding inserts the tenant row BEFORE the agreement is created, and a transfer touches only tenancy_agreements, so neither triggers a recompute. I confirmed the data layer is fine - the DAO join returns ('101','A') correctly and the label is right after a restart - so this is purely a refresh problem. SUGGESTED FIX: have both ViewModels observe tenancy_agreements (and beds) as Flows and derive location reactively, instead of reading it once per tenants-table emission."
+    },
+    {
+      "timestamp": "2026-09-04T11:00:02+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed - the label is now derived reactively instead of read once. TenantProfileViewModel: replaced the single `getLatestByTenantId()` read in init with a collect on `observeByTenantId(tenantId)`, resolving location and planned move-out on every emission. Also dropped the optimistic `_plannedMoveOut.value = millis` from setPlannedMoveOut so the flow is the single source of truth. TenantDirectoryViewModel: init now `combine`s the tenants flow with a new `observeAll()` agreements flow and resolves each tenant's location per emission; the now-dead private locationOf() is gone. Added TenancyAgreementDao.observeAll() + repository observeByTenantId/observeAll to back this. VERIFIED ON EMULATOR - both original repros, without any restart: (1) onboarded Suresh and 'Room 101 · Bed A' appeared on the directory row immediately, where before it was blank until relaunch; (2) transferred him to Room 102 Bed B and both the profile header and the directory row updated to 'Room 102 · Bed B' on return, where before both showed the old room. Added two regression tests to TenantDirectoryViewModelTest driving a MutableStateFlow of agreements - one for the transfer case, one for the agreement-written-after-tenant-row case - both of which fail against the old one-shot implementation. Build and full suite green: 412 tests pass (4 new), ./gradlew testDebugUnitTest and assembleDebug both successful. Tests touched for the new signatures: TenantProfileViewModelTest and TenantDirectoryViewModelTest now mock the observed agreement flows, InvoiceListViewModelTest gains the ReconciliationRepository mock, and DataPacketTest gains the noticeGiven label. Note on two profile tests: they assert state after setPlannedMoveOut, which previously passed only because the ViewModel wrote the value optimistically. Rather than keep that second source of truth - the exact bug class LODGY-33 is about - the mocks now use a MutableStateFlow that re-emits on write, which is how Room actually behaves."
     }
   ]
 }

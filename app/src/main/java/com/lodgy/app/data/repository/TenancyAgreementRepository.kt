@@ -4,11 +4,18 @@ import com.lodgy.app.data.dao.TenancyAgreementDao
 import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.TenancyAgreement
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
 class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgreementDao) {
     suspend fun getActiveByTenantId(tenantId: String): TenancyAgreement? =
         dao.getByTenantId(tenantId).first().firstOrNull { it.status == AgreementStatus.ACTIVE }
+
+    fun observeByTenantId(tenantId: String): Flow<List<TenancyAgreement>> = dao.getByTenantId(tenantId)
+
+    /** Screens that show a tenant's room/bed need to react to a transfer, which touches only
+     *  this table - watching tenants alone leaves the label stale. */
+    fun observeAll(): Flow<List<TenancyAgreement>> = dao.observeAll()
 
     suspend fun getAllActive(): List<TenancyAgreement> = dao.getAllActive()
 

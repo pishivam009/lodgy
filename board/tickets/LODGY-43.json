@@ -8,11 +8,11 @@
     "Reconciled periods are visually distinguished from not-yet-reconciled ones in the Monthly Report / Payments views",
     "This is a manual attestation, not an automated diff against anything - it does not block or alter any data"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "Medium",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-04T11:00:02+00:00",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "In Progress",
       "note": "FAIL on AC2 - only half the requirement is built. AC1 passes: the Monthly Report has a 'Checked against paper records' switch that marks a given month for a given hostel, the state persists (re-opened 9/2026 later and it still read 'You marked this month as matching your register'), and it is stored as its own reconciliation_marks row. AC3 passes: it is purely a manual attestation - flipping it altered no invoice, payment or total, and nothing is diffed or blocked. AC2 says 'Reconciled periods are visually distinguished from not-yet-reconciled ones in the Monthly Report / Payments views'. The Monthly Report does this (the switch plus 'You marked this month as matching your register.' vs 'Not checked against your register yet.'), and the CSV export carries it too. The Payments view does not. WHAT I DID: marked 8/2026 as reconciled, then opened the Invoices list. WHAT I EXPECTED: the 8/2026 invoice visually distinguished from the unreconciled 6/2026 and 7/2026 ones. WHAT HAPPENED: all three rows render identically - no badge, tint or marker of any kind. Confirmed in code: grepping for 'reconcil' across ui/ returns hits only in MonthlyReportScreen/ViewModel; nothing in the invoice list or its ViewModel consumes ReconciliationRepository. SUGGESTED FIX: surface the period's reconciled state on the invoice row (a small 'checked' marker keyed on the invoice's periodMonth/periodYear plus hostel). PO NOTE: if 'Monthly Report / Payments views' was only ever meant to mean the report screen, say so and I will pass this on the next round - I am reading the slash as naming two screens."
+    },
+    {
+      "timestamp": "2026-09-04T11:00:02+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed - reconciliation state now appears on the Payments view as well as the Monthly Report. InvoiceListItem gains `periodReconciled`; the ViewModel combines the invoices flow with a new ReconciliationRepository.observeAll() and matches each invoice on (hostelId, periodMonth, periodYear). The hostel is resolved per invoice via a new BedDao.getHostelId(bedId) join (beds -> rooms -> floors), because the invoice list spans every hostel rather than a selected one - matching on period alone would have wrongly marked another hostel's invoices. The row renders a check icon plus the text 'Checked against register' in the LODGY-36 GOOD token, so it follows LODGY-62's icon-plus-label rule rather than colour alone. New strings reconciliation_badge in values/ and values-hi/. Because it is driven by an observed query, toggling the switch on the Monthly Report updates the invoice list without a restart. VERIFIED ON EMULATOR: 8/2026, the period QA marked reconciled this morning, now shows the badge while 6/2026 and 7/2026 do not. Build and full suite green: 412 tests pass (4 new), ./gradlew testDebugUnitTest and assembleDebug both successful. Tests touched for the new signatures: TenantProfileViewModelTest and TenantDirectoryViewModelTest now mock the observed agreement flows, InvoiceListViewModelTest gains the ReconciliationRepository mock, and DataPacketTest gains the noticeGiven label. Note on two profile tests: they assert state after setPlannedMoveOut, which previously passed only because the ViewModel wrote the value optimistically. Rather than keep that second source of truth - the exact bug class LODGY-33 is about - the mocks now use a MutableStateFlow that re-emits on write, which is how Room actually behaves."
     }
   ]
 }

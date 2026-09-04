@@ -13,6 +13,7 @@ import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.InvoiceRepository
 import com.lodgy.app.data.repository.PaymentRepository
+import com.lodgy.app.data.repository.ReconciliationRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
 import com.lodgy.app.testutil.MainDispatcherRule
@@ -37,10 +38,13 @@ class InvoiceListViewModelTest {
     private val paymentRepository: PaymentRepository = mockk()
     private val bedRepository: BedRepository = mockk()
     private val creditRepository: CreditRepository = mockk()
+    private val reconciliationRepository: ReconciliationRepository = mockk()
 
     private fun viewModel(): InvoiceListViewModel {
         coEvery { creditRepository.getByInvoiceId(any()) } returns emptyList()
-        return InvoiceListViewModel(invoiceRepository, tenancyAgreementRepository, tenantRepository, paymentRepository, bedRepository, creditRepository)
+        every { reconciliationRepository.observeAll() } returns flowOf(emptyList())
+        coEvery { bedRepository.getHostelId(any()) } returns "h1"
+        return InvoiceListViewModel(invoiceRepository, tenancyAgreementRepository, tenantRepository, paymentRepository, bedRepository, creditRepository, reconciliationRepository)
     }
 
     @Test

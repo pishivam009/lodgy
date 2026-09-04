@@ -85,4 +85,11 @@ interface BedDao {
 
     @Query("SELECT id FROM beds WHERE status = 'VACANT'")
     suspend fun getVacantBedIds(): List<String>
+
+    @Query(
+        "SELECT floors.hostelId FROM beds " +
+            "INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "INNER JOIN floors ON floors.id = rooms.floorId WHERE beds.id = :bedId",
+    )
+    suspend fun getHostelId(bedId: String): String?
 }

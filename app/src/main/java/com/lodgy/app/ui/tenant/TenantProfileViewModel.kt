@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.dao.BedLocation
 import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.Tenant
+import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
@@ -39,11 +40,16 @@ class TenantProfileViewModel @Inject constructor(
         viewModelScope.launch {
             tenantRepository.observeById(tenantId).collect { _tenant.value = it }
         }
+        // Observed rather than read once: onboarding writes the agreement after the tenant row,
+        // and a transfer changes only bedId, so a single read at init would leave the room/bed
+        // label blank on onboarding and stale after a move.
         viewModelScope.launch {
-            val agreement = tenancyAgreementRepository.getLatestByTenantId(tenantId) ?: return@launch
-            _location.value = bedRepository.getLocation(agreement.bedId)
-            if (agreement.status == AgreementStatus.ACTIVE) {
-                _plannedMoveOut.value = agreement.moveOutDate
+            tenancyAgreementRepository.observeByTenantId(tenantId).collect { agreements ->
+                val agreement = agreements.latest()
+                _location.value = agreement?.let { bedRepository.getLocation(it.bedId) }
+                _plannedMoveOut.value = agreement
+                    ?.takeIf { it.status == AgreementStatus.ACTIVE }
+                    ?.moveOutDate
             }
         }
     }
@@ -52,7 +58,13 @@ class TenantProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val agreement = tenancyAgreementRepository.getActiveByTenantId(tenantId) ?: return@launch
             tenancyAgreementRepository.setPlannedMoveOut(agreement, millis)
-            _plannedMoveOut.value = millis
         }
     }
 }
+
+/** Same rule as TenancyAgreementDao.getLatestByTenantId: the active agreement if there is one,
+ *  else the most recent closed one, so a vacated tenant still resolves to their last bed. */
+internal fun List<TenancyAgreement>.latest(): TenancyAgreement? =
+    minWithOrNull(
+        compareBy({ it.status != AgreementStatus.ACTIVE }, { -it.moveInDate }),
+    )
