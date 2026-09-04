@@ -1,0 +1,29 @@
+{
+  "id": "LODGY-68",
+  "epic": "Backup & Restore",
+  "priority": "High",
+  "title": "Daily automatic backup, with last-backup time and a one-tap backup on the dashboard",
+  "description": "Product Owner request: should backup run automatically, daily; show the last backup time on the home screen with a small icon to back up from there. RECOMMENDED: yes, and it is the single highest-value safety feature left. Today backup is entirely manual - BackupScreen fires ActivityResultContracts.CreateDocument, the warden picks a location, and nothing records that it happened. A warden who forgets for two months has two months of unrecoverable data on one phone, and nothing in the app tells them so. WHY IT NEEDS A DESIGN, not just a WorkManager job: the current export takes a one-shot Uri from CreateDocument and no persistable permission is taken, so there is no folder to write to unattended. The job needs a location chosen ONCE via OpenDocumentTree with takePersistableUriPermission, stored in a new BackupPreferences, and reused daily. Everything else reuses BackupManager.export() as-is. THE REAL RISK is not the job failing, it is the job failing SILENTLY - a warden who believes they are covered and is not, is worse off than one who knows they are not. So the dashboard tile is not decoration, it is the feature: it must show staleness and failure as prominently as success, using the existing RAG tokens (recent = green, getting old = amber, never/failed/very stale = red). SUGGESTED SHAPE: (1) pick a folder once, persisted; (2) daily WorkManager job, same pattern as LODGY-15/59/60; (3) skip the run when nothing has changed since the last backup, so identical zips are not churned daily - the zip carries photos and is not small; (4) keep a rolling window of the last N backups and delete older ones, or storage grows without bound; (5) if the folder becomes unwritable - card removed, folder deleted, permission revoked - surface that on the dashboard rather than retrying quietly. RELATION TO LODGY-66: this is the auto-export measure recommended there. It also strengthens the case against soft delete, because a recent automatic backup covers the accidental-deletion fear that a recycle bin was meant to address, without taxing every query in the app.",
+  "acceptanceCriteria": [
+    "Warden picks a backup folder once; the permission persists across reboots and app updates, and the choice is changeable later from More",
+    "A daily WorkManager job writes a timestamped backup zip into that folder without any interaction, following the existing periodic-worker pattern",
+    "The dashboard shows when the last backup succeeded, in plain relative language, with a backup icon that runs one immediately",
+    "The dashboard indicator distinguishes recent, getting stale, and never-or-failed using the LODGY-36 status tokens, so a silently broken backup is visible rather than assumed fine",
+    "A run is skipped when no data has changed since the last successful backup, so unchanged days do not accumulate identical zips",
+    "Only the most recent N backups are kept; older ones are removed so the folder does not grow without bound",
+    "If the folder becomes unwritable the failure is surfaced on the dashboard and the warden is told how to re-pick it - it never fails silently",
+    "Backward compatible: an existing install that has never chosen a folder keeps working exactly as today, prompted but never blocked, and no migration is required beyond the new preference"
+  ],
+  "status": "Todo",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:27:10+00:00",
+  "updatedAt": "2026-09-04T12:27:10+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:27:10+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Requested by the PO: daily auto-backup, last-backup time on the home screen with a one-tap backup icon. Filed with a recommended design and the silent-failure risk called out, because an auto-backup a warden wrongly believes is running is worse than no auto-backup."
+    }
+  ]
+}
