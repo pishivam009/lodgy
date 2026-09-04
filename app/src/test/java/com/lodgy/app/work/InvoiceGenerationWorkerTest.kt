@@ -4,10 +4,16 @@ import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.lodgy.app.data.entity.AgreementStatus
+import com.lodgy.app.data.entity.InvoiceStatus
+import com.lodgy.app.data.entity.Invoice
 import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.InvoiceRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
+import com.lodgy.app.data.prefs.NotificationPreferences
+import com.lodgy.app.notify.LodgyNotifications
+import io.mockk.verify
+import kotlinx.coroutines.flow.flowOf
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -29,6 +35,8 @@ class InvoiceGenerationWorkerTest {
     private val agreementRepository: TenancyAgreementRepository = mockk()
     private val invoiceRepository: InvoiceRepository = mockk()
     private val creditRepository: CreditRepository = mockk()
+    private val notificationPreferences: NotificationPreferences = mockk()
+    private val notifications: LodgyNotifications = mockk(relaxed = true)
 
     private val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
     private val thisMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
@@ -49,8 +57,26 @@ class InvoiceGenerationWorkerTest {
         updatedAt = 0L,
     )
 
-    private fun worker() =
-        InvoiceGenerationWorker(context, params, agreementRepository, invoiceRepository, creditRepository)
+
+    private fun invoice(agreementId: String) = Invoice(
+        id = "inv-$agreementId",
+        tenancyAgreementId = agreementId,
+        periodMonth = thisMonth,
+        periodYear = thisYear,
+        amountDue = 5000.0,
+        dueDate = 0L,
+        status = InvoiceStatus.UNPAID,
+        createdAt = 0L,
+        updatedAt = 0L,
+    )
+
+    private fun worker(duesEnabled: Boolean = true): InvoiceGenerationWorker {
+        every { notificationPreferences.duesEnabled } returns flowOf(duesEnabled)
+        return InvoiceGenerationWorker(
+            context, params, agreementRepository, invoiceRepository, creditRepository,
+            notificationPreferences, notifications,
+        )
+    }
 
     @Test
     fun `generates this month's invoice for an agreement billing today`() = runTest {
@@ -88,6 +114,7 @@ class InvoiceGenerationWorkerTest {
     fun `credits waiting on the tenant's next invoice are attached to the one just generated`() = runTest {
         val generated: com.lodgy.app.data.entity.Invoice = mockk()
         every { generated.id } returns "inv-new"
+        every { generated.amountDue } returns 5000.0
         coEvery { agreementRepository.getAllActive() } returns listOf(agreement("a1", today, tenantId = "t7"))
         coEvery { invoiceRepository.existsForPeriod("a1", thisMonth, thisYear) } returns false
         coEvery { invoiceRepository.create(any(), any(), any(), any(), any()) } returns generated
@@ -104,5 +131,48 @@ class InvoiceGenerationWorkerTest {
 
         assertEquals(ListenableWorker.Result.success(), worker().doWork())
         coVerify(exactly = 0) { invoiceRepository.create(any(), any(), any(), any(), any()) }
+    }
+
+    /** LODGY-73: generation used to happen in silence, so the warden only learned the month's
+     *  collecting had started by opening the app. */
+    @Test
+    fun `one summary notification is posted for the run, not one per invoice`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", today, tenantId = "t1"),
+            agreement("a2", today, tenantId = "t2"),
+            agreement("a3", today, tenantId = "t3"),
+        )
+        coEvery { invoiceRepository.existsForPeriod(any(), any(), any()) } returns false
+        coEvery { invoiceRepository.create(any(), any(), any(), any(), any()) } answers {
+            invoice(firstArg())
+        }
+        coEvery { creditRepository.applyPendingTo(any(), any()) } returns Unit
+
+        worker().doWork()
+
+        verify(exactly = 1) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `a run that creates no invoices notifies nobody`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(agreement("a1", today))
+        coEvery { invoiceRepository.existsForPeriod("a1", thisMonth, thisYear) } returns true
+
+        worker().doWork()
+
+        verify(exactly = 0) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `the payments switch being off suppresses the summary but still generates invoices`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(agreement("a1", today))
+        coEvery { invoiceRepository.existsForPeriod("a1", thisMonth, thisYear) } returns false
+        coEvery { invoiceRepository.create(any(), any(), any(), any(), any()) } answers { invoice("a1") }
+        coEvery { creditRepository.applyPendingTo(any(), any()) } returns Unit
+
+        worker(duesEnabled = false).doWork()
+
+        coVerify(exactly = 1) { invoiceRepository.create(any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { notifications.post(any(), any(), any(), any(), any()) }
     }
 }

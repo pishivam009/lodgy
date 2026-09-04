@@ -7,6 +7,9 @@ package com.lodgy.app.notify
 const val ROUTE_VACANT_VIEW = "vacant_view"
 const val ROUTE_RECORD_PAYMENT = "record_payment"
 const val ROUTE_EXPENSE_FORM = "expense_form"
+/** The Payments tab - matches LodgyDestination.Payments.route, so the tap lands on the
+ *  invoice list rather than a route the NavHost does not know. */
+const val ROUTE_INVOICE_LIST = "payments"
 
 fun routeToRecordPayment(invoiceId: String) = "$ROUTE_RECORD_PAYMENT/$invoiceId"
 
@@ -21,6 +24,7 @@ fun routeToExpense(expenseId: String) = "$ROUTE_EXPENSE_FORM?expenseId=$expenseI
  */
 fun isSupportedNotificationRoute(route: String): Boolean =
     route == ROUTE_VACANT_VIEW ||
+        route == ROUTE_INVOICE_LIST ||
         (route.startsWith("$ROUTE_RECORD_PAYMENT/") && route.count { it == '/' } == 1) ||
         route.startsWith("$ROUTE_EXPENSE_FORM?expenseId=")
 

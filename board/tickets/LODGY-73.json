@@ -13,16 +13,24 @@
     "It respects the existing payments-and-expenses switch, so a warden who turned that off is not notified",
     "Generation itself is unchanged - this only adds the notification, and an invoice is still created exactly once per agreement per period"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:04:11+00:00",
-  "updatedAt": "2026-09-04T13:04:11+00:00",
+  "updatedAt": "2026-09-04T20:51:58+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T13:04:11+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed after the PO confirmed that silent invoice generation is a gap. Specced as one summary notification per run rather than per invoice, on the existing dues channel."
+    },
+    {
+      "timestamp": "2026-09-04T20:51:58+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "Built. InvoiceGenerationWorker now counts what it created and posts a single summary - 'This month's invoices are ready - N invoice(s) generated, Rs X due in total' - on the existing dues channel, so the same switch governs it and no third channel appears. Tapping it opens the Payments tab. Note on the route: I used LodgyDestination.Payments.route ('payments') rather than inventing an 'invoices' route, which the NavHost does not know and which would have made the tap a no-op; it is also allow-listed in isSupportedNotificationRoute so the exported-activity validation from LODGY-46 still passes it. A run that creates nothing posts nothing, and generation itself is unchanged - invoices are still created exactly once per agreement per period. New strings in both locales. TESTS: 3 new - one summary for a three-invoice run rather than three notifications, silence when nothing is created, and the dues switch suppressing the notification while still generating the invoices. Full suite 434 pass, coverage 96.98% line. Not schema-affecting."
     }
   ]
 }

@@ -8,6 +8,7 @@ import com.lodgy.app.data.prefs.NotificationPreferences
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.notify.CHANNEL_VACANCY
 import com.lodgy.app.notify.LodgyNotifications
+import io.mockk.verify
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -100,5 +101,18 @@ class VacancyCheckWorkerTest {
 
         val daysAgo = (System.currentTimeMillis() - cutoff.captured) / (24 * 60 * 60 * 1000)
         assertEquals(30L, daysAgo)
+    }
+
+    /** LODGY-74: 48 vacant beds produced 48 notifications in one run on a real device, which is the
+     *  surest way to get the whole category switched off. One per run, however many beds. */
+    @Test
+    fun `many long-vacant beds produce one summary, not one notification each`() = runTest {
+        val beds = (1..12).map { bed("b$it") }
+        coEvery { bedRepository.getLongVacantBeds(any()) } returns beds
+        coEvery { bedRepository.getVacantBedIds() } returns beds.map { it.bedId }
+
+        worker().doWork()
+
+        verify(exactly = 1) { notifications.post(any(), any(), any(), any(), any()) }
     }
 }

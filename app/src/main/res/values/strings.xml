@@ -138,6 +138,9 @@
     <string name="notify_channel_dues">Payments and expenses</string>
     <string name="notify_vacancy_title">Vacant for over %1$d days</string>
     <string name="notify_vacancy_text">%1$s — Room %2$s, Bed %3$s is still empty. Worth advertising?</string>
+    <string name="notify_vacancy_text_many">%1$d beds are sitting empty, including %2$s Room %3$s, Bed %4$s. Worth advertising?</string>
+    <string name="notify_invoices_title">This month\'s invoices are ready</string>
+    <string name="notify_invoices_text">%1$d invoice(s) generated, ₹%2$.0f due in total.</string>
     <string name="notify_overdue_title">Rent overdue</string>
     <string name="notify_overdue_text">%1$s still owes ₹%4$.0f for %2$d/%3$d.</string>
     <string name="notify_expense_title">Recurring expense coming up</string>

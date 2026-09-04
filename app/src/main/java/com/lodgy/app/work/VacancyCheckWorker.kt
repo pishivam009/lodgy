@@ -43,21 +43,39 @@ class VacancyCheckWorker @AssistedInject constructor(
 
         if (decision.toNotify.isEmpty()) return Result.success()
 
+        // One notification for the run, not one per bed. A new property left empty for a few days
+        // would otherwise greet the warden with a notification per vacant bed - 48 was observed on a
+        // two-hostel test set - which is the surest way to get the whole category switched off.
         val context = applicationContext
-        decision.toNotify.forEach { bed ->
-            notifications.post(
-                channelId = CHANNEL_VACANCY,
-                notificationId = bed.bedId.hashCode(),
-                title = context.getString(R.string.notify_vacancy_title, thresholdDays),
-                text = context.getString(
-                    R.string.notify_vacancy_text,
-                    bed.hostelName,
-                    bed.roomNumber,
-                    bed.bedLabel,
-                ),
-                route = ROUTE_VACANT_VIEW,
+        val first = decision.toNotify.first()
+        val text = if (decision.toNotify.size == 1) {
+            context.getString(
+                R.string.notify_vacancy_text,
+                first.hostelName,
+                first.roomNumber,
+                first.bedLabel,
+            )
+        } else {
+            context.getString(
+                R.string.notify_vacancy_text_many,
+                decision.toNotify.size,
+                first.hostelName,
+                first.roomNumber,
+                first.bedLabel,
             )
         }
+        notifications.post(
+            channelId = CHANNEL_VACANCY,
+            notificationId = VACANCY_SUMMARY_NOTIFICATION_ID,
+            title = context.getString(R.string.notify_vacancy_title, thresholdDays),
+            text = text,
+            route = ROUTE_VACANT_VIEW,
+        )
         return Result.success()
     }
+
 }
+
+/** Fixed id so a later run replaces the previous summary instead of stacking another one up.
+ *  A literal rather than a hash so it cannot collide with a per-record id derived from a UUID. */
+private const val VACANCY_SUMMARY_NOTIFICATION_ID = 1_000_102

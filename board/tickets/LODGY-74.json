@@ -10,17 +10,25 @@
     "LODGY-59 AC4 still holds - a bed already nudged is not nudged again on later runs, and is forgotten once it fills",
     "Verified by actually firing it, not only by unit test: move the device clock forward with several long-vacant beds and confirm the notification count"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:28:16+00:00",
-  "updatedAt": "2026-09-04T13:28:16+00:00",
+  "updatedAt": "2026-09-04T20:51:58+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T13:28:16+00:00",
       "actor": "Tester",
       "action": "created",
       "note": "Filed from observed emulator behaviour after finding that the device clock can be advanced through the Settings UI without root, which makes the daily workers run. 48 vacant beds produced 48 notifications in one run."
+    },
+    {
+      "timestamp": "2026-09-04T20:51:58+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "Fixed. VacancyCheckWorker now posts one summary per run instead of iterating decision.toNotify and posting per bed. A single bed keeps its original wording; several get a new string naming the count and one example bed, so the message is still concrete rather than a bare number. The notification id is a fixed literal, so a later run REPLACES the previous summary rather than stacking another one - and a literal rather than a hash so it cannot collide with the per-record ids derived from UUIDs elsewhere. LODGY-59 AC4 is untouched: already-notified bed ids are still persisted and skipped, and still forgotten once a bed fills, so this only caps the burst within one run. New string in values/ and values-hi/. TEST: twelve long-vacant beds now assert exactly one post() call - the regression guard for the 48 observed on the device. Full suite 434 pass, coverage 96.98% line. Not schema-affecting."
     }
   ]
 }
