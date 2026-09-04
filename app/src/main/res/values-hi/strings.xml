@@ -143,6 +143,7 @@
     <string name="notify_invoices_text">%1$d इनवॉइस बने, कुल ₹%2$.0f देय।</string>
     <string name="notify_overdue_title">किराया बकाया</string>
     <string name="notify_overdue_text">%1$s पर %2$d/%3$d का ₹%4$.0f बाकी है।</string>
+    <string name="notify_overdue_text_many">%1$d किरायेदारों पर किराया बकाया है, कुल ₹%2$.0f।</string>
     <string name="notify_expense_title">हर महीने का ख़र्च आने वाला है</string>
     <string name="notify_expense_text">%1$s (लगभग ₹%2$.0f) महीने के इसी समय आता है।</string>
     <string name="more_notifications">सूचनाएँ</string>

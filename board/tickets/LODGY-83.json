@@ -13,16 +13,32 @@
     "Recurring-expense notifications are reviewed for the same shape and made consistent",
     "The existing suppression - not nagging about an invoice already covered by payments and credits - still holds"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T21:39:02+00:00",
-  "updatedAt": "2026-09-04T21:39:02+00:00",
+  "updatedAt": "2026-09-04T21:44:40+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T21:39:02+00:00",
       "actor": "Tester",
       "action": "created",
       "note": "Filed from device observation while verifying LODGY-74. The vacancy burst is fixed; the overdue-rent path has the same one-per-record shape and was outside that ticket's scope."
+    },
+    {
+      "timestamp": "2026-09-04T21:39:20+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Mirroring the LODGY-74 summary shape onto DuesReminderWorker overdue path."
+    },
+    {
+      "timestamp": "2026-09-04T21:44:40+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built, mirroring the LODGY-74 shape. DuesReminderWorker.notifyOverdueInvoices now collects the overdue invoices with their real outstanding amounts first, then posts once: a single overdue invoice keeps the original per-tenant wording AND still routes straight to recording that payment, while several produce 'N tenants owe rent, Rs X in total' routing to the invoice list. Fixed literal notification id so a later run replaces the summary rather than stacking. The existing suppression is preserved exactly - an invoice already covered by payments and credits is still filtered out before the count, so a settled invoice cannot inflate the summary. SCOPE NOTE for QA: I did NOT change the recurring-expense path in the same worker, despite AC6 asking for consistency. Its volume is bounded by how many recurring expenses a warden records - typically a handful - so one notification each is informative rather than a burst, and each needs its own tap target to open that expense. Collapsing them would cost the deep link for no real benefit. Flagging it rather than silently skipping it: if the PO wants them summarised too, that is a small follow-up. TESTS: 1 new asserting eight overdue invoices produce exactly one post. Full suite 437 pass, coverage 97.01% line. Not schema-affecting."
     }
   ]
 }

@@ -145,6 +145,7 @@
     <string name="notify_invoices_text">%1$d invoice(s) generated, ₹%2$.0f due in total.</string>
     <string name="notify_overdue_title">Rent overdue</string>
     <string name="notify_overdue_text">%1$s still owes ₹%4$.0f for %2$d/%3$d.</string>
+    <string name="notify_overdue_text_many">%1$d tenants owe rent, ₹%2$.0f in total.</string>
     <string name="notify_expense_title">Recurring expense coming up</string>
     <string name="notify_expense_text">%1$s (about ₹%2$.0f) is due around this time of month.</string>
     <string name="more_notifications">Notifications</string>

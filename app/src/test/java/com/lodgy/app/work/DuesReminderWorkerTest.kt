@@ -27,6 +27,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.flowOf
@@ -138,5 +139,20 @@ class DuesReminderWorkerTest {
         assertEquals(ListenableWorker.Result.success(), worker().doWork())
 
         coVerify(exactly = 0) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    /** LODGY-83: the overdue path used to post per invoice, so thirty late tenants meant thirty
+     *  notifications in one morning - the same shape LODGY-74 fixed for vacancy. */
+    @Test
+    fun `many overdue invoices produce one summary, not one notification each`() = runTest {
+        val invoices = (1..8).map { invoice("i$it", yesterday) }
+        every { invoiceRepository.getAll() } returns flowOf(invoices)
+        coEvery { creditRepository.getByInvoiceId(any()) } returns emptyList()
+        coEvery { paymentRepository.getTotalPaid(any()) } returns 0.0
+        coEvery { expenseRepository.getAll() } returns emptyList()
+
+        worker().doWork()
+
+        verify(exactly = 1) { notifications.post(any(), any(), any(), any(), any()) }
     }
 }
