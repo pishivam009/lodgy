@@ -15,13 +15,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:05:59+00:00",
-  "updatedAt": "2026-09-04T12:05:59+00:00",
+  "updatedAt": "2026-09-04T21:09:45+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:05:59+00:00",
       "actor": "Tester",
       "action": "created",
       "note": "Filed after auditing all 13 entities for delete coverage. Found because a hostel created by mistake could not be removed at all. Blocked on LODGY-63 for the hostel case."
+    },
+    {
+      "timestamp": "2026-09-04T21:09:45+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: all six entities get a delete - Hostel, Tenant, Expense, Invoice, Payment and Credit - rather than the narrower first cut recommended in the description. THE TWO THAT NEED CARE, since they were the reason for recommending a narrower start: deleting a PAYMENT must recalculate its invoice's status in the same transaction, or an invoice is left reading PAID with nothing behind it - a wrong number is worse than a missing feature. Deleting an INVOICE must be blocked while payments or credits still point at it, rather than orphaning them. Both are already in the acceptance criteria; this decision confirms they are in scope now rather than deferred. Hostel delete still waits on LODGY-63 passing QA, since it would hit the same foreign-key crash on more data."
     }
   ]
 }

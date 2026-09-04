@@ -16,13 +16,19 @@
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T21:09:45+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed from real warden feedback relayed by the PO. Checked against the code before filing; findings recorded in the description."
+    },
+    {
+      "timestamp": "2026-09-04T21:09:45+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: property type drives layer visibility - no schema change. A hostel keeps the full Hostel > Floor > Room > Bed model. A shop, warehouse or flat gets a type that auto-creates one implicit floor and one implicit unit, and the UI simply never shows those layers, so the warden sees a property and a tenant. Chosen over collapsing floor and making bed optional because that would touch invoicing, occupancy, the dashboard, the PDF packet and the CSV import, and would need a migration on data that exists only on the warden's phone. This delivers the user-visible value with no migration and stays reversible if a real remodel later proves necessary. BUILD NOTE: the implicit floor and unit must be real rows, not nulls, so every existing query, rollup and export keeps working untouched - the change is what the UI renders, not what the schema holds. Tenancy stays keyed to bedId."
     }
   ]
 }

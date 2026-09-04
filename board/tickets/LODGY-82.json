@@ -16,13 +16,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T21:09:45+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed from real warden feedback relayed by the PO. Checked against the code before filing; findings recorded in the description."
+    },
+    {
+      "timestamp": "2026-09-04T21:09:45+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: a flag on the tenancy - a non-revenue occupancy - rather than a distinct occupancy type. It reuses the tenancy record so the room's history still reads normally and there is one code path through everything that touches occupancy; a separate type would fork that path. Ship in two stages: first stop the app being wrong about these rooms (no invoices, excluded from overdue counts and notifications, still counted as occupied, never nudged as vacant), then the discretionary expense recording separately. The first stage alone removes the damage."
     }
   ]
 }

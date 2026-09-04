@@ -16,13 +16,19 @@
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T21:09:45+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed from real warden feedback relayed by the PO. Checked against the code before filing; findings recorded in the description."
+    },
+    {
+      "timestamp": "2026-09-04T21:09:45+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: keep the bottom navigation visible on inner screens, rather than adding a labelled back button. Home becomes one tap from anywhere, and it costs no top-bar width - which matters because Hindi labels run longer than English and screen titles already fill the bar. BUILD NOTES, both of which need checking rather than assuming: (1) this interacts with LODGY-61's slide transitions, since inner screens will now sit above a persistent bar - verify the push/pop animation still reads correctly and the bar does not slide with the content. (2) The system back gesture and the existing chevrons must keep working; this adds a route home, it does not replace going back. Re-test with the wardens who raised it, since the whole point is that what reads as obvious to a developer was not obvious to them."
     }
   ]
 }

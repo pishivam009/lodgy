@@ -15,13 +15,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T20:10:57+00:00",
+  "updatedAt": "2026-09-04T21:09:45+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed from real warden feedback relayed by the PO. Checked against the code before filing; findings recorded in the description."
+    },
+    {
+      "timestamp": "2026-09-04T21:09:45+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED, and this overrides the recommendation in the description - the PO chose all-hostels ALWAYS, not a mode. Home shows every hostel's data by default, with figures tagged and categorised by hostel and a filter to narrow to one. So the per-hostel view survives as a filter rather than as a separate mode, which keeps 'how is Sunrise doing' answerable while making the combined view the default a multi-property warden actually wants. STILL REQUIRED, and the reason the tagging matters: every figure must state its scope. An unlabelled money total that silently means 'all properties' is worse than one that silently means 'this property', because it is larger and looks right. Tenant list: no change needed to its scope - verified in code that TenantDirectoryViewModel has no hostelId and already spans every hostel. What it lacks is hostel identification on the rows, which is the same room-101-in-two-properties ambiguity LODGY-70 has to solve; do them consistently."
     }
   ]
 }

@@ -15,13 +15,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:28:16+00:00",
-  "updatedAt": "2026-09-04T13:28:16+00:00",
+  "updatedAt": "2026-09-04T21:09:45+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T13:28:16+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed at the PO's request. Verified in code that Drive already works through the system document picker, so this is documentation plus a round-trip check, not a Drive integration."
+    },
+    {
+      "timestamp": "2026-09-04T21:09:45+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED: build what can be built without a Google account on this machine - the Backup screen nudge telling the warden the file can go to Drive or anywhere else the phone offers, and the USER-MANUAL.md documentation for both directions. The PO will verify the round trip on a real device. The two verification criteria (export to Drive, import it back, and confirm the file is non-empty) stay open and must be signed off by the PO before this moves to Done - the whole risk here is a cloud provider returning a writable-looking stream that yields a zero-byte file, and that cannot be checked from an emulator."
     }
   ]
 }
