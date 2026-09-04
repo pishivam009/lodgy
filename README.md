@@ -4,7 +4,8 @@ Lodgy is an offline-first Android app for a single warden running one or
 more hostels/PGs: property setup, tenant onboarding, rent collection,
 expenses, and reporting — all on-device, no backend, no account.
 
-Full product spec: [`docs/DESIGN.md`](docs/DESIGN.md).
+Full product spec: [`docs/DESIGN.md`](docs/DESIGN.md). What the app does, in
+plain terms: [`docs/USER-MANUAL.md`](docs/USER-MANUAL.md).
 
 ## Tech stack
 
@@ -39,9 +40,11 @@ minSdk is 24.
 app/src/main/java/com/lodgy/app/
   data/           Room entities, DAOs, database, Hilt module
   ui/nav/         Top-level NavHost, bottom navigation, destinations
-  ui/screens/     Feature screens
-  ui/theme/       Material 3 theme, color/type tokens
+  ui/<feature>/   Feature screens + ViewModels (property, tenant, payment, …)
+  ui/theme/       Material 3 theme, color/type/status tokens
 docs/DESIGN.md    Product & architecture spec — read before schema/architecture changes
+docs/USER-MANUAL.md  Every feature, written for the warden using it
+docs/design/      Wireframes and the warden's guide, as openable HTML
 board/            Ticket-based build tracker (see below)
 ```
 
