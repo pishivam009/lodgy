@@ -35,19 +35,26 @@ class BackupManager @Inject constructor(
             // Flush the WAL into the main db file so the copy below is complete and self-contained.
             database.query("PRAGMA wal_checkpoint(FULL)", null).close()
 
-            context.contentResolver.openOutputStream(destination)?.use { out ->
-                ZipOutputStream(out).use { zip ->
+            // Held in a val and null-checked on its own. Folding this into an elvis after `use`
+            // also catches the block's own last expression being null - which it is whenever
+            // filesDir/photos does not exist yet - and reports a good backup as a failure.
+            val out = context.contentResolver.openOutputStream(destination)
+                ?: return@runCatching false
+
+            out.use {
+                ZipOutputStream(it).use { zip ->
                     zip.putNextEntry(ZipEntry(DB_ENTRY_NAME))
-                    dbFile.inputStream().use { it.copyTo(zip) }
+                    dbFile.inputStream().use { db -> db.copyTo(zip) }
                     zip.closeEntry()
 
-                    photosDir.listFiles()?.forEach { photo ->
+                    // Absent on any install that has never saved a photo, which is normal.
+                    photosDir.listFiles().orEmpty().forEach { photo ->
                         zip.putNextEntry(ZipEntry(PHOTOS_ENTRY_PREFIX + photo.name))
-                        photo.inputStream().use { it.copyTo(zip) }
+                        photo.inputStream().use { image -> image.copyTo(zip) }
                         zip.closeEntry()
                     }
                 }
-            } ?: return@runCatching false
+            }
             true
         }.getOrDefault(false)
     }

@@ -177,4 +177,34 @@ class BackupManagerTest {
         assertArrayEquals(byteArrayOf(7, 7), File(photosDir, "fresh.jpg").readBytes())
         assertFalse(stagingDir.exists())
     }
+
+    /** The regression guard for LODGY-78. Every other export test creates photosDir in setUp, which
+     *  is why a successful-but-reported-failed export went unnoticed: listFiles() returns null only
+     *  when the directory is absent, which is the normal state until the first photo is saved. */
+    @Test
+    fun `export succeeds and says so when the photos directory has never been created`() = runTest {
+        photosDir.deleteRecursively()
+        assertFalse(photosDir.exists())
+        val destinationFile = File(tempFolder.root, "nophotos.zip")
+        val destinationUri: Uri = mockk()
+        every { contentResolver.openOutputStream(destinationUri) } returns destinationFile.outputStream()
+
+        val result = backupManager.export(destinationUri)
+
+        assertTrue(result)
+        val entries = mutableListOf<String>()
+        ZipInputStream(destinationFile.inputStream()).use { zip ->
+            generateSequence { zip.nextEntry }.forEach { entries += it.name }
+        }
+        assertEquals(listOf("lodgy.db"), entries)
+    }
+
+    @Test
+    fun `export succeeds when the photos directory exists but is empty`() = runTest {
+        val destinationFile = File(tempFolder.root, "emptyphotos.zip")
+        val destinationUri: Uri = mockk()
+        every { contentResolver.openOutputStream(destinationUri) } returns destinationFile.outputStream()
+
+        assertTrue(backupManager.export(destinationUri))
+    }
 }
