@@ -352,6 +352,7 @@
     <string name="reminder_open_sms">एसएमएस खोलें</string>
 
     <string name="dashboard_title">होम</string>
+    <string name="dashboard_scope_all">सभी हॉस्टल</string>
     <string name="dashboard_no_hostel">डैशबोर्ड देखने के लिए पहले हॉस्टल जोड़ें (प्रॉपर्टी टैब)।</string>
     <string name="dashboard_collections_today">आज की वसूली</string>
     <string name="dashboard_overdue_invoices">बकाया इनवॉइस</string>

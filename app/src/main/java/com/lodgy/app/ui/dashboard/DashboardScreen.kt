@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,9 +53,18 @@ fun DashboardScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        if (uiState.hasActiveHostel) uiState.hostelName else stringResource(R.string.dashboard_title),
-                    )
+                    Column {
+                        Text(stringResource(R.string.dashboard_title))
+                        if (uiState.hasActiveHostel) {
+                            // The scope caption is not decoration: an unlabelled money total that
+                            // silently means "all properties" is worse than one that silently means
+                            // "this property", because it is larger and it looks right.
+                            Text(
+                                uiState.filterHostelName ?: stringResource(R.string.dashboard_scope_all),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
                 },
                 actions = {
                     if (uiState.hasActiveHostel) {
@@ -76,6 +88,9 @@ fun DashboardScreen(
         }
 
         Column(modifier = Modifier.padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (uiState.hostels.size > 1) {
+                HostelFilterRow(uiState, viewModel::onHostelFilterChange)
+            }
             val tiles = listOf(
                 StatTile(stringResource(R.string.currency_amount, uiState.todaysCollections), R.string.dashboard_collections_today),
                 StatTile(uiState.overdueInvoiceCount.toString(), R.string.dashboard_overdue_invoices),
@@ -99,6 +114,13 @@ fun DashboardScreen(
                         uiState.upcomingMoveOuts.forEach { moveOut ->
                             Column {
                                 Text(moveOut.tenantName, style = MaterialTheme.typography.bodyMedium)
+                        if (uiState.filterHostelId == null && moveOut.hostelName.isNotBlank()) {
+                            Text(
+                                moveOut.hostelName,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
                                 Text(
                                     dateFormat.format(Date(moveOut.moveOutDateMillis)),
                                     style = MaterialTheme.typography.bodySmall,
@@ -132,5 +154,29 @@ private fun StatCardContent(tile: StatTile) {
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** Only shown when there is more than one property - a single-hostel warden sees no change. */
+@Composable
+private fun HostelFilterRow(uiState: DashboardUiState, onSelect: (String?) -> Unit) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        item {
+            FilterChip(
+                selected = uiState.filterHostelId == null,
+                onClick = { onSelect(null) },
+                label = { Text(stringResource(R.string.dashboard_scope_all)) },
+            )
+        }
+        items(uiState.hostels) { hostel ->
+            FilterChip(
+                selected = uiState.filterHostelId == hostel.id,
+                onClick = { onSelect(hostel.id) },
+                label = { Text(hostel.name) },
+            )
+        }
     }
 }

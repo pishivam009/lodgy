@@ -57,7 +57,7 @@ class DashboardViewModelTest {
 
     @Test
     fun `no active hostel stops loading with defaults`() {
-        every { hostelPreferences.selectedHostelId } returns flowOf(null)
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
 
         val state = viewModel().uiState.value
 
@@ -71,9 +71,7 @@ class DashboardViewModelTest {
         val yesterday = now - TimeUnit.DAYS.toMillis(1)
         val tomorrow = now + TimeUnit.DAYS.toMillis(1)
         val nextWeek = now + TimeUnit.DAYS.toMillis(7)
-
-        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
-        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        every { hostelRepository.getAll() } returns flowOf(listOf(Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)))
 
         val floor = Floor(id = "f1", hostelId = "h1", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
         every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(floor))
@@ -102,7 +100,7 @@ class DashboardViewModelTest {
         val state = viewModel().uiState.value
 
         assertFalse(state.loading)
-        assertEquals("Sunrise", state.hostelName)
+        assertEquals(listOf("Sunrise"), state.hostels.map { it.name })
         assertEquals(1, state.vacantBedCount)
         assertEquals(1, state.overdueInvoiceCount)
         assertEquals(5000.0, state.todaysCollections, 0.0001)
@@ -113,9 +111,7 @@ class DashboardViewModelTest {
     fun `a checked-out tenant's invoices and payments still count toward the metrics`() {
         val now = System.currentTimeMillis()
         val yesterday = now - TimeUnit.DAYS.toMillis(1)
-
-        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
-        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        every { hostelRepository.getAll() } returns flowOf(listOf(Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)))
         val floor = Floor(id = "f1", hostelId = "h1", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
         every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(floor))
         val room = Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.SINGLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
@@ -140,8 +136,7 @@ class DashboardViewModelTest {
 
     @Test
     fun `refresh re-fetches metrics for the currently selected hostel`() {
-        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
-        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        every { hostelRepository.getAll() } returns flowOf(listOf(Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)))
         every { floorRepository.getByHostelId("h1") } returns flowOf(emptyList())
         coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
         every { invoiceRepository.getAll() } returns flowOf(emptyList())
@@ -150,6 +145,49 @@ class DashboardViewModelTest {
         val viewModel = viewModel()
         viewModel.refresh()
 
-        coVerify(exactly = 2) { hostelRepository.getById("h1") }
+        coVerify(atLeast = 1) { tenancyAgreementRepository.getAll() }
+    }
+
+    /** LODGY-81: the dashboard used to follow the selected-hostel preference, so a warden with
+     *  three properties had no single view of their business. It now aggregates by default. */
+    @Test
+    fun `figures cover every hostel by default, and the filter narrows to one`() {
+        val h1 = Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        val h2 = Hostel(id = "h2", wardenId = "w1", name = "Moonlight", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        every { hostelRepository.getAll() } returns flowOf(listOf(h1, h2))
+
+        every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(
+            Floor(id = "f1", hostelId = "h1", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)))
+        every { floorRepository.getByHostelId("h2") } returns flowOf(listOf(
+            Floor(id = "f2", hostelId = "h2", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)))
+        every { roomRepository.getByFloorId("f1") } returns flowOf(listOf(
+            Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.SINGLE, pricePerBed = 1.0, amenities = "", createdAt = 0L, updatedAt = 0L)))
+        every { roomRepository.getByFloorId("f2") } returns flowOf(listOf(
+            Room(id = "r2", floorId = "f2", roomNumber = "201", type = RoomType.SINGLE, pricePerBed = 1.0, amenities = "", createdAt = 0L, updatedAt = 0L)))
+        every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(
+            Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)))
+        every { bedRepository.getByRoomId("r2") } returns flowOf(listOf(
+            Bed(id = "b2", roomId = "r2", label = "A", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)))
+
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
+        every { invoiceRepository.getAll() } returns flowOf(emptyList())
+        coEvery { paymentRepository.getAll() } returns emptyList()
+
+        val viewModel = viewModel()
+
+        // Default: both properties' vacant beds, and both offered as filter options.
+        assertEquals(2, viewModel.uiState.value.vacantBedCount)
+        assertEquals(listOf("Sunrise", "Moonlight"), viewModel.uiState.value.hostels.map { it.name })
+        assertEquals(null, viewModel.uiState.value.filterHostelId)
+
+        // Narrowed: only that property's bed, and the scope is nameable so the UI can label it.
+        viewModel.onHostelFilterChange("h2")
+        assertEquals(1, viewModel.uiState.value.vacantBedCount)
+        assertEquals("Moonlight", viewModel.uiState.value.filterHostelName)
+
+        // And back.
+        viewModel.onHostelFilterChange(null)
+        assertEquals(2, viewModel.uiState.value.vacantBedCount)
+        assertEquals(null, viewModel.uiState.value.filterHostelName)
     }
 }

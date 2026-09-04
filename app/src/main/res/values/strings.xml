@@ -358,6 +358,7 @@
     <string name="reminder_template_en">Hi %1$s, your rent of ₹%2$d is due on %3$s. - %4$s</string>
 
     <string name="dashboard_title">Home</string>
+    <string name="dashboard_scope_all">All hostels</string>
     <string name="dashboard_no_hostel">Add a hostel first (Property tab) to see your dashboard.</string>
     <string name="dashboard_collections_today">Collected today</string>
     <string name="dashboard_overdue_invoices">Overdue invoices</string>

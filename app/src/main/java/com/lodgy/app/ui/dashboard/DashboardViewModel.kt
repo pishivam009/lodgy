@@ -24,17 +24,33 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class UpcomingMoveOut(val tenantName: String, val moveOutDateMillis: Long)
+data class UpcomingMoveOut(
+    val tenantName: String,
+    val moveOutDateMillis: Long,
+    /** Which property this tenant is in. Shown because two hostels can both have a Room 101, so a
+     *  bare name is ambiguous once the dashboard spans every property (LODGY-81). */
+    val hostelName: String = "",
+)
+
+data class HostelOption(val id: String, val name: String)
 
 data class DashboardUiState(
     val loading: Boolean = true,
     val hasActiveHostel: Boolean = false,
-    val hostelName: String = "",
+    /** Null means every hostel - the default. The figures below always describe whatever this
+     *  says, and the UI must state which, because an unlabelled total that silently means "all
+     *  properties" is worse than one that silently means "this property": it is larger and it
+     *  looks right. */
+    val filterHostelId: String? = null,
+    val hostels: List<HostelOption> = emptyList(),
     val todaysCollections: Double = 0.0,
     val overdueInvoiceCount: Int = 0,
     val vacantBedCount: Int = 0,
     val upcomingMoveOuts: List<UpcomingMoveOut> = emptyList(),
-)
+) {
+    val filterHostelName: String?
+        get() = filterHostelId?.let { id -> hostels.firstOrNull { it.id == id }?.name }
+}
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
@@ -52,35 +68,43 @@ class DashboardViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
-    private var currentHostelId: String? = null
-
     init {
-        viewModelScope.launch {
-            hostelPreferences.selectedHostelId.collect { hostelId ->
-                currentHostelId = hostelId
-                if (hostelId == null) {
-                    _uiState.update { it.copy(loading = false, hasActiveHostel = false) }
-                } else {
-                    loadMetrics(hostelId)
-                }
-            }
-        }
+        viewModelScope.launch { loadMetrics(_uiState.value.filterHostelId) }
+    }
+
+    /** Narrow to one hostel, or pass null for every hostel. The selected-hostel preference is left
+     *  alone: it still drives the property screens, and the dashboard no longer follows it. */
+    fun onHostelFilterChange(hostelId: String?) {
+        _uiState.update { it.copy(filterHostelId = hostelId) }
+        viewModelScope.launch { loadMetrics(hostelId) }
     }
 
     /** Bottom-nav keeps this ViewModel alive across tab switches, so metrics computed from
      *  one-shot fetches go stale the moment something changes elsewhere (a checkout, a payment)
      *  without the selected hostel itself changing. Call this when the screen re-enters view. */
     fun refresh() {
-        val hostelId = currentHostelId ?: return
-        viewModelScope.launch { loadMetrics(hostelId) }
+        viewModelScope.launch { loadMetrics(_uiState.value.filterHostelId) }
     }
 
-    private suspend fun loadMetrics(hostelId: String) {
-        val hostel = hostelRepository.getById(hostelId)
+    /** [hostelId] null means every hostel, which is the default a multi-property warden wants. */
+    private suspend fun loadMetrics(hostelId: String?) {
+        val allHostels = hostelRepository.getAll().first()
+        val hostelOptions = allHostels.map { HostelOption(it.id, it.name) }
+        if (allHostels.isEmpty()) {
+            // Nothing to aggregate, and no reason to walk the repositories for it.
+            _uiState.update { it.copy(loading = false, hasActiveHostel = false, hostels = emptyList()) }
+            return
+        }
+        val scope = if (hostelId == null) allHostels else allHostels.filter { it.id == hostelId }
 
-        val bedsInHostel = floorRepository.getByHostelId(hostelId).first()
-            .flatMap { floor -> roomRepository.getByFloorId(floor.id).first() }
-            .flatMap { room -> bedRepository.getByRoomId(room.id).first() }
+        // Bed -> hostel, kept so move-outs can name the property a tenant is in.
+        val hostelNameByBedId = mutableMapOf<String, String>()
+        val bedsInHostel = scope.flatMap { hostel ->
+            floorRepository.getByHostelId(hostel.id).first()
+                .flatMap { floor -> roomRepository.getByFloorId(floor.id).first() }
+                .flatMap { room -> bedRepository.getByRoomId(room.id).first() }
+                .onEach { hostelNameByBedId[it.id] = hostel.name }
+        }
         val bedIdsInHostel = bedsInHostel.map { it.id }.toSet()
         val vacantBedCount = bedsInHostel.count { it.status == BedStatus.VACANT }
 
@@ -103,13 +127,19 @@ class DashboardViewModel @Inject constructor(
         val upcomingMoveOuts = agreementsInHostel
             .filter { it.status == AgreementStatus.ACTIVE && it.moveOutDate != null && it.moveOutDate > now.timeInMillis }
             .sortedBy { it.moveOutDate }
-            .map { agreement -> UpcomingMoveOut(tenantRepository.getById(agreement.tenantId)?.name.orEmpty(), agreement.moveOutDate!!) }
+            .map { agreement ->
+                UpcomingMoveOut(
+                    tenantName = tenantRepository.getById(agreement.tenantId)?.name.orEmpty(),
+                    moveOutDateMillis = agreement.moveOutDate!!,
+                    hostelName = hostelNameByBedId[agreement.bedId].orEmpty(),
+                )
+            }
 
         _uiState.update {
             it.copy(
                 loading = false,
-                hasActiveHostel = true,
-                hostelName = hostel?.name.orEmpty(),
+                hasActiveHostel = allHostels.isNotEmpty(),
+                hostels = hostelOptions,
                 todaysCollections = todaysCollections,
                 overdueInvoiceCount = overdueCount,
                 vacantBedCount = vacantBedCount,
