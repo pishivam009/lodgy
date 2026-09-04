@@ -16,13 +16,19 @@
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-04T12:35:58+00:00",
+  "updatedAt": "2026-09-04T12:53:34+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed at the Product Owner's request: All rooms should span every hostel with a hostel filter, and move to the Property tab. Notes which repository and occupancy queries are hostel-scoped today and need widening."
+    },
+    {
+      "timestamp": "2026-09-04T12:53:34+00:00",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "Cross-reference: LODGY-72 adds a vacancy filter to this same screen, driven from the Home tile. Design the hostel filter and the fill filter together - two separately-conceived filter rows on one screen will not sit well, and both need to feed the LODGY-67 summary row consistently."
     }
   ]
 }

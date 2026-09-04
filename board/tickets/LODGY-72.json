@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-72",
+  "epic": "Reporting & Dashboard",
+  "priority": "Medium",
+  "title": "Vacant beds tile on Home should open All rooms filtered to rooms with space",
+  "description": "Product Owner request: tapping the Vacant beds card on Home should go to the All rooms screen with a vacancy filter already applied. TWO THINGS THE BUILD NEEDS TO KNOW UP FRONT. (1) The tile is ALREADY tappable. DashboardScreen wires it to onOpenVacantBeds, which navigates to VACANT_VIEW_ROUTE - VacantViewScreen, built by LODGY-21. So this is not new wiring, it is changing where an existing tap goes, and it strands the screen it currently points at (see the open question below). (2) All rooms has NO filter of any kind today - a grep for 'filter' across AllRoomsScreen and AllRoomsViewModel returns nothing. The vacancy filter this ticket depends on does not exist and has to be built. LODGY-70 is separately adding a hostel filter to the same screen, so the two should be designed together rather than bolting two unrelated filter rows onto one screen. THE SEMANTIC TRAP, and the thing most likely to be got wrong: the tile counts vacant BEDS, All rooms shows ROOMS. Those are different numbers. A hostel with 5 vacant beds might have 3 rooms with space - one wholly empty double and one partly filled triple, say. So a warden tapping '5' and landing on 3 tiles will reasonably think something is broken. Two consequences: the filter should mean 'rooms with space', i.e. EMPTY plus PART FULL from LODGY-67's RoomFill, not EMPTY alone - a partly filled room does contain a vacant bed and hiding it would be wrong; and the destination should make the bed-versus-room distinction visible, since LODGY-67's summary row already counts rooms and would otherwise silently disagree with the tile the warden just tapped. OPEN QUESTION for the PO: what happens to VacantViewScreen. It is bed-level where All rooms is room-level, and it has its own floor filter and All/Vacant/Occupied chips, so it is not simply a worse version of the same thing. If this tile is its only entry point then redirecting it leaves LODGY-21's screen unreachable and effectively dead. Either it should be removed deliberately, or kept with another way in, or All rooms should absorb the bed-level detail it provides. Worth deciding before build rather than discovering an orphaned screen afterwards.",
+  "acceptanceCriteria": [
+    "Tapping the Vacant beds card on Home opens All rooms with the vacancy filter already applied, rather than its current destination",
+    "The filter means rooms with space - wholly empty and partly filled both qualify, since a partly filled room still contains a vacant bed",
+    "All rooms gains a fill filter, which it does not have today, designed alongside LODGY-70's hostel filter rather than as a second independent control",
+    "The filter is visibly active on arrival, so the warden can see why they are looking at a subset and can clear it",
+    "The bed count on the tile and the room count on the destination do not silently contradict each other - the screen makes clear it is showing rooms, not beds",
+    "A decision is recorded on VacantViewScreen: removed, kept with another entry point, or absorbed - it must not be left unreachable",
+    "Correct in dark mode and Hindi, consistent with the LODGY-67 tiles"
+  ],
+  "status": "Todo",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:53:34+00:00",
+  "updatedAt": "2026-09-04T12:53:34+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:53:34+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed at the PO's request. Two findings recorded up front: the tile is already tappable and today opens VacantViewScreen, so this redirects an existing tap and risks orphaning LODGY-21's screen; and All rooms has no filter at all yet, so the vacancy filter has to be built and should be designed together with LODGY-70's hostel filter. Also flagged the beds-versus-rooms count mismatch, which is the most likely thing to look like a bug after shipping."
+    }
+  ]
+}
