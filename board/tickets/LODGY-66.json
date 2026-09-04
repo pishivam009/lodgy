@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-66",
+  "epic": "Backup & Restore",
+  "title": "Decide: soft delete with an undo bin, or keep hard delete",
+  "description": "Product Owner asked whether deletes should be soft - a deleted flag in the DB, with a screen under More to undo any delete. This ticket is the decision, not the implementation. THE CASE FOR: the warden is one non-technical person on one phone, the backup is manual and may be weeks stale, and a mis-tap on a hostel or floor can take years of records with no way back. That is a genuinely bad failure and the current answer to it - 'restore your zip' - assumes a zip exists. THE CASE AGAINST, and why the tester recommends NOT doing it globally: (1) Every read has to filter. There are 15 DAOs and many queries, including joins and aggregates behind occupancy counts, the dashboard, the monthly report and the PDF exports. One missed WHERE clause and deleted data silently reappears in a total - a bug class that is easy to introduce and hard to notice. (2) Cascades get much harder. Deleting a hostel would have to flag floors, rooms and beds too, and undo would have to restore exactly what that action removed and nothing else - meaning delete operations need their own grouping record. That is a real feature, not a flag. (3) Uniqueness breaks: a soft-deleted Room 101 still occupies its number, so recreating it either collides or quietly duplicates. (4) Knock-on effects elsewhere - the orphan photo cleaner (LODGY-51) would delete a soft-deleted tenant's photos, so undo would restore a tenant whose pictures are gone, and every backup would carry deleted rows forever. (5) It contradicts DESIGN.md 4.6, which chose hard delete for notes deliberately. RECOMMENDED ALTERNATIVE, cheaper and it addresses the actual fear: (a) Prevent instead of undo - LODGY-63 and LODGY-64 already block deleting anything that still holds tenants or money, which removes the catastrophic cases outright; what stays deletable is small and re-creatable. (b) Never delete money - an invoice or payment entered wrongly should be voided or reversed, leaving a visible corrected record, which is both standard bookkeeping and sidesteps undo entirely. (c) Auto-export before any cascading delete - write a timestamped backup zip automatically before a hostel or floor delete and tell the warden where it went. That gives real recoverability for the one case that matters, costs no query filtering, and reuses LODGY-28's export wholesale. (d) If an undo affordance is still wanted after that, scope it to a short in-session undo on the snackbar rather than a permanent bin. If the PO still wants a full recycle bin, that is a legitimate call - but it should be sized as an epic across every DAO and export path, not a flag added to a few tables.",
+  "acceptanceCriteria": [
+    "Product decision recorded: (a) keep hard delete plus the prevention/void/auto-export measures above, or (b) implement soft delete with an undo screen under More",
+    "If (a): the auto-export-before-cascading-delete behaviour is specified as its own ticket, and DESIGN.md records why soft delete was declined so it is not re-litigated",
+    "If (b): scope is written up honestly across all 15 DAOs, the cascade-grouping needed for a correct undo, the uniqueness question, and the effect on LODGY-51's photo cleanup and LODGY-28's backup size",
+    "Either way DESIGN.md gains a short statement of what 'delete' means in Lodgy, so future tickets inherit the answer rather than re-asking it"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:05:59+00:00",
+  "updatedAt": "2026-09-04T12:05:59+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:05:59+00:00",
+      "actor": "Tester",
+      "action": "created",
+      "note": "Filed at the Product Owner's request to evaluate soft delete with an undo bin. Written as a decision ticket with a recommendation against doing it globally, and a cheaper alternative that addresses the same fear."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-63",
+  "epic": "Property Setup",
+  "title": "Deleting a floor or room that still has a tenant crashes the app",
+  "description": "Found while auditing delete coverage. Deleting a floor whose bed still has an ACTIVE tenancy hard-crashes the app to the launcher - it does not fail gracefully, show an error, or block the action. REPRO: hostel Moonlight > floor Ground > Room 501 > Bed A occupied by a tenant with one invoice. Property > Moonlight > delete Ground > Delete. The confirmation reads 'Ground and any rooms/beds under it will be removed' with no mention that someone lives there; on confirming, the process dies. LOG: android.database.sqlite.SQLiteConstraintException: FOREIGN KEY constraint failed (code 787 SQLITE_CONSTRAINT_FOREIGNKEY), thrown from FloorDao_Impl.delete. ROOT CAUSE: the cascade chain is only half wired. Hostel -CASCADE-> Floor -CASCADE-> Room -CASCADE-> Bed, but Bed <- TenancyAgreement is NO ACTION, as are TenancyAgreement <- Invoice and Invoice <- Payment. So deleting a floor tries to cascade beds out from under agreements that still reference them, and SQLite refuses. RoomListViewModel already hard-blocks deleting a room with an OCCUPIED bed, which is why the room path does not crash - FloorListViewModel has no equivalent check. The developer flagged exactly this on LODGY-57 ('deleting a floor still cascades to rooms/beds with NO occupied-bed check, unlike room delete which hard-blocks - worth its own ticket'); this ticket is that ticket, now with a confirmed crash behind it. NOTE: this is not only a floor problem. Any future delete that removes beds out from under an agreement will hit the same constraint, which is why LODGY-64 should not add a hostel delete button until this is settled.",
+  "acceptanceCriteria": [
+    "Deleting a floor that contains an occupied bed no longer crashes - it is blocked with a clear explanation naming the tenant(s) in the way, matching how room delete already hard-blocks",
+    "The block names what is in the way rather than failing generically, so the warden knows to check the tenant out first",
+    "A floor with no occupied beds still deletes normally, with its existing confirmation",
+    "The same guard is applied anywhere else a delete can remove a bed that an agreement still references, so the fix is not floor-only",
+    "A test covers the occupied-bed case at the ViewModel or DAO level, so the crash cannot regress silently"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:05:59+00:00",
+  "updatedAt": "2026-09-04T12:05:59+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:05:59+00:00",
+      "actor": "Tester",
+      "action": "created",
+      "note": "Filed by the Tester after reproducing a hard crash on the emulator: deleting a floor with an occupied bed dies with SQLITE_CONSTRAINT_FOREIGNKEY. Stack trace and repro in the description. This is the ticket the developer asked for when handing off LODGY-57."
+    }
+  ]
+}

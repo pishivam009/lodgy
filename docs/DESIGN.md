@@ -44,6 +44,10 @@ No network permissions requested at all. No `SEND_SMS` permission (tap-to-send o
 
 ## 3. Data model
 
+Entity-relationship diagrams, the full field list and the delete/cascade rules live in
+[`DATA-MODEL.md`](DATA-MODEL.md). This section covers the reasoning; that file covers
+the shape.
+
 IDs are **UUID strings**, not auto-increment ints, and every entity carries
 `createdAt` / `updatedAt` (epoch millis) and a `syncStatus`-ready shape —
 even though there's no sync today. This is deliberate: it costs nothing now

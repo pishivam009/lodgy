@@ -76,6 +76,7 @@ four roles (each a Claude Code skill under `.claude/skills/`):
 Low-fidelity wireframes for every screen in the app, organized by epic,
 were built before any UI code:
 
+- [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) — ER diagrams, every field, and the delete/cascade rules
 - [`docs/design/screenshots.html`](docs/design/screenshots.html) — real screenshots of the built app, in light, dark and Hindi
 - [`docs/design/wireframes.html`](docs/design/wireframes.html) — every screen, organized by epic
 - [`docs/design/wardens-guide.html`](docs/design/wardens-guide.html) — the same screens walked through task by task, for the actual end user

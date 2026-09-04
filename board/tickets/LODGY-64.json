@@ -1,0 +1,27 @@
+{
+  "id": "LODGY-64",
+  "epic": "Property Setup",
+  "title": "Delete is missing on Hostel, Tenant, Expense, Invoice, Payment and Credit",
+  "description": "Audit of every entity against whether the UI lets a warden delete it. Every DAO already has a delete method, so this is purely a missing-UI gap - the data layer is ready. HAS DELETE TODAY (3): Floor (list row), Room (list row), TenantNote (note form). NO DELETE TODAY (6): Hostel - HostelFormScreen has Save only, which is how this was found: a hostel created by mistake cannot be removed at all. Tenant - TenantFormScreen has no delete; checkout closes a tenancy but a tenant added in error stays forever. Expense - ExpenseFormScreen has no delete, so a wrong amount can be edited but a duplicate row cannot be removed. Invoice - no delete; a manually backfilled invoice entered for the wrong month or tenant is stuck. Payment - no delete; a payment recorded against the wrong invoice cannot be undone, which also silently leaves the invoice status wrong. Credit - no delete. DELIBERATELY NOT DELETABLE, no change wanted: Bed (generated from the room's type, managed by editing the room), TenancyAgreement (closed by checkout, never deleted, or history breaks), Warden (the local profile itself), ReconciliationMark (already reversible via its own toggle). SEQUENCING: hostel delete must not ship before LODGY-63. A hostel cascades to floors, rooms and beds but NOT to the agreements/invoices/payments hanging off those beds, so a naive hostel delete on a populated property will hit the same FOREIGN KEY crash - on far more data. OPEN QUESTION for the PO, tied to LODGY-66: whether these deletes are hard or soft changes what 'delete' means here, so decide LODGY-66 first if you want soft delete.",
+  "acceptanceCriteria": [
+    "Hostel has a delete action, blocked with a clear explanation while it still holds any floor, room, tenancy or financial record - a hostel is only deletable once empty",
+    "Tenant, Expense, Invoice, Payment and Credit each have a delete action reachable from the screen where that record is viewed or edited",
+    "Deleting a Payment recalculates its invoice's status, so removing money never leaves an invoice reading PAID with nothing behind it",
+    "Deleting an Invoice is blocked while payments or credits are attached to it, rather than orphaning them",
+    "Bed, TenancyAgreement, Warden and ReconciliationMark are explicitly left without a delete action, and the ticket records why",
+    "Every new delete follows the confirmation pattern from LODGY-57 and, where relevant, the hard-block pattern from LODGY-63"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:05:59+00:00",
+  "updatedAt": "2026-09-04T12:05:59+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:05:59+00:00",
+      "actor": "Tester",
+      "action": "created",
+      "note": "Filed after auditing all 13 entities for delete coverage. Found because a hostel created by mistake could not be removed at all. Blocked on LODGY-63 for the hostel case."
+    }
+  ]
+}

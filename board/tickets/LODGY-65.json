@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-65",
+  "epic": "Usability",
+  "title": "Decide which updates need confirmation, not just deletes",
+  "description": "Raised directly by the Product Owner: 'all delete and update should ask for confirmation - especially hostel as it has a lot of data'. THIS CONTRADICTS A DECISION ALREADY TAKEN AND DELIVERED, so it needs an explicit call rather than quiet implementation. LODGY-57 AC5 reads: 'Routine non-destructive edits (renaming a hostel, editing a phone number, etc.) are explicitly NOT changed - no new confirmation added where there is nothing destructive happening.' That was built, tested and accepted. Confirming every update would reverse it. WHAT IS ALREADY CONFIRMED: deleting a room, floor or note; changing a room's type while it has an occupied bed; checkout. THE TESTER'S READ, offered as a recommendation not a decision: the risk the PO is pointing at is real but it is about DELETING a hostel, not about EDITING one. Renaming 'Sunrise PG' to 'Sunrise PG Annexe' destroys nothing and is trivially reversible by typing the old name back; a hostel delete is the catastrophic action, and that is covered by LODGY-64's hard-block. Confirming every field edit trains wardens to dismiss dialogs without reading them, which makes the dialogs that DO matter less effective. Suggested line: confirm an update only when it silently changes money, occupancy or history that the warden cannot see on the screen they are on. CANDIDATES that meet that bar and are NOT confirmed today: editing a room's price per bed (changes what future invoices are generated at, for every bed in the room); editing a tenant's agreed rent; editing an invoice's amount after payments exist against it; changing a hostel's name while reconciliation marks and exported PDFs already carry the old one. Decide the line, then implement to it - the ACs below assume a decision is recorded first.",
+  "acceptanceCriteria": [
+    "Product Owner records an explicit decision on whether LODGY-57 AC5 stands or is reversed, so the two tickets do not contradict each other in the board's history",
+    "If AC5 stands: the money/occupancy/history-affecting updates listed in the description get confirmations, and routine field edits still do not",
+    "If AC5 is reversed: every update gets a confirmation, LODGY-57's note is annotated to say it was superseded and by what, so a future reader is not misled",
+    "Whichever way it goes, the rule is written down somewhere a developer will find it - DESIGN.md, next to the UI invariants in 4.12"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T12:05:59+00:00",
+  "updatedAt": "2026-09-04T12:05:59+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T12:05:59+00:00",
+      "actor": "Tester",
+      "action": "created",
+      "note": "Filed at the Product Owner's request to confirm updates as well as deletes. Flagged rather than implemented because it directly contradicts LODGY-57 AC5, which was built and accepted - needs an explicit PO call."
+    }
+  ]
+}
