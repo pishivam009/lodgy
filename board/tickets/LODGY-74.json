@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-74",
+  "epic": "Notifications",
+  "title": "Vacancy check posts one notification per bed - 48 at once on a new property",
+  "description": "Found by finally getting notifications to fire on the emulator, which had not been possible before: the device clock can be moved forward through the Settings UI even without root, which makes the daily periodic workers overdue and they run. Everything below is observed behaviour, not inference. WHAT HAPPENED: with 48 vacant beds and the vacancy threshold at 3 days, VacancyCheckWorker posted 48 separate notifications in one run - confirmed by counting NotificationRecord entries for com.lodgy.app in dumpsys: 48 on the vacancy channel, 3 on dues, against exactly 48 VACANT rows in the database. One notification per bed. ROOT CAUSE: VacancyCheckWorker.doWork iterates decision.toNotify and calls notifications.post once per bed, with notificationId = bed.bedId.hashCode(), so every bed gets its own distinct, individually-dismissible notification. WHY THIS MATTERS: it is worst exactly when a warden is new to the app. Set up a property, leave it three days before tenants move in, and the reward is a wall of 48 notifications - the single most likely moment for someone to turn the feature off permanently, or uninstall. It also scales with the property: a 200-bed hostel means 200. NOT A DUPLICATE OF LODGY-59 AC4: that criterion prevents the same bed being nudged again on following days, and it works correctly - re-running the check did not re-notify beds already covered. What is missing is any cap on the burst within a SINGLE run. AC4 was written about repetition over time and is silent about volume at one moment. SUGGESTED FIX, consistent with how LODGY-73 specs invoice generation: collapse a run into one summary notification - '12 beds vacant over 3 days' - opening the vacant list, rather than one per bed. If per-bed detail is wanted, Android's notification grouping with a summary is the mechanism, but the group summary still has to be the thing that alerts.",
+  "acceptanceCriteria": [
+    "A vacancy run that finds many long-vacant beds does not post one notification per bed",
+    "The warden gets a single summary for the run, saying how many beds and where, opening the vacant list",
+    "A run finding exactly one bed still reads naturally rather than as a summary of one",
+    "LODGY-59 AC4 still holds - a bed already nudged is not nudged again on later runs, and is forgotten once it fills",
+    "Verified by actually firing it, not only by unit test: move the device clock forward with several long-vacant beds and confirm the notification count"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T13:28:16+00:00",
+  "updatedAt": "2026-09-04T13:28:16+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T13:28:16+00:00",
+      "actor": "Tester",
+      "action": "created",
+      "note": "Filed from observed emulator behaviour after finding that the device clock can be advanced through the Settings UI without root, which makes the daily workers run. 48 vacant beds produced 48 notifications in one run."
+    }
+  ]
+}

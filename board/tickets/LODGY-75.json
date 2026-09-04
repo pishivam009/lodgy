@@ -1,0 +1,27 @@
+{
+  "id": "LODGY-75",
+  "epic": "Backup & Restore",
+  "title": "Guidance and support for keeping backups in Google Drive",
+  "description": "Product Owner request: how does a warden get a backup into Google Drive, and restore from it. THE GOOD NEWS - it already works, and needs no Drive integration. Export uses ActivityResultContracts.CreateDocument, which opens Android's own document picker; Google Drive appears there as a location like any other provider, so a warden can already save the zip straight into Drive. Import uses the matching OpenDocument picker and can read it back the same way. Nothing in the app is Drive-aware and nothing needs to be - no Drive API, no OAuth, no INTERNET permission, which matters because DESIGN.md's whole position is that the app requests no network access at all. Adding a Drive SDK would break that and is explicitly not what this ticket asks for. SO THE ACTUAL GAP IS THAT NOBODY KNOWS. The Backup screen says nothing about where the file can go, the user manual does not mention Drive, and a warden worried about losing their phone has no reason to think 'save to Drive' is available. This is documentation and a nudge, not a feature. WORTH CHECKING DURING BUILD, since it is the one thing that could genuinely be broken: whether the Drive provider reliably returns a writable stream for CreateDocument on the devices in question. Some cloud providers behave differently from local storage for new files, and a backup that silently produces a zero-byte file in Drive would be far worse than no Drive support at all. Test the round trip - export to Drive, then import that exact file back - rather than assuming symmetry. RELATED: LODGY-68's automatic daily backup needs a persisted folder via OpenDocumentTree. Whether Drive grants a durable tree permission is a real question and should be settled there; if it does, automatic backups land in Drive for free, which is the strongest possible answer to the lost-phone fear.",
+  "acceptanceCriteria": [
+    "The round trip is verified on a real device: export a backup, choose Google Drive in the picker, then import that same file back and confirm the data restores intact",
+    "The exported file in Drive is confirmed non-empty and openable - not a zero-byte or truncated artefact",
+    "The Backup screen tells the warden that the file can be saved to Drive or any other location the phone offers, so the option is discoverable rather than folklore",
+    "USER-MANUAL.md documents the Drive route for both export and import, in plain language",
+    "No Drive SDK, no OAuth and no INTERNET permission is added - the app stays network-free and keeps using the system picker",
+    "Findings feed LODGY-68: record whether Drive grants a durable OpenDocumentTree permission suitable for unattended daily backups"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-04T13:28:16+00:00",
+  "updatedAt": "2026-09-04T13:28:16+00:00",
+  "history": [
+    {
+      "timestamp": "2026-09-04T13:28:16+00:00",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed at the PO's request. Verified in code that Drive already works through the system document picker, so this is documentation plus a round-trip check, not a Drive integration."
+    }
+  ]
+}
