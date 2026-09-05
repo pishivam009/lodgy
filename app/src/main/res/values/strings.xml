@@ -26,17 +26,29 @@
     <string name="pin_lock_biometric_title">Unlock Lodgy</string>
     <string name="pin_lock_use_pin">Use PIN instead</string>
 
-    <string name="hostel_list_title">Your Hostels</string>
-    <string name="hostel_list_empty">No hostels yet. Tap + to add your first one.</string>
-    <string name="hostel_add">Add hostel</string>
+    <string name="hostel_list_title">Your properties</string>
+    <string name="hostel_list_empty">No properties yet. Tap + to add your first one.</string>
+    <string name="hostel_add">Add property</string>
     <string name="hostel_edit">Edit</string>
     <string name="hostel_selected">Selected</string>
-    <string name="hostel_form_title_add">Add Hostel</string>
-    <string name="hostel_form_title_edit">Edit Hostel</string>
-    <string name="hostel_field_name">Hostel name</string>
+    <string name="hostel_form_title_add">Add property</string>
+    <string name="hostel_form_title_edit">Edit property</string>
+    <string name="hostel_field_name">Property name</string>
+    <string name="property_type_label">What is this property?</string>
+    <string name="property_type_hostel">Hostel / PG</string>
+    <string name="property_type_shop">Shop</string>
+    <string name="property_type_warehouse">Warehouse</string>
+    <string name="property_type_flat">Flat</string>
+    <string name="property_type_hint_hostel">Rented out bed by bed. You will add floors, rooms and beds next.</string>
+    <string name="property_type_hint_single_unit">Rented out as a whole. No floors, rooms or beds — just the property and its tenant.</string>
+    <string name="property_field_monthly_rent">Monthly rent</string>
+    <string name="unit_status_vacant">Vacant</string>
+    <string name="unit_monthly_rent">₹%1$.0f / month</string>
+    <string name="unit_tile_label">This property</string>
+    <string name="unit_status_occupied">Let</string>
     <string name="hostel_field_address">Address</string>
     <string name="hostel_field_phone">Contact phone</string>
-    <string name="hostel_form_save">Save Hostel</string>
+    <string name="hostel_form_save">Save property</string>
 
     <string name="cancel">Cancel</string>
 
@@ -166,7 +178,7 @@
     <string name="packet_action">Printable records (PDF)</string>
     <string name="packet_description">A readable PDF of your tenants, agreements and payment history — something you can print or hand over, unlike the backup zip.</string>
     <string name="packet_scope_current">This hostel</string>
-    <string name="packet_scope_all">All hostels</string>
+    <string name="packet_scope_all">All properties</string>
     <string name="packet_summary">%1$d hostel(s), %2$d tenancy record(s)</string>
     <string name="packet_export_action">Save as PDF</string>
     <string name="packet_address">Address</string>
@@ -365,7 +377,7 @@
     <string name="reminder_template_en">Hi %1$s, your rent of ₹%2$d is due on %3$s. - %4$s</string>
 
     <string name="dashboard_title">Home</string>
-    <string name="dashboard_scope_all">All hostels</string>
+    <string name="dashboard_scope_all">All properties</string>
     <string name="dashboard_no_hostel">Add a hostel first (Property tab) to see your dashboard.</string>
     <string name="dashboard_collections_today">Collected today</string>
     <string name="dashboard_overdue_invoices">Overdue invoices</string>

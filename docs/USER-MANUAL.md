@@ -43,11 +43,28 @@ The app has five tabs along the bottom:
 
 ## 2. Setting up your property
 
-Property is a four-level structure: **hostel → floor → room → bed**.
+### What kind of property is it?
 
-- **Hostels.** Add as many as you run. Each has a name, address and contact
+The first thing Lodgy asks when you add a property is what it is, because that
+changes how much you have to set up.
+
+- **Hostel / PG** — let out bed by bed. You build it up as
+  **hostel → floor → room → bed**, and everything below applies.
+- **Shop, warehouse or flat** — let out as a whole. There is nothing to build:
+  you give it a name and a monthly rent, and that's the setup finished. Lodgy
+  never asks you for floors, rooms or beds, because for these there aren't any.
+  Tapping the property shows you the rent, whether it's let, and one button to
+  put a tenant in or open the tenant who's already there.
+
+You can run both kinds side by side — a hostel and two shops is normal. Pick the
+type when you create the property; it can't be changed afterwards, because the
+structure underneath is already built.
+
+The rest of this section is about hostels.
+
+- **Properties.** Add as many as you run. Each has a name, address and contact
   phone. A switcher lets you flip between them; the dashboard, reports and
-  vacancy views all follow the hostel you've selected.
+  vacancy views all follow the property you've selected.
 - **Floors.** Named however you call them ("Ground", "1st"), reorderable with
   move up/down. Each floor card shows a vacant/occupied summary so you can see
   where the space is without opening it.

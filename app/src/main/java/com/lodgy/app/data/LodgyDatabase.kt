@@ -46,7 +46,7 @@ import com.lodgy.app.data.entity.Warden
         Credit::class,
         ReconciliationMark::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.entity.Bed
+import com.lodgy.app.data.entity.PropertyType
 import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.RoomRepository
@@ -26,6 +27,8 @@ data class SelectedBed(val bed: Bed, val tenantId: String?, val tenantName: Stri
 
 data class BedGridUiState(
     val roomNumber: String = "",
+    val propertyName: String = "",
+    val propertyType: PropertyType = PropertyType.HOSTEL,
     val roomType: RoomType? = null,
     val pricePerBed: Double = 0.0,
     /** Free text as the warden typed it. Captured since LODGY-8 and, until LODGY-71, readable
@@ -39,6 +42,10 @@ data class BedGridUiState(
     val selectedBed: SelectedBed? = null,
 ) {
     val filteredBeds: List<Bed> get() = beds.filter { filter.matches(it.status) }
+
+    /** A shop, warehouse or flat is one unit. There is no grid to filter and no bed to name, so the
+     *  screen shows the property and its letting status instead (LODGY-79). */
+    val isSingleUnit: Boolean get() = propertyType.isSingleUnit
 }
 
 @HiltViewModel
@@ -58,9 +65,12 @@ class BedGridViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val room = roomRepository.getById(roomId)
+            val property = roomRepository.getPropertyForRoom(roomId)
             _uiState.update {
                 it.copy(
                     roomNumber = room?.roomNumber.orEmpty(),
+                    propertyName = property?.hostelName.orEmpty(),
+                    propertyType = property?.propertyType ?: PropertyType.HOSTEL,
                     roomType = room?.type,
                     pricePerBed = room?.pricePerBed ?: 0.0,
                     amenities = room?.amenities.orEmpty(),

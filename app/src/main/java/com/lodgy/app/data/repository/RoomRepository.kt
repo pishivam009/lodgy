@@ -17,6 +17,12 @@ class RoomRepository @Inject constructor(private val roomDao: RoomDao) {
     fun getByHostelIdWithFloor(hostelId: String): Flow<List<RoomWithFloor>> =
         roomDao.getByHostelIdWithFloor(hostelId)
 
+    suspend fun getPropertyForRoom(roomId: String) = roomDao.getPropertyForRoom(roomId)
+
+    /** The one room of a single-unit property (LODGY-79). */
+    suspend fun getFirstRoomIdByHostel(hostelId: String): String? =
+        roomDao.getFirstRoomIdByHostel(hostelId)
+
     suspend fun create(
         floorId: String,
         roomNumber: String,

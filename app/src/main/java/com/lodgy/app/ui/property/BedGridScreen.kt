@@ -56,9 +56,19 @@ fun BedGridScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(stringResource(R.string.bed_grid_title, uiState.roomNumber))
-                        uiState.roomType?.let {
-                            Text(it.label(), style = MaterialTheme.typography.bodySmall)
+                        // A single-unit property IS the thing being let, so it is named directly
+                        // rather than dressed up as a room inside itself (LODGY-79).
+                        if (uiState.isSingleUnit) {
+                            Text(uiState.propertyName)
+                            Text(
+                                uiState.propertyType.label(),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        } else {
+                            Text(stringResource(R.string.bed_grid_title, uiState.roomNumber))
+                            uiState.roomType?.let {
+                                Text(it.label(), style = MaterialTheme.typography.bodySmall)
+                            }
                         }
                     }
                 },
@@ -70,11 +80,13 @@ fun BedGridScreen(
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             RoomDetails(uiState)
-            BedFilterChips(
-                selected = uiState.filter,
-                onSelect = viewModel::onFilterChange,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            )
+            if (!uiState.isSingleUnit) {
+                BedFilterChips(
+                    selected = uiState.filter,
+                    onSelect = viewModel::onFilterChange,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(16.dp),
@@ -82,7 +94,11 @@ fun BedGridScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(uiState.filteredBeds, key = Bed::id) { bed ->
-                    BedTile(bed, onClick = { viewModel.onBedSelected(bed) })
+                    BedTile(
+                        bed = bed,
+                        singleUnit = uiState.isSingleUnit,
+                        onClick = { viewModel.onBedSelected(bed) },
+                    )
                 }
             }
         }
@@ -114,7 +130,11 @@ private fun BedActionSheet(
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
             Text(
-                stringResource(R.string.bed_sheet_title, uiState.roomNumber, selected.bed.label),
+                if (uiState.isSingleUnit) {
+                    uiState.propertyName
+                } else {
+                    stringResource(R.string.bed_sheet_title, uiState.roomNumber, selected.bed.label)
+                },
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
@@ -125,14 +145,19 @@ private fun BedActionSheet(
             )
 
             // The room's own details, since a bed has only a label and a status of its own.
-            uiState.roomType?.let {
-                Text(
-                    stringResource(R.string.bed_sheet_room_type, it.label()),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+            if (!uiState.isSingleUnit) {
+                uiState.roomType?.let {
+                    Text(
+                        stringResource(R.string.bed_sheet_room_type, it.label()),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
             }
             Text(
-                stringResource(R.string.room_price_per_bed, uiState.pricePerBed),
+                stringResource(
+                    if (uiState.isSingleUnit) R.string.unit_monthly_rent else R.string.room_price_per_bed,
+                    uiState.pricePerBed,
+                ),
                 style = MaterialTheme.typography.bodyMedium,
             )
             if (uiState.amenities.isNotBlank()) {
@@ -188,7 +213,7 @@ internal fun BedFilterChips(selected: BedFilter, onSelect: (BedFilter) -> Unit, 
 }
 
 @Composable
-private fun BedTile(bed: Bed, onClick: () -> Unit) {
+private fun BedTile(bed: Bed, singleUnit: Boolean, onClick: () -> Unit) {
     val palette = LodgyStatus.colors[bed.status.level]
     Column(
         modifier = Modifier
@@ -199,7 +224,11 @@ private fun BedTile(bed: Bed, onClick: () -> Unit) {
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                stringResource(R.string.bed_label, bed.label),
+                if (singleUnit) {
+                    stringResource(R.string.unit_tile_label)
+                } else {
+                    stringResource(R.string.bed_label, bed.label)
+                },
                 style = MaterialTheme.typography.titleMedium,
                 color = palette.onContainer,
             )
@@ -222,7 +251,10 @@ private fun RoomDetails(uiState: BedGridUiState) {
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
-            stringResource(R.string.room_price_per_bed, uiState.pricePerBed),
+            stringResource(
+                if (uiState.isSingleUnit) R.string.unit_monthly_rent else R.string.room_price_per_bed,
+                uiState.pricePerBed,
+            ),
             style = MaterialTheme.typography.bodyMedium,
         )
         if (uiState.amenities.isNotBlank()) {

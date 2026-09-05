@@ -2,6 +2,7 @@ package com.lodgy.app.data.repository
 
 import com.lodgy.app.data.dao.HostelDao
 import com.lodgy.app.data.entity.Hostel
+import com.lodgy.app.data.entity.PropertyType
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
@@ -13,13 +14,20 @@ class HostelRepository @Inject constructor(private val hostelDao: HostelDao) {
 
     suspend fun getById(id: String): Hostel? = hostelDao.getById(id)
 
-    suspend fun create(wardenId: String, name: String, address: String, contactPhone: String): Hostel {
+    suspend fun create(
+        wardenId: String,
+        name: String,
+        address: String,
+        contactPhone: String,
+        propertyType: PropertyType = PropertyType.HOSTEL,
+    ): Hostel {
         val now = System.currentTimeMillis()
         val hostel = Hostel(
             wardenId = wardenId,
             name = name,
             address = address,
             contactPhone = contactPhone,
+            propertyType = propertyType,
             createdAt = now,
             updatedAt = now,
         )

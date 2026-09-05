@@ -152,6 +152,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                             onAddHostel = { navController.navigate(HOSTEL_FORM_ROUTE) },
                             onEditHostel = { id -> navController.navigate("$HOSTEL_FORM_ROUTE?hostelId=$id") },
                             onOpenFloors = { hostelId -> navController.navigate("$FLOOR_LIST_ROUTE/$hostelId") },
+                            onOpenUnit = { roomId -> navController.navigate("$BED_GRID_ROUTE/$roomId") },
                             onOpenAllRooms = { navController.navigate(ALL_ROOMS_ROUTE) },
                         )
                         LodgyDestination.Tenants -> TenantDirectoryScreen(

@@ -164,8 +164,12 @@ private fun RoomTile(item: AllRoomsItem, showHostel: Boolean, onClick: () -> Uni
             }
             Text(
                 // Two hostels can each have a Room 101, so the number alone is ambiguous once the
-                // view spans properties - prefix the hostel only when it actually can be.
-                if (showHostel && item.room.hostelName.isNotBlank()) {
+                // view spans properties - prefix the hostel only when it actually can be. A
+                // single-unit property has no meaningful floor, so it shows the type instead of the
+                // placeholder floor its hierarchy carries (LODGY-79).
+                if (item.room.propertyType.isSingleUnit) {
+                    item.room.propertyType.label()
+                } else if (showHostel && item.room.hostelName.isNotBlank()) {
                     "${item.room.hostelName} · ${item.room.floorLabel}"
                 } else {
                     item.room.floorLabel

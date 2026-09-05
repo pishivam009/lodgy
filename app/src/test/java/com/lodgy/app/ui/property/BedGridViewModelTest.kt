@@ -3,6 +3,8 @@ package com.lodgy.app.ui.property
 import androidx.lifecycle.SavedStateHandle
 import com.lodgy.app.data.entity.Bed
 import com.lodgy.app.data.entity.BedStatus
+import com.lodgy.app.data.dao.RoomProperty
+import com.lodgy.app.data.entity.PropertyType
 import com.lodgy.app.data.entity.Room
 import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.repository.BedRepository
@@ -49,6 +51,7 @@ class BedGridViewModelTest {
 
     @Test
     fun `loads the room number and type, and beds sorted by label`() {
+        coEvery { roomRepository.getPropertyForRoom("r1") } returns RoomProperty("Sunrise PG", PropertyType.HOSTEL)
         coEvery { roomRepository.getById("r1") } returns Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
         val bedB = Bed(id = "b2", roomId = "r1", label = "B", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)
         val bedA = Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L)
@@ -66,6 +69,7 @@ class BedGridViewModelTest {
      *  tab even when the warden was looking straight at the bed. */
     @Test
     fun `tapping an occupied bed resolves the tenant on it`() = runTest {
+        coEvery { roomRepository.getPropertyForRoom("r1") } returns RoomProperty("Sunrise PG", PropertyType.HOSTEL)
         coEvery { roomRepository.getById("r1") } returns Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
         val occupied = Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L)
         every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(occupied))
@@ -81,6 +85,7 @@ class BedGridViewModelTest {
 
     @Test
     fun `tapping a vacant bed offers no tenant, so the sheet shows assign instead`() = runTest {
+        coEvery { roomRepository.getPropertyForRoom("r1") } returns RoomProperty("Sunrise PG", PropertyType.HOSTEL)
         coEvery { roomRepository.getById("r1") } returns Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
         val vacant = Bed(id = "b2", roomId = "r1", label = "B", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)
         every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(vacant))
@@ -97,6 +102,7 @@ class BedGridViewModelTest {
      *  there - it falls back to the vacant behaviour. */
     @Test
     fun `an occupied bed with no agreement falls back rather than dead-ending`() = runTest {
+        coEvery { roomRepository.getPropertyForRoom("r1") } returns RoomProperty("Sunrise PG", PropertyType.HOSTEL)
         coEvery { roomRepository.getById("r1") } returns Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
         val orphaned = Bed(id = "b3", roomId = "r1", label = "C", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L)
         every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(orphaned))
@@ -110,6 +116,7 @@ class BedGridViewModelTest {
 
     @Test
     fun `dismissing clears the sheet`() = runTest {
+        coEvery { roomRepository.getPropertyForRoom("r1") } returns RoomProperty("Sunrise PG", PropertyType.HOSTEL)
         coEvery { roomRepository.getById("r1") } returns Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
         val vacant = Bed(id = "b2", roomId = "r1", label = "B", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)
         every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(vacant))

@@ -51,3 +51,12 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         db.execSQL("ALTER TABLE `tenancy_agreements` ADD COLUMN `nonRevenue` INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+/** Adds the property type. A plain ADD COLUMN defaulting to HOSTEL, so every property that already
+ *  exists keeps the full four-level model and behaves exactly as before - the warden's only copy of
+ *  their data is on the phone (LODGY-79). */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `hostels` ADD COLUMN `propertyType` TEXT NOT NULL DEFAULT 'HOSTEL'")
+    }
+}

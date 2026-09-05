@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.ui.common.label
 import com.lodgy.app.data.entity.Hostel
 import com.lodgy.app.ui.icons.CommonIcons
 
@@ -42,6 +43,8 @@ fun HostelListScreen(
     onAddHostel: () -> Unit,
     onEditHostel: (String) -> Unit,
     onOpenFloors: (String) -> Unit,
+    /** A single-unit property skips floors and rooms entirely and opens its unit (LODGY-79). */
+    onOpenUnit: (String) -> Unit = {},
     onOpenAllRooms: () -> Unit = {},
     viewModel: HostelListViewModel = hiltViewModel(),
 ) {
@@ -86,7 +89,12 @@ fun HostelListScreen(
                         selected = hostel.id == uiState.selectedHostelId,
                         onOpen = {
                             viewModel.selectHostel(hostel.id)
-                            onOpenFloors(hostel.id)
+                            viewModel.openProperty(hostel) { destination ->
+                                when (destination) {
+                                    is PropertyDestination.Floors -> onOpenFloors(destination.hostelId)
+                                    is PropertyDestination.Unit -> onOpenUnit(destination.roomId)
+                                }
+                            }
                         },
                         onEdit = { onEditHostel(hostel.id) },
                     )
@@ -122,7 +130,13 @@ private fun HostelCard(hostel: Hostel, selected: Boolean, onOpen: () -> Unit, on
             Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
                 Text(hostel.name, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    hostel.address,
+                    // A warden running a hostel alongside two shops needs to tell them apart at a
+                    // glance, and the address alone does not say what the thing is.
+                    if (hostel.address.isBlank()) {
+                        hostel.propertyType.label()
+                    } else {
+                        "${hostel.propertyType.label()} · ${hostel.address}"
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

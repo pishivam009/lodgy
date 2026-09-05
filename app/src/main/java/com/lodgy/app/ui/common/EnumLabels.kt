@@ -6,7 +6,18 @@ import com.lodgy.app.R
 import com.lodgy.app.data.entity.ExpenseCategory
 import com.lodgy.app.data.entity.NoteType
 import com.lodgy.app.data.entity.PaymentMode
+import com.lodgy.app.data.entity.PropertyType
 import com.lodgy.app.data.entity.RoomType
+
+@Composable
+fun PropertyType.label(): String = stringResource(
+    when (this) {
+        PropertyType.HOSTEL -> R.string.property_type_hostel
+        PropertyType.SHOP -> R.string.property_type_shop
+        PropertyType.WAREHOUSE -> R.string.property_type_warehouse
+        PropertyType.FLAT -> R.string.property_type_flat
+    },
+)
 
 @Composable
 fun RoomType.label(): String = stringResource(

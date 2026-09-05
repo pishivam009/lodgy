@@ -12,11 +12,11 @@
     "Invoicing, occupancy, the dashboard, the PDF packet and the CSV import all still work for both property shapes",
     "The impact on LODGY-41 and LODGY-70 is assessed before either is built on the old assumption"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T21:09:45+00:00",
+  "updatedAt": "2026-09-05T09:07:25Z",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -29,6 +29,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "DECIDED: property type drives layer visibility - no schema change. A hostel keeps the full Hostel > Floor > Room > Bed model. A shop, warehouse or flat gets a type that auto-creates one implicit floor and one implicit unit, and the UI simply never shows those layers, so the warden sees a property and a tenant. Chosen over collapsing floor and making bed optional because that would touch invoicing, occupancy, the dashboard, the PDF packet and the CSV import, and would need a migration on data that exists only on the warden's phone. This delivers the user-visible value with no migration and stays reversible if a real remodel later proves necessary. BUILD NOTE: the implicit floor and unit must be real rows, not nulls, so every existing query, rollup and export keeps working untouched - the change is what the UI renders, not what the schema holds. Tenancy stays keyed to bedId."
+    },
+    {
+      "timestamp": "2026-09-05T08:40:08Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting, building the PO's decided option: property type drives layer visibility, implicit rows stay real, tenancy stays keyed to bedId. Note the decision's 'no schema change' means no structural remodel - a propertyType column on hostels is still needed, so this carries migration 5->6 as a plain ADD COLUMN with DEFAULT 'HOSTEL', which leaves every existing property on the full four-level model untouched."
+    },
+    {
+      "timestamp": "2026-09-05T09:07:25Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built the PO's decided option. A propertyType on the property decides how much of Hostel > Floor > Room > Bed the UI shows; the schema keeps all four levels for every type.\n\nWHAT WAS BUILT. PropertyType (HOSTEL, SHOP, WAREHOUSE, FLAT) with isSingleUnit = anything but HOSTEL. Migration 5->6, a plain ADD COLUMN ... NOT NULL DEFAULT 'HOSTEL'. The add-property form asks the type first, and for a single-unit type swaps the setup-by-floors path for a single monthly rent field. Saving one creates its floor, room and bed as REAL rows - HostelFormViewModel.createSingleUnit - so nothing downstream can tell the difference. Tapping such a property on the Property tab goes straight to its unit rather than a floor list (HostelListViewModel.openProperty, falling back to the floor list if the implicit room is ever missing, so a tap cannot dead-end). The bed grid renders as a unit view for these: titled with the property and its type, rent shown per MONTH not per bed, no filter chips, the tile reads 'this property' rather than 'Bed A', and LODGY-69's sheet drops the room-type line and names the property. Editing a single-unit property carries the name and rent onto its implicit room, since the warden can never reach the room form.\n\nWORDING. A warden who owns a hostel and two shops was still being told they were 'adding a hostel'. The screens that now span every type say property instead - list title, add/edit titles, the name field, the save button, the dashboard and packet 'all properties' scopes. Genuinely hostel-shaped concepts keep the word.\n\nAC5 - MIGRATION TESTED AGAINST A REAL POPULATED v5 DATABASE, not a synthetic one. Pulled the emulator's live database (2 hostels, 3 floors, 19 rooms, 50 beds, 5 tenants, 5 agreements, 7 invoices, 7 payments, 2 expenses, 1 credit), installed the v6 build, opened the app to force the lazy migration, pulled it back with -wal and -shm. user_version 5 -> 6, every table's row count identical, every agreement's rent, non-revenue flag and invoice count unchanged, and both existing properties defaulted to HOSTEL. No fallbackToDestructiveMigration anywhere.\n\nAC7 - IMPACT ASSESSED. LODGY-41's floor cards are only reachable for a hostel, since a single-unit property never opens a floor list, so they need no change. LODGY-70's all-rooms view DID need one and got it: a single-unit property's tile was showing its placeholder floor label, so the tile now shows the property type instead. Both verified on device.\n\nVERIFIED END TO END ON THE EMULATOR. Created a SHOP with an 18000 rent: no floor or bed step anywhere. Tapping it opened the unit - 'Corner shop / dukaan', Rs18000 per month, one tile reading 'this property', vacant. Let it to a tenant through the normal agreement form and it flipped to occupied and returned to the unit view. Database confirms the full chain exists as real rows - hostel(SHOP) > floor('-') > room('Corner shop', SINGLE, 18000) > bed('A', OCCUPIED) - with an ordinary tenancy keyed to that bedId. Downstream all correct: the shop appears in the dashboard property switcher, full-room count went 2 -> 3, vacant beds stayed 46 because the shop is let, and the all-rooms tile reads 'Corner shop / dukaan' rather than a bogus floor. The two existing hostels are untouched throughout.\n\n453 tests pass, line coverage 96.82%, jacocoCoverageVerification green. Six new tests: implicit floor/room/bed created for a single-unit property and NOT for a hostel, rent required only for single-unit, edits carried onto the implicit room, and both navigation branches including the missing-room fallback.\n\nNOTE FOR QA: I left the Corner shop and its tenant in the emulator data on purpose, so the feature can be exercised without rebuilding it. Docs updated - DESIGN.md 3 and 4.2, DATA-MODEL.md, USER-MANUAL.md 2, and a decision-log row."
     }
   ]
 }

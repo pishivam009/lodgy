@@ -58,8 +58,12 @@ up later.
 Warden (local profile — PIN/password hash, name)
   id, pinHash, name, createdAt
 
-Hostel
-  id, wardenId, name, address, contactPhone, createdAt, updatedAt
+Hostel (any property: a hostel, or a shop/warehouse/flat let as a whole)
+  id, wardenId, name, address, contactPhone,
+  propertyType (HOSTEL | SHOP | WAREHOUSE | FLAT, default HOSTEL),
+  createdAt, updatedAt
+  — propertyType decides how much of the hierarchy below is shown, not how
+    much of it exists. See 4.2.
 
 Floor
   id, hostelId, label (e.g. "Ground", "1st"), sortOrder, createdAt, updatedAt
@@ -149,9 +153,33 @@ Notes:
 - No account/server involved — this just gates the app on the device.
 
 ### 4.2 Property setup (static data, filled once, editable later)
-- Multi-hostel support: hostel switcher on dashboard.
+- Multi-property support: property switcher on dashboard.
 - Hostel → Floor → Room → Bed, with a bulk "add N rooms to this floor" flow
   to make initial setup fast.
+- **Not every property is a hostel.** Wardens also let shops, warehouses and
+  whole flats, where the rentable unit IS the property — there is no floor and
+  no bed, and before this the warden had to invent both to rent anything at
+  all. A `propertyType` on the property decides how much of the hierarchy the
+  UI shows. A hostel keeps all four levels. A shop, warehouse or flat gets one
+  implicit floor, one implicit unit and one implicit bed created for it at
+  setup, and the warden simply never sees those layers: they see a property
+  and its tenant. Tapping such a property goes straight to the unit, which
+  shows the monthly rent and whether it is let, with the same one-tap assign
+  or view-tenant as a bed (4.3). Floors, rooms and bulk-add are never reached
+  (LODGY-79).
+- **The implicit rows are real rows, not nulls.** That is the whole reason this
+  was chosen over collapsing the hierarchy: every existing query, occupancy
+  rollup, invoice, notification, PDF packet and CSV export keeps working
+  untouched, because the shape of the data has not changed — only what is
+  rendered. Tenancy stays keyed to `bedId`. The alternative, making floor a
+  label and bed optional, would have touched invoicing, occupancy, the
+  dashboard, the packet and the import, and needed a migration on data that
+  exists only on the warden's phone. This delivers the user-visible value with
+  a plain ADD COLUMN, and stays reversible if a real remodel later proves
+  necessary (LODGY-79).
+- Because a warden can now own a hostel and two shops, the screens that span
+  them say "property" rather than "hostel"; only genuinely hostel-shaped
+  concepts keep the word.
 - Floor cards carry a vacant/occupied summary, and an **All rooms** view lists
   every room across floors — a warden scanning the property shouldn't have to
   open each floor in turn (LODGY-40, LODGY-41).
@@ -560,3 +588,4 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Onboarding pops the chain, not a fixed destination | Aiming at Tenants stranded the bed-tap route, whose back stack has no Tenants entry — Save looked dead but wrote a tenancy per press | LODGY-69 |
 | Warden/caretaker rooms are a flag on the tenancy, not an occupancy type | Reuses the tenancy record so history reads normally and one code path covers occupancy; a separate type would fork it | LODGY-82 |
 | Non-revenue hides rent and deposit rather than only clearing them | Left editable, the warden could flip the switch and then type a rent, saving a tenancy claiming rent it would never charge | LODGY-82 |
+| Property type decides which layers the UI shows, not which exist | Wardens let shops, warehouses and flats too, where the property IS the unit; collapsing the hierarchy would have touched invoicing, occupancy, the packet and the import, and needed a migration on data that lives only on the phone | LODGY-79 |

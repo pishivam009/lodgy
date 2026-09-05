@@ -76,6 +76,14 @@ erDiagram
         string emergencyContactPhone
         enum   status "ACTIVE VACATED"
     }
+    HOSTEL {
+        string id PK
+        string wardenId FK
+        string name
+        string address
+        string contactPhone
+        enum   propertyType "HOSTEL SHOP WAREHOUSE FLAT"
+    }
     TENANCY_AGREEMENT {
         string id PK
         string tenantId FK
@@ -170,6 +178,14 @@ a returning tenant gets a second agreement rather than overwriting the first, so
 their history survives a move-out and move-in. A bed transfer rewrites `bedId`
 **on the same row** — no close-and-reopen — so one tenancy stays one tenancy and
 its invoices stay attributed to it.
+
+`Hostel.propertyType` decides how much of Hostel → Floor → Room → Bed the warden
+is shown, and **nothing else**. A shop, warehouse or flat still gets a floor, a
+room and a bed — created for it at setup, as real rows — so every query, rollup
+and export in this document applies to it unchanged, and tenancy stays keyed to
+`bedId`. Only the UI knows the difference. Added in **migration 5 → 6** as a
+plain `ADD COLUMN ... NOT NULL DEFAULT 'HOSTEL'`, so every property that already
+existed keeps the full four-level model.
 
 `nonRevenue` on the agreement is what lets a warden's or caretaker's own room be
 modelled honestly. The bed is genuinely occupied, so it is `OCCUPIED` like any
