@@ -13,6 +13,29 @@ Status: built. Every epic through LODGY-62 is implemented, and the board now run
 to LODGY-84 with post-launch feedback and fixes; the board is the source of truth
 for what is still awaiting work or verification.
 
+## Standing constraints
+
+Requirements from the product owner, not suggestions. They apply to every change.
+
+**Every build reports its test results and coverage.** Run
+`./gradlew testDebugUnitTest jacocoTestReport jacocoCoverageVerification` and
+state the numbers — tests passed, failures, line coverage — in the handoff. The
+gate is 0.93 LINE and it is a gate, not a target: if it fails, the change is not
+done. Do not report a build as green without having read the actual results.
+
+**Every new build stays backward compatible.** The warden's only copy of their
+data is on the phone, so a schema change ships a real migration or it does not
+ship. See the emulator notes below for how to test one properly.
+
+**A feature that has been tested is not finished until the docs match.**
+Architecture and schema go in `docs/DESIGN.md` and `docs/DATA-MODEL.md`,
+warden-facing behaviour in `docs/USER-MANUAL.md`, and a settled choice gets a row
+in the DESIGN.md decision log. Screens that changed visibly belong in
+`docs/design/screenshots.html`. Do this in the same commit as the work, not as a
+follow-up — CLAUDE.md tells every session to read DESIGN.md before making
+architecture decisions, so a doc that lags behind silently misleads the next
+change.
+
 ## Working efficiently
 
 These are not style preferences. Each one is a specific way earlier sessions
