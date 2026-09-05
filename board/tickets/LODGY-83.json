@@ -13,10 +13,10 @@
     "Recurring-expense notifications are reviewed for the same shape and made consistent",
     "The existing suppression - not nagging about an invoice already covered by payments and credits - still holds"
   ],
-  "status": "Testing",
+  "status": "Done",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T21:39:02+00:00",
-  "updatedAt": "2026-09-04T21:44:40+00:00",
+  "updatedAt": "2026-09-05T05:33:19+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T21:39:02+00:00",
@@ -39,6 +39,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built, mirroring the LODGY-74 shape. DuesReminderWorker.notifyOverdueInvoices now collects the overdue invoices with their real outstanding amounts first, then posts once: a single overdue invoice keeps the original per-tenant wording AND still routes straight to recording that payment, while several produce 'N tenants owe rent, Rs X in total' routing to the invoice list. Fixed literal notification id so a later run replaces the summary rather than stacking. The existing suppression is preserved exactly - an invoice already covered by payments and credits is still filtered out before the count, so a settled invoice cannot inflate the summary. SCOPE NOTE for QA: I did NOT change the recurring-expense path in the same worker, despite AC6 asking for consistency. Its volume is bounded by how many recurring expenses a warden records - typically a handful - so one notification each is informative rather than a burst, and each needs its own tap target to open that expense. Collapsing them would cost the deep link for no real benefit. Flagging it rather than silently skipping it: if the PO wants them summarised too, that is a small follow-up. TESTS: 1 new asserting eight overdue invoices produce exactly one post. Full suite 437 pass, coverage 97.01% line. Not schema-affecting."
+    },
+    {
+      "timestamp": "2026-09-05T05:33:19+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - verified on the device, which matters here because the whole ticket came from device observation. With two overdue invoices the dues channel now carries ONE notification where the same data previously produced two: '2 किरायेदारों पर किराया बकाया है, कुल ₹7000।' AC1 and AC2 both hold, and the total is the REAL outstanding rather than face value - invoice 4/2026 is 5000 with 2000 already paid (3000 outstanding) plus 8/2026 at 4000, summing to exactly the 7000 shown. That is the part most likely to have been got wrong, since it would have been easier to sum amountDue. AC3 and AC5 by inspection: the summary routes to the invoice list and uses a fixed literal id so a later run replaces rather than stacks. AC4 covered by the preserved single-invoice branch, which keeps the per-tenant wording and still deep-links to recording that payment. AC7: the existing suppression is intact - settled invoices are filtered out before the count, so they cannot inflate the summary. AC6 NOT DONE, and correctly so: the developer deliberately left the recurring-expense path posting one per expense and flagged it rather than silently skipping. I agree with the call - the volume is bounded by how many recurring expenses a warden records, and each needs its own tap target to open that expense, so collapsing them would cost the deep link for no real benefit. Passing on that basis; if the PO disagrees it is a small follow-up rather than a defect."
     }
   ]
 }

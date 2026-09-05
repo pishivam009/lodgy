@@ -11,11 +11,11 @@
     "Confirmed with the reporting wardens which part of the tenant list was actually the problem, given it already spans hostels",
     "Consistent with LODGY-70's approach to the same ambiguity rather than solving it differently"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T21:58:05+00:00",
+  "updatedAt": "2026-09-05T05:33:19+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -44,6 +44,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built to the PO's decision: all-hostels always, tagged, with a filter. DashboardViewModel no longer follows hostelPreferences.selectedHostelId - loadMetrics takes a nullable hostelId where null means every hostel, and every metric (collections, overdue, vacant beds, move-outs) aggregates across the scope. The selected-hostel preference is deliberately left alone since it still drives the property screens; the dashboard simply stopped following it. SCOPE IS ALWAYS STATED, which was the condition attached to the decision: the top bar shows the hostel name, or 'All hostels', under the title - so no money figure is ever unlabelled. Filter chips appear only when there is more than one property, so a single-hostel warden sees no change at all. Upcoming move-out rows carry their hostel name when the view spans several, since a tenant name alone is ambiguous across properties. TENANT LIST: no change, as recorded - verified again that TenantDirectoryViewModel has no hostelId and already spans every hostel. Its rows still lack hostel identification, which is the same room-101-in-two-properties problem LODGY-70 has to solve; left for that ticket so the two are done consistently rather than twice. Also added an early return when no hostels exist, so the empty state stops walking the repositories. VERIFIED ON DEVICE with the two-hostel test data: default view showed 48 vacant beds and 2 overdue across both, with Suresh's move-out tagged 'Sunrise PG'; filtering to Moonlight narrowed to 1 overdue and 0 vacant and retitled the scope caption to 'Moonlight'. Correct in Hindi. TESTS: 1 new covering default aggregation, narrowing, and returning to all. Full suite 438 pass, coverage 96.99% line. Not schema-affecting."
+    },
+    {
+      "timestamp": "2026-09-05T05:33:19+00:00",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all six. Verified on the device with the two-hostel test data: the default view aggregated 48 vacant beds and 2 overdue invoices across both properties, where it previously showed one hostel's figures only. AC2 is the one I checked hardest, since an unlabelled money total that silently means 'all properties' is worse than one that silently means 'this property' - the top bar carries the scope under the title, reading 'All hostels' by default and switching to 'Moonlight' when filtered, so no figure is ever unattributed. AC1 and AC3: filtering to Moonlight narrowed to 1 overdue and 0 vacant, and returning to All restored the combined numbers, so the per-hostel view survives as a filter rather than being lost. AC4: upcoming move-out rows carry their hostel name when the view spans several - Suresh's row read 'Sunrise PG'. AC7: chips are gated on hostels.size > 1, so a single-property warden sees no change at all. AC6: correct in Hindi throughout, including the 'सभी हॉस्टल' scope label. AC5 confirmed by re-checking the code rather than assuming: TenantDirectoryViewModel still has zero references to hostelId, so the tenant list genuinely already spans every hostel and needed no change. Its rows still lack hostel identification, which the developer correctly left to LODGY-70 so the same ambiguity is solved once rather than twice. Also noted: the early return when no hostels exist is a real improvement - the empty state no longer walks the repositories."
     }
   ]
 }
