@@ -16,11 +16,11 @@
     "The existing Tenants tab onboarding route via BedPickerScreen keeps working unchanged",
     "View description shows the room's type, price per bed and amenities - amenities being the field the PO could not see anywhere today (LODGY-71)"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-05T06:25:06+00:00",
+  "updatedAt": "2026-09-05T07:42:09Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
@@ -61,6 +61,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built to the amended spec - every bed tap opens the same sheet and only the second row varies. Beds are now clickable (they were not at all), and BedGridViewModel resolves the tenancy on the tapped bed via a new TenancyAgreementDao.getActiveByBedId. The sheet always shows the room details the ticket asked for - price per bed and amenities, reusing the LODGY-71 display rather than duplicating it - plus who is in it when occupied. Second row: occupied gets View tenant, vacant gets Assign a tenant. ASSIGN SKIPS THE BED PICKER: it routes to TENANT_FORM_ROUTE?bedId=..., which already accepted a bedId, so the warden is not asked to pick a bed they just tapped. That was the whole point of the shortcut. The Tenants-tab route via BedPickerScreen is untouched. FALLBACK: an OCCUPIED bed whose tenancy has gone missing resolves tenantId null and therefore shows the vacant behaviour rather than navigating to a profile that is not there. VERIFIED ON DEVICE, all four paths: occupied bed (Moonlight 501/Priya) showed the sheet with price, \"Priya रह रहे हैं\" and View tenant, which opened her profile; vacant bed (Sunrise 101/Bed A) showed price and Assign a tenant, which opened the tenant form directly rather than the bed picker. Correct in Hindi. NOTE FOR QA: my first attempt wired the tile and the state but never rendered the sheet - it compiled and the tests would have passed, and only the device showed nothing happening. Worth a skeptical tap rather than trusting the unit tests here. TESTS: 4 new covering occupied resolution, vacant, the missing-tenancy fallback, and dismissal. Full suite 442 pass, coverage 96.87% line. Not schema-affecting - the new DAO method is a read."
+    },
+    {
+      "timestamp": "2026-09-05T07:42:09Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - two defects, one of them data-corrupting. Tested on the emulator via Property > All rooms > room 102 > tap a bed.\n\n(1) BLOCKER, breaks AC8 'a bed can never be assigned twice'. The agreement form reached via the new assign-from-bed route never navigates away on save, and its Save button stays enabled, so every press writes another ACTIVE tenancy on the same bed. Reproduced: tapped Save twice on bed 102/A and got TWO ACTIVE tenancy_agreements rows with the same tenantId and the same bedId (f4c4d7cc... and dddcf950...). Root cause is LodgyNavHost.kt:400 - the agreement form's onDone is navController.popBackStack(LodgyDestination.Tenants.route, false). That works for the old Tenants-tab flow because Tenants is on that back stack, but LODGY-69's new route starts from the Property tab (Property > All rooms > bed grid > sheet > tenant form > agreement form), where Tenants is NOT on the stack - popBackStack finds no such destination, returns false, and nothing happens. The screen also carries no bottom nav, so the warden is stranded on a form whose Save appears to do nothing and only the top-left back arrow escapes. Fix needs a route-appropriate onDone (pop back to the bed grid, or popUpTo the agreement form inclusive) instead of a hardcoded Tenants target. Please also guard save() against re-entry so a double tap can never write two agreements regardless of how navigation behaves.\n\n(2) AC11 not met. 'View description shows the room's type, price per bed and amenities.' The sheet shows room number, bed label, status and 'Rs 5500 / bed' only - the room TYPE (DOUBLE) is missing. It is rendered on the bed-grid screen behind the sheet, but the AC is about the description the sheet offers. Amenities render conditionally and room 102 has none set, so that half is still untested - please set amenities on a room and confirm, since amenities being invisible (LODGY-71) is the very thing this AC exists for.\n\nFlagging for the PO rather than failing on it: AC2/AC3/AC4 specify a TWO-option sheet ('view description' plus a state-dependent second option). What is built is a ONE-option sheet with the description inlined as text above the single action. That is arguably the better design - it saves a tap, and the PO's stated goal was reaching the tenant or onboarding from the bed - but it is not what the ACs say, so it needs the PO to bless the change or the second option to be added.\n\nWhat DOES pass: AC1 beds are tappable; AC2 a tap opens a sheet and never navigates on its own; AC5 'kirayedar dekhen' opened Suresh's profile showing room 102 - bed B; AC6 the bed is pre-chosen and BedPickerScreen is correctly skipped; AC7 the same sheet is reachable via All rooms; the other half of AC8 holds - assign is not offered on an occupied bed; AC9 no crash; AC10 the Tenants-tab route still works unchanged."
     }
   ]
 }

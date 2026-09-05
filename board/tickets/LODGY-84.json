@@ -1,0 +1,28 @@
+{
+  "id": "LODGY-84",
+  "epic": "Rent & Payments",
+  "title": "Optionally record a warden or caretaker room's forgone rent as an expense",
+  "description": "Stage two of LODGY-82, which the PO split off deliberately and which had no ticket holding it, so it was about to be lost. LODGY-82 stage one stopped the app being WRONG about warden and caretaker rooms - they now carry a nonRevenue flag on the tenancy, generate no invoices, stay out of dues and overdue counts, and still count as occupied. This ticket is the separable bookkeeping half the user asked for: 'can go in expense as per warden discretion'.\n\nWHY IT IS DISCRETIONARY, AND WHY THAT MATTERS TO THE DESIGN: a warden living in their own building has not spent money, so for most wardens this is not an expense at all and must not be forced on them. But a warden who pays a caretaker partly in accommodation may reasonably want the rent they gave up to show against the month, so the P&L reflects the real cost of staffing. So this must be opt-in per tenancy, never automatic, and never on by default.\n\nWHAT IT NEEDS: a decision on the amount, since a non-revenue tenancy has no rent by definition - most likely the room's pricePerBed as the default, which is the market rate the warden is forgoing, with the figure editable. Then a recurring monthly expense tied to the tenancy, in an appropriate category, which stops when the tenancy closes. Note LODGY-82's stage one currently CLEARS the rent to zero when the switch is flipped, so the forgone amount is not stored anywhere on the agreement - either derive it from the room, or keep a separate forgoneRent column rather than reusing agreedRent, which would undo the guarantee that a non-revenue tenancy never bills.\n\nDO NOT let this leak back into the money the warden is owed. The whole point of LODGY-82 was that these rooms never appear as dues; an expense is a cost, not a receivable, and it must not surface in invoices, overdue counts or collection figures.",
+  "acceptanceCriteria": [
+    "A non-revenue tenancy can optionally have its forgone rent recorded as an expense, off by default",
+    "The amount defaults to something defensible (the room's price per bed) and is editable by the warden",
+    "It recurs monthly while the tenancy is active and stops when the tenancy closes",
+    "It appears as an expense in the monthly report and PDF exports, never as a due or a receivable",
+    "Turning it off removes future entries without deleting the history already recorded",
+    "A non-revenue tenancy with this turned off behaves exactly as it does after LODGY-82, with no expense at all",
+    "The forgone amount is stored somewhere that cannot be mistaken for billable rent, so LODGY-82's no-invoice guarantee still holds"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-05T07:42:49Z",
+  "updatedAt": "2026-09-05T07:42:49Z",
+  "history": [
+    {
+      "timestamp": "2026-09-05T07:42:49Z",
+      "actor": "Tester",
+      "action": "created",
+      "note": "Filed during QA of LODGY-82. The PO explicitly decided to ship LODGY-82 in two stages and the Developer's handoff note said the discretionary expense recording 'stays for a follow-up', but no follow-up ticket was ever created - so LODGY-82's AC6 had no home and would have disappeared when that ticket closed. This ticket holds it. Not a defect in the stage-one build."
+    }
+  ]
+}
