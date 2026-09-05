@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Bed-level counts, matching how VacantViewScreen counts - a warden comparing the two
- *  screens should not be reading rooms in one and beds in the other. */
+/** Bed-level counts. Kept at bed level rather than room level so a warden is not reading
+ *  rooms on one screen and beds on another. */
 data class FloorListItem(val floor: Floor, val totalBeds: Int, val occupiedBeds: Int) {
     val vacantBeds: Int get() = totalBeds - occupiedBeds
 }

@@ -27,6 +27,8 @@ class BedRepository @Inject constructor(private val bedDao: BedDao) {
     fun observeOccupancyByHostel(hostelId: String): Flow<List<FloorOccupancy>> =
         bedDao.observeOccupancyByHostel(hostelId)
 
+    fun observeRoomOccupancy(): Flow<List<RoomOccupancy>> = bedDao.observeRoomOccupancy()
+
     fun observeRoomOccupancyByHostel(hostelId: String): Flow<List<RoomOccupancy>> =
         bedDao.observeRoomOccupancyByHostel(hostelId)
 

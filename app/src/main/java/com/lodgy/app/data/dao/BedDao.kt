@@ -60,6 +60,14 @@ interface BedDao {
     )
     fun observeRoomOccupancyByHostel(hostelId: String): Flow<List<RoomOccupancy>>
 
+    /** Room occupancy everywhere, for the all-hostels room view (LODGY-70). */
+    @Query(
+        "SELECT beds.roomId AS roomId, COUNT(*) AS totalBeds, " +
+            "SUM(CASE WHEN beds.status = 'OCCUPIED' THEN 1 ELSE 0 END) AS occupiedBeds " +
+            "FROM beds GROUP BY beds.roomId",
+    )
+    fun observeRoomOccupancy(): Flow<List<RoomOccupancy>>
+
     @Query(
         "SELECT beds.id AS bedId, beds.label AS bedLabel, rooms.roomNumber AS roomNumber, " +
             "rooms.pricePerBed AS pricePerBed, floors.label AS floorLabel " +

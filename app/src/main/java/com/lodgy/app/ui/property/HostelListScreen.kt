@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,12 +42,24 @@ fun HostelListScreen(
     onAddHostel: () -> Unit,
     onEditHostel: (String) -> Unit,
     onOpenFloors: (String) -> Unit,
+    onOpenAllRooms: () -> Unit = {},
     viewModel: HostelListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.hostel_list_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.hostel_list_title)) },
+                actions = {
+                    // All rooms is reachable here rather than only after opening a hostel: the
+                    // screen spans every property now, so requiring one first was backwards.
+                    TextButton(onClick = onOpenAllRooms) {
+                        Text(stringResource(R.string.all_rooms_action))
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddHostel) {
                 Icon(CommonIcons.Plus, contentDescription = stringResource(R.string.hostel_add))

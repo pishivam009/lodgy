@@ -24,14 +24,37 @@ data class AllRoomsItem(val room: RoomWithFloor, val totalBeds: Int, val occupie
     val occupancy: RoomFill get() = roomFillOf(totalBeds, occupiedBeds)
 }
 
+data class AllRoomsHostel(val id: String, val name: String)
+
+/** Rooms the warden can still put someone in. Deliberately EMPTY plus PARTIAL rather than EMPTY
+ *  alone: a partly filled room does contain a vacant bed, and hiding it would answer "where is
+ *  there space" wrongly (LODGY-72). */
+enum class RoomSpaceFilter { ALL, HAS_SPACE }
+
 data class AllRoomsUiState(
-    val hostelName: String = "",
+    /** Null means every hostel - the default, since this screen exists to survey the whole estate. */
+    val filterHostelId: String? = null,
+    val spaceFilter: RoomSpaceFilter = RoomSpaceFilter.ALL,
+    val hostels: List<AllRoomsHostel> = emptyList(),
     val items: List<AllRoomsItem> = emptyList(),
     val loading: Boolean = true,
 ) {
-    val emptyRooms: Int get() = items.count { it.occupancy == RoomFill.EMPTY }
-    val partialRooms: Int get() = items.count { it.occupancy == RoomFill.PARTIAL }
-    val fullRooms: Int get() = items.count { it.occupancy == RoomFill.FULL }
+    val filterHostelName: String?
+        get() = filterHostelId?.let { id -> hostels.firstOrNull { it.id == id }?.name }
+
+    val visibleItems: List<AllRoomsItem>
+        get() = items
+            .filter { filterHostelId == null || it.room.hostelId == filterHostelId }
+            .filter { spaceFilter == RoomSpaceFilter.ALL || it.vacantBeds > 0 }
+
+    /** Counted over what is on screen, so the summary never contradicts the tiles below it. */
+    val emptyRooms: Int get() = visibleItems.count { it.occupancy == RoomFill.EMPTY }
+    val partialRooms: Int get() = visibleItems.count { it.occupancy == RoomFill.PARTIAL }
+    val fullRooms: Int get() = visibleItems.count { it.occupancy == RoomFill.FULL }
+
+    /** The tile counts ROOMS while the dashboard tile that can lead here counts BEDS, and 5 vacant
+     *  beds can be 3 rooms. Surfaced so the two never look like they disagree (LODGY-72). */
+    val vacantBedsInView: Int get() = visibleItems.sumOf { it.vacantBeds }
 }
 
 @HiltViewModel
@@ -42,27 +65,40 @@ class AllRoomsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val hostelId: String = checkNotNull(savedStateHandle["hostelId"])
-
     private val _uiState = MutableStateFlow(AllRoomsUiState())
     val uiState: StateFlow<AllRoomsUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            val hostel = hostelRepository.getById(hostelId)
-            _uiState.update { it.copy(hostelName = hostel?.name.orEmpty()) }
+        // Both optional: arriving from a hostel pre-filters to it, and arriving from the Home
+        // vacant-beds tile pre-filters to rooms with space.
+        val hostelId: String? = savedStateHandle["hostelId"]
+        val hasSpaceOnly: Boolean = savedStateHandle["hasSpace"] ?: false
+        _uiState.update {
+            it.copy(
+                filterHostelId = hostelId,
+                spaceFilter = if (hasSpaceOnly) RoomSpaceFilter.HAS_SPACE else RoomSpaceFilter.ALL,
+            )
         }
+
         viewModelScope.launch {
             combine(
-                roomRepository.getByHostelIdWithFloor(hostelId),
-                bedRepository.observeRoomOccupancyByHostel(hostelId),
-            ) { rooms, occupancy ->
+                roomRepository.getAllWithFloor(),
+                bedRepository.observeRoomOccupancy(),
+                hostelRepository.getAll(),
+            ) { rooms, occupancy, hostels ->
                 val byRoomId = occupancy.associateBy(RoomOccupancy::roomId)
-                rooms.map { room ->
+                val items = rooms.map { room ->
                     val counts = byRoomId[room.roomId]
                     AllRoomsItem(room, counts?.totalBeds ?: 0, counts?.occupiedBeds ?: 0)
                 }
-            }.collect { items -> _uiState.update { it.copy(loading = false, items = items) } }
+                items to hostels.map { AllRoomsHostel(it.id, it.name) }
+            }.collect { (items, hostels) ->
+                _uiState.update { it.copy(loading = false, items = items, hostels = hostels) }
+            }
         }
     }
+
+    fun onHostelFilterChange(hostelId: String?) = _uiState.update { it.copy(filterHostelId = hostelId) }
+
+    fun onSpaceFilterChange(filter: RoomSpaceFilter) = _uiState.update { it.copy(spaceFilter = filter) }
 }

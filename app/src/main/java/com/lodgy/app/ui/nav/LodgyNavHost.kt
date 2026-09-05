@@ -37,7 +37,6 @@ import com.lodgy.app.ui.backup.DataPacketScreen
 import com.lodgy.app.ui.backup.HistoryImportScreen
 import com.lodgy.app.ui.dashboard.DashboardScreen
 import com.lodgy.app.ui.dashboard.MonthlyReportScreen
-import com.lodgy.app.ui.dashboard.VacantViewScreen
 import com.lodgy.app.ui.expense.ExpenseFormScreen
 import com.lodgy.app.ui.expense.ExpenseListScreen
 import com.lodgy.app.ui.more.MoreScreen
@@ -151,6 +150,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                             onAddHostel = { navController.navigate(HOSTEL_FORM_ROUTE) },
                             onEditHostel = { id -> navController.navigate("$HOSTEL_FORM_ROUTE?hostelId=$id") },
                             onOpenFloors = { hostelId -> navController.navigate("$FLOOR_LIST_ROUTE/$hostelId") },
+                            onOpenAllRooms = { navController.navigate(ALL_ROOMS_ROUTE) },
                         )
                         LodgyDestination.Tenants -> TenantDirectoryScreen(
                             onAddTenant = { navController.navigate(BED_PICKER_ROUTE) },
@@ -163,7 +163,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                             onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
                         )
                         LodgyDestination.Home -> DashboardScreen(
-                            onOpenVacantBeds = { navController.navigate(VACANT_VIEW_ROUTE) },
+                            onOpenVacantBeds = { navController.navigate("$ALL_ROOMS_ROUTE?hasSpace=true") },
                             onOpenMonthlyReport = { navController.navigate(MONTHLY_REPORT_ROUTE) },
                         )
                         LodgyDestination.More -> MoreScreen(
@@ -197,7 +197,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                     onAddFloor = { navController.navigate("$FLOOR_FORM_ROUTE/$hostelId") },
                     onEditFloor = { floor -> navController.navigate("$FLOOR_FORM_ROUTE/$hostelId?floorId=${floor.id}") },
                     onOpenRooms = { floor -> navController.navigate("$ROOM_LIST_ROUTE/${floor.id}") },
-                    onOpenAllRooms = { navController.navigate("$ALL_ROOMS_ROUTE/$hostelId") },
+                    onOpenAllRooms = { navController.navigate("$ALL_ROOMS_ROUTE?hostelId=$hostelId") },
                 )
             }
 
@@ -229,8 +229,11 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             }
 
             composable(
-                route = "$ALL_ROOMS_ROUTE/{hostelId}",
-                arguments = listOf(navArgument("hostelId") { type = NavType.StringType }),
+                route = "$ALL_ROOMS_ROUTE?hostelId={hostelId}&hasSpace={hasSpace}",
+                arguments = listOf(
+                    navArgument("hostelId") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("hasSpace") { type = NavType.BoolType; defaultValue = false },
+                ),
             ) {
                 AllRoomsScreen(
                     onBack = { navController.popBackStack() },
@@ -429,8 +432,14 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                 ReminderScreen(onBack = { navController.popBackStack() })
             }
 
+            // Kept as a redirect rather than deleted: LODGY-59's vacancy notification carries
+            // ROUTE_VACANT_VIEW in its intent, and an already-delivered notification on a warden's
+            // phone would otherwise open nothing after they update.
             composable(VACANT_VIEW_ROUTE) {
-                VacantViewScreen(onBack = { navController.popBackStack() })
+                AllRoomsScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenRoom = { roomId -> navController.navigate("$BED_GRID_ROUTE/$roomId") },
+                )
             }
 
             composable(MONTHLY_REPORT_ROUTE) {

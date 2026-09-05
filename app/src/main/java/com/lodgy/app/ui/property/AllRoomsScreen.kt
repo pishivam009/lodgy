@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +55,12 @@ fun AllRoomsScreen(
                 title = {
                     Column {
                         Text(stringResource(R.string.all_rooms_title))
-                        Text(uiState.hostelName, style = MaterialTheme.typography.bodySmall)
+                        // Says which properties these tiles cover, so the counts are never
+                        // ambiguous once the screen can span the whole estate.
+                        Text(
+                            uiState.filterHostelName ?: stringResource(R.string.dashboard_scope_all),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
                     }
                 },
                 navigationIcon = {
@@ -73,6 +81,10 @@ fun AllRoomsScreen(
         }
 
         Column(modifier = Modifier.padding(padding)) {
+            if (uiState.hostels.size > 1) {
+                HostelFilterRow(uiState, viewModel::onHostelFilterChange)
+            }
+            SpaceFilterRow(uiState, viewModel::onSpaceFilterChange)
             OccupancySummary(uiState)
             // Adaptive rather than a fixed column count so a small phone still gets two per row
             // and a large one gets more, instead of tiles stretching to fill the width.
@@ -82,8 +94,8 @@ fun AllRoomsScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(uiState.items, key = { it.room.roomId }) { item ->
-                    RoomTile(item = item, onClick = { onOpenRoom(item.room.roomId) })
+                items(uiState.visibleItems, key = { it.room.roomId }) { item ->
+                    RoomTile(item = item, showHostel = uiState.filterHostelId == null, onClick = { onOpenRoom(item.room.roomId) })
                 }
             }
         }
@@ -120,7 +132,7 @@ private fun SummaryPart(occupancy: RoomFill, count: Int) {
 }
 
 @Composable
-private fun RoomTile(item: AllRoomsItem, onClick: () -> Unit) {
+private fun RoomTile(item: AllRoomsItem, showHostel: Boolean, onClick: () -> Unit) {
     val palette = LodgyStatus.colors[item.occupancy.level]
     Card(
         onClick = onClick,
@@ -151,7 +163,13 @@ private fun RoomTile(item: AllRoomsItem, onClick: () -> Unit) {
                 )
             }
             Text(
-                item.room.floorLabel,
+                // Two hostels can each have a Room 101, so the number alone is ambiguous once the
+                // view spans properties - prefix the hostel only when it actually can be.
+                if (showHostel && item.room.hostelName.isNotBlank()) {
+                    "${item.room.hostelName} · ${item.room.floorLabel}"
+                } else {
+                    item.room.floorLabel
+                },
                 style = MaterialTheme.typography.labelSmall,
                 color = palette.onContainer,
                 maxLines = 1,
@@ -172,5 +190,49 @@ private fun RoomTile(item: AllRoomsItem, onClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis,
             )
         }
+    }
+}
+
+@Composable
+private fun HostelFilterRow(uiState: AllRoomsUiState, onSelect: (String?) -> Unit) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+    ) {
+        item {
+            FilterChip(
+                selected = uiState.filterHostelId == null,
+                onClick = { onSelect(null) },
+                label = { Text(stringResource(R.string.dashboard_scope_all)) },
+            )
+        }
+        items(uiState.hostels) { hostel ->
+            FilterChip(
+                selected = uiState.filterHostelId == hostel.id,
+                onClick = { onSelect(hostel.id) },
+                label = { Text(hostel.name) },
+            )
+        }
+    }
+}
+
+/** "Has space" means empty OR partly filled - a partly filled room still has a bed free, and
+ *  hiding it would answer "where can I put someone" wrongly. */
+@Composable
+private fun SpaceFilterRow(uiState: AllRoomsUiState, onSelect: (RoomSpaceFilter) -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+    ) {
+        FilterChip(
+            selected = uiState.spaceFilter == RoomSpaceFilter.ALL,
+            onClick = { onSelect(RoomSpaceFilter.ALL) },
+            label = { Text(stringResource(R.string.room_filter_all)) },
+        )
+        FilterChip(
+            selected = uiState.spaceFilter == RoomSpaceFilter.HAS_SPACE,
+            onClick = { onSelect(RoomSpaceFilter.HAS_SPACE) },
+            label = { Text(stringResource(R.string.room_filter_has_space)) },
+        )
     }
 }

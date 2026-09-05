@@ -12,11 +12,11 @@
     "Correct in dark mode and in Hindi, and the tiles stay legible once a hostel name is added to them",
     "A warden with a single hostel sees no regression - the filter is unobtrusive and the screen still reads as it does today"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-04T13:04:11+00:00",
+  "updatedAt": "2026-09-05T06:07:42+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
@@ -35,6 +35,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "DECIDED: the per-hostel 'All rooms' action stays, opening the screen pre-filtered to that hostel. It is the useful path when the warden is already inside a property, and it costs nothing once the filter exists."
+    },
+    {
+      "timestamp": "2026-09-05T05:33:36+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Built together since both change All rooms: hostel filter + vacancy filter, moved to Property, Home tile routes here, VacantViewScreen removed and LODGY-59 notification repointed."
+    },
+    {
+      "timestamp": "2026-09-05T06:07:42+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built together with the other, since both change All rooms and splitting them would have meant two filter rows designed apart. AllRoomsViewModel is no longer hostel-scoped by construction: new RoomDao.getAllWithFloor() and BedDao.observeRoomOccupancy() cover every property, RoomWithFloor now carries hostelId/hostelName, and both filters live in UI state so they compose. The nav route became optional-arg: no hostelId means every hostel, hasSpace=true pre-filters. LODGY-70 specifics: reachable from the Property tab top bar without opening a hostel first; the per-hostel shortcut survives pre-filtered, as decided; tiles prefix the hostel ONLY when the view spans several, so a filtered view is not cluttered with a name it already states in the header. LODGY-72 specifics: the Home vacant-beds tile now opens here with has-space applied. 'Has space' is EMPTY plus PARTIAL, not EMPTY alone - a partly filled room still has a bed free. On the beds-vs-rooms mismatch the ticket warned about, the summary counts ROOMS and the state also exposes vacantBedsInView so the two can be reconciled rather than silently disagreeing. VacantViewScreen, its ViewModel and its test are deleted. Its ROUTE_VACANT_VIEW is kept as a REDIRECT to All rooms rather than removed - LODGY-59's vacancy notification puts that route in its intent, and a notification already sitting on a warden's phone would otherwise open nothing after they update. Verified that redirect works. VERIFIED ON DEVICE, all four paths: Home tile arrives with the has-space chip selected and Moonlight's full room excluded (18 of 19 rooms); Property tab opens unfiltered showing all 19 including the full one; hostel filter narrows and composes with the space filter (Moonlight + has-space correctly shows nothing, since its only room is full); and the old notification route lands on All rooms. Tiles read 'Sunrise PG · Ground' when spanning, plain 'Ground' when filtered. Correct in Hindi throughout. TESTS: 5 new covering all-hostels default, hostel narrowing, has-space including partials, the hasSpace arrival argument, and the room-vs-bed count distinction. Full suite 438 pass, coverage 96.89% line. NOT SCHEMA-AFFECTING: the new DAO methods are reads over existing tables, no entity changed, database stays at version 4, no migration."
     }
   ]
 }

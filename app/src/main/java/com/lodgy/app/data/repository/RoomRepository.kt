@@ -12,6 +12,8 @@ class RoomRepository @Inject constructor(private val roomDao: RoomDao) {
 
     suspend fun getById(id: String): Room? = roomDao.getById(id)
 
+    fun getAllWithFloor(): Flow<List<RoomWithFloor>> = roomDao.getAllWithFloor()
+
     fun getByHostelIdWithFloor(hostelId: String): Flow<List<RoomWithFloor>> =
         roomDao.getByHostelIdWithFloor(hostelId)
 
