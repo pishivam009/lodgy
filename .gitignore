@@ -42,3 +42,6 @@ target/
 
 ### VS Code ###
 .vscode/
+
+# Kotlin compiler scratch output
+.kotlin/
