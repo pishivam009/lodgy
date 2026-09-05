@@ -69,6 +69,8 @@ private const val ALL_ROOMS_ROUTE = "all_rooms"
 private const val BED_GRID_ROUTE = "bed_grid"
 private const val BED_PICKER_ROUTE = "bed_picker"
 private const val TENANT_FORM_ROUTE = "tenant_form"
+private const val TENANT_FORM_ROUTE_PATTERN =
+    "$TENANT_FORM_ROUTE?tenantId={tenantId}&bedId={bedId}"
 private const val TENANT_PROFILE_ROUTE = "tenant_profile"
 private const val AGREEMENT_FORM_ROUTE = "agreement_form"
 private const val CHECKOUT_ROUTE = "checkout"
@@ -277,7 +279,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             }
 
             composable(
-                route = "$TENANT_FORM_ROUTE?tenantId={tenantId}&bedId={bedId}",
+                route = TENANT_FORM_ROUTE_PATTERN,
                 arguments = listOf(
                     navArgument("tenantId") { type = NavType.StringType; nullable = true },
                     navArgument("bedId") { type = NavType.StringType; nullable = true },
@@ -398,7 +400,16 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                 ),
             ) {
                 AgreementFormScreen(
-                    onDone = { navController.popBackStack(LodgyDestination.Tenants.route, false) },
+                    // Unwind the whole onboarding chain, back to wherever the warden started it:
+                    // the Tenants tab via the bed picker, or the bed grid via a bed tap. Popping
+                    // to a hardcoded Tenants destination stranded the second route, whose back
+                    // stack holds no Tenants entry at all - the pop silently did nothing, leaving
+                    // the warden on a form whose Save looked dead but wrote a fresh tenancy on
+                    // every press (LODGY-69). The second pop is a no-op on the bed-tap route.
+                    onDone = {
+                        navController.popBackStack(TENANT_FORM_ROUTE_PATTERN, inclusive = true)
+                        navController.popBackStack(BED_PICKER_ROUTE, inclusive = true)
+                    },
                     onBack = { navController.popBackStack() },
                 )
             }

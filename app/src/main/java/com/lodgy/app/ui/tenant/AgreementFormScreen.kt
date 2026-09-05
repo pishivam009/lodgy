@@ -69,22 +69,27 @@ fun AgreementFormScreen(
             modifier = Modifier.padding(padding).padding(16.dp).fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            OutlinedTextField(
-                value = uiState.agreedRent,
-                onValueChange = viewModel::onAgreedRentChange,
-                label = { Text(stringResource(R.string.agreement_field_rent)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-            OutlinedTextField(
-                value = uiState.advanceDeposit,
-                onValueChange = viewModel::onAdvanceDepositChange,
-                label = { Text(stringResource(R.string.agreement_field_deposit)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
+            // Hidden rather than merely cleared when the room bills nobody: left editable, they
+            // let a warden turn the switch on and then type a rent, saving a tenancy that claimed
+            // rent it would never charge (LODGY-82).
+            if (!uiState.nonRevenue) {
+                OutlinedTextField(
+                    value = uiState.agreedRent,
+                    onValueChange = viewModel::onAgreedRentChange,
+                    label = { Text(stringResource(R.string.agreement_field_rent)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = uiState.advanceDeposit,
+                    onValueChange = viewModel::onAdvanceDepositChange,
+                    label = { Text(stringResource(R.string.agreement_field_deposit)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+            }
             OutlinedTextField(
                 value = uiState.billingCycleDay,
                 onValueChange = viewModel::onBillingCycleDayChange,

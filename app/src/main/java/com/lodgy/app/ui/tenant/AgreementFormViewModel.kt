@@ -46,6 +46,11 @@ class AgreementFormViewModel @Inject constructor(
     private val tenantId: String = checkNotNull(savedStateHandle["tenantId"])
     private val bedId: String = checkNotNull(savedStateHandle["bedId"])
 
+    /** One tap, one tenancy. Covers the window between the tap and the save completing, so a
+     *  double tap cannot put two active agreements on one bed however the caller behaves
+     *  (LODGY-69). */
+    private var saving = false
+
     private val _uiState = MutableStateFlow(AgreementFormUiState())
     val uiState: StateFlow<AgreementFormUiState> = _uiState.asStateFlow()
 
@@ -56,17 +61,25 @@ class AgreementFormViewModel @Inject constructor(
     fun onOpeningBalanceChange(value: String) = _uiState.update { it.copy(openingBalance = value) }
 
     fun onNonRevenueChange(value: Boolean) = _uiState.update {
-        // Rent and an opening balance are meaningless on a room that bills nobody, so clear them
-        // rather than storing figures that will never be charged.
-        if (value) it.copy(nonRevenue = true, agreedRent = "0", openingBalance = "") else it.copy(nonRevenue = false)
+        // Rent, deposit and an opening balance are all meaningless on a room that bills nobody, so
+        // clear them rather than store figures that will never be charged. Clearing the deposit
+        // also stops Save sitting silently disabled on a field the warden has no reason to fill.
+        if (value) {
+            it.copy(nonRevenue = true, agreedRent = "0", advanceDeposit = "0", openingBalance = "")
+        } else {
+            it.copy(nonRevenue = false)
+        }
     }
 
     fun save() {
         val state = _uiState.value
-        if (!state.canSave) return
-        val rent = state.agreedRent.toDoubleOrNull() ?: return
+        if (!state.canSave || saving) return
+        // Forced to zero here as well as hidden in the form: the flag and the figure must never
+        // be able to disagree, whatever order the warden touched the fields in (LODGY-82).
+        val rent = if (state.nonRevenue) 0.0 else state.agreedRent.toDoubleOrNull() ?: return
         val deposit = state.advanceDeposit.toDoubleOrNull() ?: return
         val billingDay = state.billingCycleDay.toIntOrNull() ?: return
+        saving = true
         viewModelScope.launch {
             val agreement = tenancyAgreementRepository.create(
                 tenantId, bedId, rent, deposit, billingDay, state.moveInDateMillis,

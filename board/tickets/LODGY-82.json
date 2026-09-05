@@ -12,11 +12,11 @@
     "Optionally, and separately decided, the warden can record the forgone rent as an expense",
     "Existing data is unaffected and no migration is required beyond whatever the flag itself needs"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-05T07:42:09Z",
+  "updatedAt": "2026-09-05T08:10:20Z",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -53,6 +53,14 @@
       "from": "Testing",
       "to": "In Progress",
       "note": "FAIL on AC1, but the core of the ticket is sound and confirmed on device.\n\nDEFECT (AC1 - 'a room or bed can be marked as used by the warden or a caretaker, WITH NO RENT'): the rent field is not gated by the switch, so a non-revenue tenancy can carry a real rent. AgreementFormScreen.kt:72 renders the agreed-rent field unconditionally; only the opening balance is wrapped in if (!uiState.nonRevenue) at line 131. onNonRevenueChange clears the rent at the moment the switch is flipped, but nothing enforces it afterwards - and the switch sits BELOW the rent field, so flip-then-edit is a natural order. Reproduced end to end: flipped the switch on (rent correctly cleared to 0, opening balance correctly hidden), then typed 7777 into the still-editable rent field and saved. The row persisted as nonRevenue=1, agreedRent=7777.0, while the hint directly under the switch still promised 'koi kiraya nahin'. Fix: hide or disable the rent field when nonRevenue is on, exactly as the opening balance already is, and/or clamp the rent to 0 in save() so the flag and the figure cannot disagree.\n\nMINOR: with the switch on, Save stays silently disabled until a deposit is typed - canSave requires advanceDeposit.toDoubleOrNull() != null and an empty string does not parse. A caretaker room has no deposit either, and unlike the billing-cycle field there is no error hint, so the button just looks dead. Suggest defaulting the deposit to 0 alongside the rent when the switch goes on.\n\nVERIFIED AND CORRECT - AC2: advanced the emulator clock to Mon 5 Oct 2026 (billing cycle day 5) and let InvoiceGenerationWorker run for real. The two ordinary tenancies generated 10/2026 invoices (Suresh Rs 5500, Priya Rs 4000); the two non-revenue tenancies generated none - non-revenue tenancies with ANY invoice: 0. Having the ordinary tenancies bill in the same run is what makes this proof rather than a worker that simply did not fire. AC3: the dashboard's 'bakaya invoice' read exactly 2, and neither non-revenue occupant appears anywhere in the invoice list; the overdue notification and the dashboard count both derive from invoices, and there are none. AC4: both beds are OCCUPIED in the DB, both occupants appear as active with their room and bed in the tenant list, room 101 reads 'bhara' (full) in All rooms, Home's vacant-bed count of 46 excludes them, and VacancyCheckWorker only inspects VACANT beds so the long-vacancy nudge cannot fire for them. AC5: the reports read from invoices, so no phantom dues are possible. AC7: the 4->5 migration is a plain ADD COLUMN with DEFAULT 0, verified against a real populated database - 3 agreements, 7 invoices and 3 tenants all survived and existing rows default to nonRevenue=0.\n\nAC6 (recording the forgone rent as an expense) was explicitly deferred by the PO to a stage two, which is the right call - but no follow-up ticket existed for it, so it was dropped on the floor. Filed LODGY-84 to hold it."
+    },
+    {
+      "timestamp": "2026-09-05T08:10:20Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "note": "AC1 fixed, plus the minor QA raised.\n\nThe rent and deposit fields are now hidden when the warden/caretaker switch is on, exactly as the opening balance already was, so the field QA typed 7777 into no longer exists in that state. Hiding alone would still leave the ViewModel able to disagree with itself, so save() also forces the rent to 0.0 whenever nonRevenue is set - the flag and the figure now cannot diverge whatever order the fields were touched in, or whatever a future caller does.\n\nThe minor is fixed too: turning the switch on now clears the deposit to 0 alongside the rent, so canSave is satisfied immediately and Save no longer sits silently disabled on a field a caretaker room has no reason to carry.\n\nTwo regression tests: one turns the switch on, then types 7777 into the rent, saves, and asserts the agreement is created with 0.0 and never with 7777.0 - i.e. it reproduces QA's exact sequence; the other asserts the switch clears both figures and leaves the form saveable as-is.\n\nNo schema change - nonRevenue and migration 4->5 are untouched, so nothing here affects existing data.",
+      "from": "In Progress",
+      "to": "Testing"
     }
   ]
 }

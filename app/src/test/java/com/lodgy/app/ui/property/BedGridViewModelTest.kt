@@ -58,7 +58,7 @@ class BedGridViewModelTest {
         val state = viewModel.uiState.value
 
         assertEquals("101", state.roomNumber)
-        assertEquals("DOUBLE", state.roomType)
+        assertEquals(RoomType.DOUBLE, state.roomType)
         assertEquals(listOf("A", "B"), state.beds.map { it.label })
     }
 

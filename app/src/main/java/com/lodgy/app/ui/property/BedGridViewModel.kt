@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.entity.Bed
+import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.RoomRepository
 import com.lodgy.app.data.repository.TenantRepository
@@ -25,7 +26,7 @@ data class SelectedBed(val bed: Bed, val tenantId: String?, val tenantName: Stri
 
 data class BedGridUiState(
     val roomNumber: String = "",
-    val roomType: String = "",
+    val roomType: RoomType? = null,
     val pricePerBed: Double = 0.0,
     /** Free text as the warden typed it. Captured since LODGY-8 and, until LODGY-71, readable
      *  nowhere except the edit form - so checking what a room had meant opening a screen whose
@@ -60,7 +61,7 @@ class BedGridViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     roomNumber = room?.roomNumber.orEmpty(),
-                    roomType = room?.type?.name.orEmpty(),
+                    roomType = room?.type,
                     pricePerBed = room?.pricePerBed ?: 0.0,
                     amenities = room?.amenities.orEmpty(),
                 )

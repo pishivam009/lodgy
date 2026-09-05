@@ -95,6 +95,7 @@
     <string name="bed_grid_title">Room %1$s</string>
     <string name="bed_label">Bed %1$s</string>
     <string name="bed_sheet_title">Room %1$s · Bed %2$s</string>
+    <string name="bed_sheet_room_type">Type: %1$s</string>
     <string name="bed_sheet_occupied_by">Occupied by %1$s</string>
     <string name="bed_sheet_view_tenant">View tenant</string>
     <string name="bed_sheet_assign_tenant">Assign a tenant</string>

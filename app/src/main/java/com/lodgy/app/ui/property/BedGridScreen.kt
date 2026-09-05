@@ -57,7 +57,9 @@ fun BedGridScreen(
                 title = {
                     Column {
                         Text(stringResource(R.string.bed_grid_title, uiState.roomNumber))
-                        Text(uiState.roomType, style = MaterialTheme.typography.bodySmall)
+                        uiState.roomType?.let {
+                            Text(it.label(), style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 },
                 navigationIcon = {
@@ -123,6 +125,12 @@ private fun BedActionSheet(
             )
 
             // The room's own details, since a bed has only a label and a status of its own.
+            uiState.roomType?.let {
+                Text(
+                    stringResource(R.string.bed_sheet_room_type, it.label()),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
             Text(
                 stringResource(R.string.room_price_per_bed, uiState.pricePerBed),
                 style = MaterialTheme.typography.bodyMedium,
