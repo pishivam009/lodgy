@@ -60,8 +60,21 @@ Property is a four-level structure: **hostel → floor → room → bed**.
 - **Bulk add rooms.** Give a starting number, a count, and the type, price and
   amenities they share, and Lodgy creates them in sequence (101 → 101, 102,
   103…) with their beds, instead of one form at a time.
-- **All rooms view.** Every room in the hostel in one list, without drilling
-  through floors, filterable by *all / has space / full*.
+- **All rooms view.** Every room you have, as coloured tiles rather than a
+  list — **green** for empty, **amber** for part-full, **red** for full — so
+  you can see where the space is at a glance. It opens straight from the
+  Property tab, and it covers **all your hostels at once**, not just the one
+  you have selected. Each tile says which hostel and floor its room is on, so
+  two buildings that both have a room 101 don't get confused. Two filters sit
+  above it: one to narrow to a single hostel, one for *all / has space*. The
+  empty/part-full/full counts above the tiles follow whatever you've filtered
+  to. If you run a single hostel, the hostel filter doesn't appear at all.
+- **Tapping a bed.** Anywhere you see the beds in a room, tapping one opens a
+  small panel with the room's type, price per bed and amenities, plus one
+  action: **assign a tenant** if the bed is free, or **view tenant** if it
+  isn't. Nothing happens from the tap alone, so a mis-touch on a crowded grid
+  can't take you somewhere unexpected. Assigning from here skips the
+  bed-picking step, since you've already told Lodgy which bed you mean.
 
 ## 3. Bringing in a tenant
 
@@ -76,7 +89,24 @@ Property is a four-level structure: **hostel → floor → room → bed**.
    - **Dues carried forward** is optional: whatever they already owed on the
      day you started using the app becomes a single opening invoice, so their
      balance is right from day one without re-typing past months.
-4. The bed flips to **occupied** on save.
+4. The bed flips to **occupied** on save, and you're taken back to wherever
+   you started — the tenant list, or the room you tapped the bed in.
+
+### Rooms you or a caretaker live in
+
+Some rooms aren't let out: you live in one yourself, or a caretaker does as
+part of their pay. Turn on **"Warden / caretaker room"** on the agreement form
+and Lodgy treats it honestly — the bed counts as occupied, but no rent is
+charged, no invoice is ever raised, it never shows up as dues or overdue, and
+you won't be nagged that a bed has been empty too long.
+
+The rent and deposit fields disappear when you turn the switch on, because
+there's nothing to charge. Everything else works normally: the person appears
+in your tenant directory with their room and bed, and the room's history reads
+like any other.
+
+Recording the rent you're giving up as an *expense* is a separate thing and
+isn't built yet — it's a bookkeeping choice, and not every warden wants it.
 
 ### The tenant directory and profile
 

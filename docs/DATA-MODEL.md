@@ -86,6 +86,7 @@ erDiagram
         long   moveInDate
         long   moveOutDate "notice if ACTIVE, departure if CLOSED"
         double depositRefundAmount "nullable"
+        bool   nonRevenue "warden/caretaker room - bills nobody"
         enum   status "ACTIVE CLOSED"
     }
     INVOICE {
@@ -169,6 +170,16 @@ a returning tenant gets a second agreement rather than overwriting the first, so
 their history survives a move-out and move-in. A bed transfer rewrites `bedId`
 **on the same row** — no close-and-reopen — so one tenancy stays one tenancy and
 its invoices stay attributed to it.
+
+`nonRevenue` on the agreement is what lets a warden's or caretaker's own room be
+modelled honestly. The bed is genuinely occupied, so it is `OCCUPIED` like any
+other; the flag is what stops invoice generation producing a due for it. Every
+downstream figure — dashboard dues, overdue notifications, monthly reports,
+PDF exports — reads from invoices, so excluding the agreement at generation is
+the single choke point that keeps all of them clean, rather than each having to
+know about the flag. Added in **migration 4 → 5** as a plain `ADD COLUMN ...
+NOT NULL DEFAULT 0`, so every pre-existing agreement keeps billing exactly as
+before.
 
 Because that seam exists, a tenant's hostel is not stored anywhere. It is derived:
 `agreement → bed → room → floor → hostel`. Anything that needs to group tenants,

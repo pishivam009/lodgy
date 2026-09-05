@@ -79,7 +79,10 @@ Tenant
 TenancyAgreement (links tenant to a bed; one active per tenant)
   id, tenantId, bedId, agreedRent, advanceDeposit, billingCycleDay (1–28),
   moveInDate, moveOutDate (nullable), depositRefundAmount (nullable),
-  status (ACTIVE | CLOSED), createdAt, updatedAt
+  nonRevenue (bool, default false), status (ACTIVE | CLOSED),
+  createdAt, updatedAt
+  — nonRevenue marks a room the warden or a caretaker lives in: real
+    occupancy that bills nobody. See 4.3.
   — moveOutDate on an ACTIVE agreement means notice given, not departure;
     on a CLOSED one it is the actual move-out. See 4.3.
   — a bed transfer rewrites bedId on the same row rather than closing and
@@ -149,11 +152,35 @@ Notes:
 - Multi-hostel support: hostel switcher on dashboard.
 - Hostel → Floor → Room → Bed, with a bulk "add N rooms to this floor" flow
   to make initial setup fast.
-- Floor cards carry a vacant/occupied summary, and an "all rooms" view lists
-  every room in a hostel across floors — a warden scanning the property
-  shouldn't have to open each floor in turn (LODGY-40, LODGY-41).
+- Floor cards carry a vacant/occupied summary, and an **All rooms** view lists
+  every room across floors — a warden scanning the property shouldn't have to
+  open each floor in turn (LODGY-40, LODGY-41).
+- All rooms spans **every hostel** and hangs off the Property tab directly,
+  rather than being reachable only after picking a hostel. Drilling through a
+  hostel to see rooms was the same drill-down LODGY-40 set out to remove; it
+  had removed one level of it rather than two. A hostel filter narrows the
+  view, each tile names the hostel its room belongs to so two properties with
+  a room 101 aren't confusable, and the empty/part-full/full summary reflects
+  the current filter rather than the whole estate. A warden with one hostel
+  sees no filter at all (LODGY-70).
+- Rooms are **RAG tiles, not a list** — green empty, amber part-full, red
+  full — so occupancy is legible at a glance across the estate. Each tile
+  pairs its colour with a status icon rather than relying on colour alone
+  (LODGY-67).
 - Room and bed views filter to vacant/occupied (and rooms to has-space/full),
-  the same filter vocabulary as the vacant-beds view (LODGY-53).
+  the same filter vocabulary as the vacant-beds view (LODGY-53). All rooms
+  carries the hostel filter and the fill filter as two chip rows designed
+  together, not as competing controls (LODGY-70, LODGY-72).
+- The dashboard's **vacant-beds tile opens All rooms with the fill filter
+  already applied**, showing rooms with space — wholly empty and part-full
+  both qualify, since a part-full room still contains a vacant bed. The filter
+  renders visibly active on arrival so the warden can see why they're looking
+  at a subset, and clear it (LODGY-72).
+- `VacantViewScreen` is deliberately **kept** rather than absorbed, even though
+  the dashboard no longer points at it: an already-delivered long-vacancy
+  notification sitting in a warden's tray still carries its route in the
+  intent, so removing the destination would break notifications already on the
+  phone (LODGY-72).
 - Every delete and every high-impact edit confirms first, and a room whose
   bed has an active tenant can't be deleted at all. Deleting a floor cascades
   to its rooms and beds, so it says so in the prompt (LODGY-57).
@@ -162,6 +189,25 @@ Notes:
 - Pick a vacant bed → capture tenant profile (name, phone, photo, ID proof
   photo, emergency contact) → capture agreement terms (agreed rent, advance,
   billing cycle day, move-in date).
+- **Onboarding can start from the bed itself.** Tapping any bed in the bed
+  grid opens a sheet rather than acting immediately, so nothing navigates on a
+  stray touch of a dense grid. The sheet shows the room's description — type,
+  price per bed and amenities — and then one action that depends on the bed:
+  a vacant bed offers *assign a tenant*, an occupied one offers *view tenant*,
+  which opens the profile where every operation on that tenancy already lives.
+  Assign jumps straight into the existing flow with the bed already chosen, so
+  the bed picker is skipped. Assign is never offered on an occupied bed, so no
+  second tenancy can be created on one bed. A bed whose tenancy has somehow
+  gone missing falls back to the vacant behaviour rather than opening a
+  profile that isn't there. The Tenants-tab route through the bed picker keeps
+  working unchanged (LODGY-69).
+- Finishing an agreement **unwinds the whole onboarding chain** back to
+  wherever it started — the tenant list via the bed picker, the bed grid via a
+  bed tap. Aiming the pop at a fixed destination stranded the second route,
+  whose back stack has no Tenants entry, leaving a form whose Save appeared
+  dead while still writing a tenancy on every press. The save is also guarded
+  against re-entry, because a bed being assignable twice is data corruption
+  and shouldn't depend on navigation being right (LODGY-69).
 - Tenant profile screen has quick-contact buttons: Call, WhatsApp, SMS.
   Each opens the respective app pre-filled with the tenant's number —
   dialer (`ACTION_DIAL`, not `ACTION_CALL`), WhatsApp chat (`wa.me`), SMS
@@ -178,6 +224,20 @@ Notes:
   single opening invoice dated to the move-in, so a mid-tenancy onboarding
   starts with the right balance without re-entering past months (LODGY-44).
 - Bed flips to OCCUPIED automatically.
+- **Non-revenue rooms.** A room or bed occupied by the warden themselves or by
+  a caretaker is marked with a switch on the agreement form. It is a flag on
+  the tenancy (`nonRevenue`), not a separate occupancy type: that reuses the
+  tenancy record so the room's history still reads normally, and keeps one
+  code path through everything that touches occupancy. Turning it on hides and
+  zeroes the rent, deposit and opening balance, and the save forces the rent
+  to zero regardless, so the flag and the figure can never disagree. Such a
+  bed counts as genuinely occupied, generates no invoices, and therefore never
+  appears as dues or overdue anywhere and never triggers the long-vacancy
+  nudge. Before this there was no third option: the bed had to be left vacant,
+  which corrupted occupancy and invited the vacancy nudge, or set up as a real
+  tenancy, which billed forever and polluted the money figures (LODGY-82).
+  Recording the forgone rent as an expense is a separate, discretionary
+  choice, deliberately deferred (LODGY-84).
 - **Notice** is separate from checkout: setting a planned move-out date on an
   ACTIVE agreement records intent and nothing else — the bed stays occupied,
   the agreement stays active, and checkout remains an explicit action on the
@@ -192,6 +252,8 @@ Notes:
   invoices, payments, reminder previews (LODGY-33).
 
 ### 4.4 Rent & payments
+- Invoice generation skips agreements flagged `nonRevenue` (4.3), so a warden's
+  or caretaker's room never produces a due (LODGY-82).
 - WorkManager job generates the month's invoice for every ACTIVE agreement
   on its billing cycle day.
 - Record a payment against an invoice — full or partial; invoice status
@@ -492,3 +554,9 @@ changed. The ticket holds the full argument; this is the shape of it.
 | UI state comes from observed queries | A one-shot read in `init` cannot see later writes, so labels went stale — see 4.12 | LODGY-33 |
 | Reconciliation marks match on hostel *and* period | The invoice list spans every property; period alone would flag the wrong hostel's invoices | LODGY-43 |
 | `moveOutDate` is read together with agreement status | The field means notice on an ACTIVE agreement and departure on a CLOSED one (3); the printable packet read it without the status and told the warden a current resident had left | LODGY-45 |
+| All rooms spans every hostel and moved to the Property tab | Drilling through a hostel to list rooms was the same drill-down LODGY-40 removed — it had removed one level of two | LODGY-70 |
+| Vacant-beds tile opens All rooms filtered, VacantView kept | Notifications already delivered to a warden's phone still route to it, so it can't just be deleted | LODGY-72 |
+| A bed tap opens a sheet, never an immediate navigation | Bed grids are dense; a stray touch shouldn't move the warden somewhere | LODGY-69 |
+| Onboarding pops the chain, not a fixed destination | Aiming at Tenants stranded the bed-tap route, whose back stack has no Tenants entry — Save looked dead but wrote a tenancy per press | LODGY-69 |
+| Warden/caretaker rooms are a flag on the tenancy, not an occupancy type | Reuses the tenancy record so history reads normally and one code path covers occupancy; a separate type would fork it | LODGY-82 |
+| Non-revenue hides rent and deposit rather than only clearing them | Left editable, the warden could flip the switch and then type a rent, saving a tenancy claiming rent it would never charge | LODGY-82 |
