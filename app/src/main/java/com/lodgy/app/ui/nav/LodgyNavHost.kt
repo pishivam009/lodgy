@@ -268,7 +268,12 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                 route = "$BED_GRID_ROUTE/{roomId}",
                 arguments = listOf(navArgument("roomId") { type = NavType.StringType }),
             ) {
-                BedGridScreen(onBack = { navController.popBackStack() })
+                BedGridScreen(
+                    onBack = { navController.popBackStack() },
+                    // Skips the bed picker: the warden already chose the bed by tapping it.
+                    onAssignTenant = { bedId -> navController.navigate("$TENANT_FORM_ROUTE?bedId=$bedId") },
+                    onViewTenant = { tenantId -> navController.navigate("$TENANT_PROFILE_ROUTE/$tenantId") },
+                )
             }
 
             composable(

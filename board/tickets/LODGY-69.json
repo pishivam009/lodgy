@@ -16,11 +16,11 @@
     "The existing Tenants tab onboarding route via BedPickerScreen keeps working unchanged",
     "View description shows the room's type, price per bed and amenities - amenities being the field the PO could not see anywhere today (LODGY-71)"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-04T13:04:11+00:00",
+  "updatedAt": "2026-09-05T06:25:06+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
@@ -45,6 +45,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "DECIDED: a compact panel is enough for 'view description' - no full screen. It shows the room's type, price per bed and amenities, plus the tenancy summary when the bed is occupied."
+    },
+    {
+      "timestamp": "2026-09-05T06:08:58+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Beds are not clickable at all today, so this is a new interaction: two-option sheet on every tap, second option varies by bed state."
+    },
+    {
+      "timestamp": "2026-09-05T06:25:06+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built to the amended spec - every bed tap opens the same sheet and only the second row varies. Beds are now clickable (they were not at all), and BedGridViewModel resolves the tenancy on the tapped bed via a new TenancyAgreementDao.getActiveByBedId. The sheet always shows the room details the ticket asked for - price per bed and amenities, reusing the LODGY-71 display rather than duplicating it - plus who is in it when occupied. Second row: occupied gets View tenant, vacant gets Assign a tenant. ASSIGN SKIPS THE BED PICKER: it routes to TENANT_FORM_ROUTE?bedId=..., which already accepted a bedId, so the warden is not asked to pick a bed they just tapped. That was the whole point of the shortcut. The Tenants-tab route via BedPickerScreen is untouched. FALLBACK: an OCCUPIED bed whose tenancy has gone missing resolves tenantId null and therefore shows the vacant behaviour rather than navigating to a profile that is not there. VERIFIED ON DEVICE, all four paths: occupied bed (Moonlight 501/Priya) showed the sheet with price, \"Priya रह रहे हैं\" and View tenant, which opened her profile; vacant bed (Sunrise 101/Bed A) showed price and Assign a tenant, which opened the tenant form directly rather than the bed picker. Correct in Hindi. NOTE FOR QA: my first attempt wired the tile and the state but never rendered the sheet - it compiled and the tests would have passed, and only the device showed nothing happening. Worth a skeptical tap rather than trusting the unit tests here. TESTS: 4 new covering occupied resolution, vacant, the missing-tenancy fallback, and dismissal. Full suite 442 pass, coverage 96.87% line. Not schema-affecting - the new DAO method is a read."
     }
   ]
 }

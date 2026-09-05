@@ -40,6 +40,10 @@ interface TenancyAgreementDao {
     @Query("SELECT * FROM tenancy_agreements")
     suspend fun getAll(): List<TenancyAgreement>
 
+    /** The tenancy currently on a bed, if any. Lets a bed tap reach the person in it. */
+    @Query("SELECT * FROM tenancy_agreements WHERE bedId = :bedId AND status = 'ACTIVE' LIMIT 1")
+    suspend fun getActiveByBedId(bedId: String): TenancyAgreement?
+
     @Query("SELECT * FROM tenancy_agreements")
     fun observeAll(): Flow<List<TenancyAgreement>>
 }

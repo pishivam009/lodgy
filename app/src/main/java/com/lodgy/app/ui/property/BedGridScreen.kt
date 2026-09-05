@@ -1,5 +1,6 @@
 package com.lodgy.app.ui.property
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -39,7 +43,12 @@ import com.lodgy.app.ui.theme.LodgyStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BedGridScreen(onBack: () -> Unit, viewModel: BedGridViewModel = hiltViewModel()) {
+fun BedGridScreen(
+    onBack: () -> Unit,
+    onAssignTenant: (String) -> Unit = {},
+    onViewTenant: (String) -> Unit = {},
+    viewModel: BedGridViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -70,7 +79,82 @@ fun BedGridScreen(onBack: () -> Unit, viewModel: BedGridViewModel = hiltViewMode
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(uiState.filteredBeds, key = Bed::id) { bed -> BedTile(bed) }
+                items(uiState.filteredBeds, key = Bed::id) { bed ->
+                    BedTile(bed, onClick = { viewModel.onBedSelected(bed) })
+                }
+            }
+        }
+
+        uiState.selectedBed?.let { selected ->
+            BedActionSheet(
+                selected = selected,
+                uiState = uiState,
+                onDismiss = viewModel::onBedSheetDismissed,
+                onAssignTenant = onAssignTenant,
+                onViewTenant = onViewTenant,
+            )
+        }
+    }
+}
+
+
+/** Every bed tap opens this, and only the second row changes with the bed's state - so the warden
+ *  learns one gesture and nothing navigates on a stray touch of a dense grid (LODGY-69). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BedActionSheet(
+    selected: SelectedBed,
+    uiState: BedGridUiState,
+    onDismiss: () -> Unit,
+    onAssignTenant: (String) -> Unit,
+    onViewTenant: (String) -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
+            Text(
+                stringResource(R.string.bed_sheet_title, uiState.roomNumber, selected.bed.label),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                selected.bed.status.label(),
+                style = MaterialTheme.typography.bodySmall,
+                color = LodgyStatus.colors[selected.bed.status.level].accent,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+
+            // The room's own details, since a bed has only a label and a status of its own.
+            Text(
+                stringResource(R.string.room_price_per_bed, uiState.pricePerBed),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            if (uiState.amenities.isNotBlank()) {
+                Text(
+                    stringResource(R.string.room_amenities_label, uiState.amenities),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (selected.tenantId != null) {
+                Text(
+                    stringResource(R.string.bed_sheet_occupied_by, selected.tenantName),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+            // An occupied bed offers the person in it; a vacant one offers filling it. A bed whose
+            // tenancy has gone missing falls back to assign rather than opening a profile that is
+            // not there.
+            if (selected.tenantId != null) {
+                TextButton(onClick = { onDismiss(); onViewTenant(selected.tenantId) }) {
+                    Text(stringResource(R.string.bed_sheet_view_tenant))
+                }
+            } else {
+                TextButton(onClick = { onDismiss(); onAssignTenant(selected.bed.id) }) {
+                    Text(stringResource(R.string.bed_sheet_assign_tenant))
+                }
             }
         }
     }
@@ -96,12 +180,13 @@ internal fun BedFilterChips(selected: BedFilter, onSelect: (BedFilter) -> Unit, 
 }
 
 @Composable
-private fun BedTile(bed: Bed) {
+private fun BedTile(bed: Bed, onClick: () -> Unit) {
     val palette = LodgyStatus.colors[bed.status.level]
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(palette.container, RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
             .padding(16.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

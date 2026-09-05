@@ -19,6 +19,8 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
 
     suspend fun getAllActive(): List<TenancyAgreement> = dao.getAllActive()
 
+    suspend fun getActiveByBedId(bedId: String): TenancyAgreement? = dao.getActiveByBedId(bedId)
+
     suspend fun getLatestByTenantId(tenantId: String): TenancyAgreement? = dao.getLatestByTenantId(tenantId)
 
     /** Includes closed agreements - historical reporting needs a checked-out tenant's past

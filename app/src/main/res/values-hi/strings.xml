@@ -92,6 +92,10 @@
 
     <string name="bed_grid_title">कमरा %1$s</string>
     <string name="bed_label">बेड %1$s</string>
+    <string name="bed_sheet_title">कमरा %1$s · बेड %2$s</string>
+    <string name="bed_sheet_occupied_by">%1$s रह रहे हैं</string>
+    <string name="bed_sheet_view_tenant">किरायेदार देखें</string>
+    <string name="bed_sheet_assign_tenant">किरायेदार जोड़ें</string>
     <string name="bed_status_occupied">भरा हुआ</string>
     <string name="bed_status_vacant">खाली</string>
 

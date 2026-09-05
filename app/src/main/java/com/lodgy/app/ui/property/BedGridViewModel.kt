@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.entity.Bed
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.RoomRepository
+import com.lodgy.app.data.repository.TenantRepository
+import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.ui.common.BedFilter
 import com.lodgy.app.ui.common.matches
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +17,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+/** [tenantId] is null for a vacant bed, and also for the rare case of an OCCUPIED bed whose
+ *  tenancy has gone missing - which falls back to the vacant behaviour rather than opening a
+ *  profile that is not there. */
+data class SelectedBed(val bed: Bed, val tenantId: String?, val tenantName: String)
 
 data class BedGridUiState(
     val roomNumber: String = "",
@@ -26,6 +33,9 @@ data class BedGridUiState(
     val amenities: String = "",
     val beds: List<Bed> = emptyList(),
     val filter: BedFilter = BedFilter.ALL,
+    /** The bed whose sheet is open. Every tap opens a sheet rather than acting immediately, so
+     *  nothing navigates on a stray touch of a dense grid (LODGY-69). */
+    val selectedBed: SelectedBed? = null,
 ) {
     val filteredBeds: List<Bed> get() = beds.filter { filter.matches(it.status) }
 }
@@ -34,6 +44,8 @@ data class BedGridUiState(
 class BedGridViewModel @Inject constructor(
     bedRepository: BedRepository,
     roomRepository: RoomRepository,
+    private val tenancyAgreementRepository: TenancyAgreementRepository,
+    private val tenantRepository: TenantRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -62,4 +74,16 @@ class BedGridViewModel @Inject constructor(
     }
 
     fun onFilterChange(filter: BedFilter) = _uiState.update { it.copy(filter = filter) }
+
+    fun onBedSelected(bed: Bed) {
+        viewModelScope.launch {
+            val agreement = tenancyAgreementRepository.getActiveByBedId(bed.id)
+            val tenant = agreement?.let { tenantRepository.getById(it.tenantId) }
+            _uiState.update {
+                it.copy(selectedBed = SelectedBed(bed, tenant?.id, tenant?.name.orEmpty()))
+            }
+        }
+    }
+
+    fun onBedSheetDismissed() = _uiState.update { it.copy(selectedBed = null) }
 }
