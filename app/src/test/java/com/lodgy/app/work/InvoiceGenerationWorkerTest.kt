@@ -42,13 +42,14 @@ class InvoiceGenerationWorkerTest {
     private val thisMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
     private val thisYear = Calendar.getInstance().get(Calendar.YEAR)
 
-    private fun agreement(id: String, billingDay: Int, tenantId: String = "t1") = TenancyAgreement(
+    private fun agreement(id: String, billingDay: Int, tenantId: String = "t1", nonRevenue: Boolean = false) = TenancyAgreement(
         id = id,
         tenantId = tenantId,
         bedId = "b1",
         agreedRent = 5000.0,
         advanceDeposit = 0.0,
         billingCycleDay = billingDay,
+        nonRevenue = nonRevenue,
         moveInDate = 0L,
         moveOutDate = null,
         depositRefundAmount = null,
@@ -174,5 +175,34 @@ class InvoiceGenerationWorkerTest {
 
         coVerify(exactly = 1) { invoiceRepository.create(any(), any(), any(), any(), any()) }
         verify(exactly = 0) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    /** LODGY-82: a warden's or caretaker's own room bills nobody. Generating an invoice for it
+     *  would show as overdue forever and pollute the money figures. */
+    @Test
+    fun `a non-revenue tenancy never generates an invoice`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", today, nonRevenue = true),
+        )
+
+        worker().doWork()
+
+        coVerify(exactly = 0) { invoiceRepository.create(any(), any(), any(), any(), any()) }
+        verify(exactly = 0) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `an ordinary tenancy on the same day still bills`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", today, nonRevenue = true),
+            agreement("a2", today, tenantId = "t2"),
+        )
+        coEvery { invoiceRepository.existsForPeriod("a2", thisMonth, thisYear) } returns false
+        coEvery { invoiceRepository.create(any(), any(), any(), any(), any()) } answers { invoice("a2") }
+        coEvery { creditRepository.applyPendingTo(any(), any()) } returns Unit
+
+        worker().doWork()
+
+        coVerify(exactly = 1) { invoiceRepository.create(any(), any(), any(), any(), any()) }
     }
 }

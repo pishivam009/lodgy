@@ -12,11 +12,11 @@
     "Optionally, and separately decided, the warden can record the forgone rent as an expense",
     "Existing data is unaffected and no migration is required beyond whatever the flag itself needs"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T21:09:45+00:00",
+  "updatedAt": "2026-09-05T06:38:26+00:00",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -29,6 +29,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "DECIDED: a flag on the tenancy - a non-revenue occupancy - rather than a distinct occupancy type. It reuses the tenancy record so the room's history still reads normally and there is one code path through everything that touches occupancy; a separate type would fork that path. Ship in two stages: first stop the app being wrong about these rooms (no invoices, excluded from overdue counts and notifications, still counted as occupied, never nudged as vacant), then the discretionary expense recording separately. The first stage alone removes the damage."
+    },
+    {
+      "timestamp": "2026-09-05T06:25:40+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting stage one only. This IS schema-affecting - a nonRevenue flag on tenancy_agreements - so it needs a real migration 4->5 plus a migration test."
+    },
+    {
+      "timestamp": "2026-09-05T06:38:26+00:00",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Stage one built, as decided - the app stops being wrong about these rooms; the discretionary expense recording stays for a follow-up. Implemented as a nonRevenue FLAG on tenancy_agreements, not a separate occupancy type, so there is one code path through everything that touches occupancy. The agreement form gains a 'Warden / caretaker room' switch; turning it on clears the rent and any opening balance, since figures that will never be charged should not be stored. WHAT EACH CRITERION NEEDED, and most needed nothing: invoice generation now skips these agreements, which is the only behavioural change required. No invoices means nothing can be overdue, so the overdue notification and the dashboard's overdue count exclude them automatically, and the monthly report and PDF exports carry no phantom dues. The bed stays OCCUPIED because the tenancy is real, so occupancy counts it and the long-vacancy nudge - which only looks at VACANT beds - never fires for it. I checked each of those rather than assuming they followed. *** SCHEMA-AFFECTING - the first such change in a while. *** Database goes 4 -> 5 with MIGRATION_4_5, a plain ADD COLUMN ... NOT NULL DEFAULT 0. I declared @ColumnInfo(defaultValue = \"0\") on the entity so Room's exported schema and the migration SQL agree exactly, rather than relying on Room's validation being lenient about a default it does not know about. No fallbackToDestructiveMigration anywhere. MIGRATION VERIFIED AGAINST A REAL POPULATED DATABASE, not a synthetic one: the emulator held a live v4 file with 3 agreements, 7 invoices and 3 tenants. Installed the v5 build over it and confirmed user_version went 4 -> 5, the nonRevenue column exists, all 3/7/3 rows survived, and every existing agreement defaulted to 0 - so no warden's tenancy silently becomes non-revenue on upgrade. NOTE FOR QA: the migration is LAZY. It did not run on app launch, only once something actually opened the database - the PIN screen reads DataStore, not Room, so user_version was still 4 after the first launch and only flipped after unlocking. Worth knowing before concluding a migration has failed. TESTS: 2 new asserting a non-revenue tenancy never generates an invoice while an ordinary one on the same billing day still does. Full suite 444 pass, coverage 96.78% line."
     }
   ]
 }

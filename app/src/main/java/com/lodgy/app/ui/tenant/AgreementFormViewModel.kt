@@ -23,6 +23,8 @@ data class AgreementFormUiState(
     /** Optional. What the tenant already owed when the app took over their record - the
      *  alternative to re-typing years of past invoices (LODGY-44). */
     val openingBalance: String = "",
+    /** The warden's or a caretaker's own room: real occupancy, billed to nobody (LODGY-82). */
+    val nonRevenue: Boolean = false,
     val saved: Boolean = false,
 ) {
     val openingBalanceAmount: Double get() = openingBalance.toDoubleOrNull() ?: 0.0
@@ -53,6 +55,12 @@ class AgreementFormViewModel @Inject constructor(
     fun onMoveInDateChange(millis: Long) = _uiState.update { it.copy(moveInDateMillis = millis) }
     fun onOpeningBalanceChange(value: String) = _uiState.update { it.copy(openingBalance = value) }
 
+    fun onNonRevenueChange(value: Boolean) = _uiState.update {
+        // Rent and an opening balance are meaningless on a room that bills nobody, so clear them
+        // rather than storing figures that will never be charged.
+        if (value) it.copy(nonRevenue = true, agreedRent = "0", openingBalance = "") else it.copy(nonRevenue = false)
+    }
+
     fun save() {
         val state = _uiState.value
         if (!state.canSave) return
@@ -62,6 +70,7 @@ class AgreementFormViewModel @Inject constructor(
         viewModelScope.launch {
             val agreement = tenancyAgreementRepository.create(
                 tenantId, bedId, rent, deposit, billingDay, state.moveInDateMillis,
+                state.nonRevenue,
             )
             bedRepository.setOccupied(bedId)
             if (state.openingBalanceAmount > 0.0) {

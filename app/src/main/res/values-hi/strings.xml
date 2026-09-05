@@ -274,6 +274,8 @@
     <string name="agreement_form_title">किरायेदारी की शर्तें</string>
     <string name="agreement_field_opening_balance">पुराना बकाया (वैकल्पिक)</string>
     <string name="agreement_field_opening_balance_hint">ऐप शुरू करते समय इस किरायेदार पर जो बकाया था। कुछ बाकी न हो तो खाली छोड़ें — पुराने महीने दोबारा भरने की ज़रूरत नहीं।</string>
+    <string name="agreement_non_revenue">वार्डन / केयरटेकर का कमरा</string>
+    <string name="agreement_non_revenue_hint">कोई किराया नहीं, कोई इनवॉइस नहीं, कोई बकाया रिमाइंडर नहीं। बेड फिर भी भरा हुआ गिना जाएगा।</string>
     <string name="agreement_field_rent">तय किराया / महीना</string>
     <string name="agreement_field_deposit">अग्रिम जमा राशि</string>
     <string name="agreement_field_billing_day">बिलिंग साइकिल दिन</string>

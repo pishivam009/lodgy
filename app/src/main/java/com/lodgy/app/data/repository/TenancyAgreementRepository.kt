@@ -62,6 +62,7 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
         advanceDeposit: Double,
         billingCycleDay: Int,
         moveInDate: Long,
+        nonRevenue: Boolean = false,
     ): TenancyAgreement {
         val now = System.currentTimeMillis()
         val agreement = TenancyAgreement(
@@ -71,6 +72,7 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
             advanceDeposit = advanceDeposit,
             billingCycleDay = billingCycleDay,
             moveInDate = moveInDate,
+            nonRevenue = nonRevenue,
             moveOutDate = null,
             depositRefundAmount = null,
             status = AgreementStatus.ACTIVE,

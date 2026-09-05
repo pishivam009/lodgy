@@ -39,6 +39,9 @@ class InvoiceGenerationWorker @AssistedInject constructor(
         var totalDue = 0.0
 
         tenancyAgreementRepository.getAllActive()
+            // A warden's or caretaker's room bills nobody, so it must never generate an invoice -
+            // one would show as overdue forever and pollute the money figures (LODGY-82).
+            .filter { !it.nonRevenue }
             .filter { it.billingCycleDay == dayOfMonth }
             .forEach { agreement ->
                 if (!invoiceRepository.existsForPeriod(agreement.id, periodMonth, periodYear)) {

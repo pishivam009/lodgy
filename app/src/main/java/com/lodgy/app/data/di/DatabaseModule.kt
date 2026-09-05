@@ -6,6 +6,7 @@ import com.lodgy.app.data.LodgyDatabase
 import com.lodgy.app.data.MIGRATION_1_2
 import com.lodgy.app.data.MIGRATION_2_3
 import com.lodgy.app.data.MIGRATION_3_4
+import com.lodgy.app.data.MIGRATION_4_5
 import com.lodgy.app.data.dao.BedDao
 import com.lodgy.app.data.dao.CreditDao
 import com.lodgy.app.data.dao.ExpenseDao
@@ -34,7 +35,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): LodgyDatabase =
         Room.databaseBuilder(context, LodgyDatabase::class.java, LodgyDatabase.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
 
     @Provides

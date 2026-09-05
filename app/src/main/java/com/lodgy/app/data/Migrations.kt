@@ -43,3 +43,11 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         db.execSQL("ALTER TABLE `payments` ADD COLUMN `multiPeriodGroupId` TEXT")
     }
 }
+
+/** Adds the non-revenue flag. A plain ADD COLUMN with a default, so every existing agreement keeps
+ *  billing exactly as before - the warden's only copy of their data is on the phone. */
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tenancy_agreements` ADD COLUMN `nonRevenue` INTEGER NOT NULL DEFAULT 0")
+    }
+}

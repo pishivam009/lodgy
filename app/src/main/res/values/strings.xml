@@ -276,6 +276,8 @@
     <string name="agreement_form_title">Agreement Terms</string>
     <string name="agreement_field_opening_balance">Dues carried forward (optional)</string>
     <string name="agreement_field_opening_balance_hint">What this tenant already owed when you started using the app. Leave blank if nothing is outstanding — you do not need to re-enter past months.</string>
+    <string name="agreement_non_revenue">Warden / caretaker room</string>
+    <string name="agreement_non_revenue_hint">No rent, no invoices, no overdue reminders. The bed still counts as occupied.</string>
     <string name="agreement_field_rent">Agreed rent / month</string>
     <string name="agreement_field_deposit">Advance deposit</string>
     <string name="agreement_field_billing_day">Billing cycle day</string>
