@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lodgy Engineering Report</title>
+<style>
+  :root{
+    --bg:#faf9fb; --panel:#fff; --ink:#1b1a1f; --muted:#5d5a66;
+    --line:#e4e1e8; --accent:#5b4bc4; --shadow:0 1px 3px rgba(20,16,40,.07),0 8px 24px rgba(20,16,40,.05);
+    --good:#2d7d5a; --warn:#b8860b; --bad:#c0392b; --track:#eceaf1;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#131218; --panel:#1c1a22; --ink:#eceaf1; --muted:#a6a1b2;
+    --line:#2c2934; --accent:#b3a6f5; --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+    --good:#6bbf95; --warn:#d9b45f; --bad:#e88b7d; --track:#2c2934;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#131218; --panel:#1c1a22; --ink:#eceaf1; --muted:#a6a1b2;
+    --line:#2c2934; --accent:#b3a6f5; --shadow:0 1px 3px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+    --good:#6bbf95; --warn:#d9b45f; --bad:#e88b7d; --track:#2c2934;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);
+    font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;margin:0;padding:0 24px 96px}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{padding:72px 0 8px;border-bottom:1px solid var(--line);margin-bottom:48px}
+  h1{font-size:2.6rem;line-height:1.1;letter-spacing:-.022em;margin:0 0 12px;font-weight:640}
+  .lede{color:var(--muted);font-size:1.08rem;max-width:64ch;margin:0 0 28px}
+  .meta{color:var(--muted);font-size:.83rem;letter-spacing:.02em;margin:0 0 24px}
+  .meta code{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.95em}
+  nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+  nav a{color:var(--muted);text-decoration:none;font-size:.85rem;border:1px solid var(--line);
+    background:var(--panel);border-radius:999px;padding:5px 13px;transition:.15s}
+  nav a:hover{color:var(--accent);border-color:var(--accent)}
+  section{margin:0 0 64px;scroll-margin-top:24px}
+  h2{font-size:1.42rem;letter-spacing:-.014em;margin:0 0 6px;font-weight:620}
+  h3{font-size:1.02rem;margin:34px 0 10px;font-weight:620}
+  .sub{color:var(--muted);margin:0 0 26px;max-width:72ch;font-size:.97rem}
+  .cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 17px;box-shadow:var(--shadow)}
+  .card .n{font-size:1.85rem;font-weight:640;letter-spacing:-.02em;line-height:1.15}
+  .card .l{color:var(--muted);font-size:.83rem;margin-top:3px}
+  .card .n small{font-size:.9rem;font-weight:500;color:var(--muted);letter-spacing:0}
+  table{width:100%;border-collapse:collapse;font-size:.9rem;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  .scroll{overflow-x:auto}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  tr:last-child td{border-bottom:0}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .bar{position:relative;height:7px;border-radius:99px;background:var(--track);min-width:110px;overflow:hidden}
+  .bar span{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--good)}
+  .bar.w span{background:var(--warn)} .bar.b span{background:var(--bad)}
+  .pill{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.03em;
+    padding:2px 9px;border-radius:99px;border:1px solid;white-space:nowrap}
+  .p-fixed{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,transparent)}
+  .p-acc{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+  .p-none{color:var(--muted);border-color:var(--line)}
+  .p-med{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
+  code{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.88em}
+  .note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:0 11px 11px 0;padding:14px 17px;color:var(--muted);font-size:.92rem;margin:20px 0 0;max-width:82ch}
+  .note strong{color:var(--ink)}
+  ul{margin:0 0 0 18px;padding:0} li{margin:7px 0}
+  footer{border-top:1px solid var(--line);padding-top:22px;color:var(--muted);font-size:.85rem;max-width:78ch}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Lodgy engineering report</h1>
+  <p class="lede">Code, coverage, security posture and non-functional characteristics of the app as it stands. Every figure here was measured from this commit &mdash; the JaCoCo XML, the JUnit results, the merged manifest and the board &mdash; not estimated.</p>
+  <p class="meta">Lodgy <code>v0.5.0 (build 5)</code> &middot; commit <code>52696cb</code> &middot; schema v7 &middot; measured 7 Sep 2026</p>
+  <nav>
+    <a href="#glance">At a glance</a><a href="#codebase">Codebase</a><a href="#coverage">Test coverage</a>
+    <a href="#security">Security</a><a href="#nfr">Non-functional</a><a href="#delivery">Delivery</a>
+    <a href="#limits">Accepted limits</a>
+  </nav>
+</header>
+
+<section id="glance">
+  <h2>At a glance</h2>
+  <p class="sub">The five numbers that describe the project's health. The coverage gate is enforced by the build, not by convention &mdash; a change that drops line coverage below 93% fails <code>jacocoCoverageVerification</code> and does not ship.</p>
+  <div class="cards">
+    <div class="card"><div class="n">27,353</div><div class="l">lines of Kotlin</div></div>
+    <div class="card"><div class="n">559</div><div class="l">unit tests, 0 failing</div></div>
+    <div class="card"><div class="n">95.88<small>%</small></div><div class="l">line coverage &middot; gate 93%</div></div>
+    <div class="card"><div class="n">0</div><div class="l">open security findings</div></div>
+    <div class="card"><div class="n">89</div><div class="l">tickets, 5 releases</div></div>
+  </div>
+</section>
+
+<section id="codebase">
+  <h2>Codebase</h2>
+  <p class="sub">A single Android module, Kotlin and Jetpack Compose throughout, with Room for storage. There is no backend, no network layer and no shared code with a server, so the whole application is what you see here.</p>
+
+  <div class="scroll"><table>
+    <tr><th>Area</th><th class="num">Files</th><th class="num">Lines</th><th>Notes</th></tr>
+    <tr><td>Production Kotlin</td><td class="num">186</td><td class="num">17,171</td><td>Of which 14,669 are code; 948 comment, 1,554 blank</td></tr>
+    <tr><td>Test Kotlin</td><td class="num">91</td><td class="num">10,182</td><td>0.59 lines of test per line of production code</td></tr>
+    <tr><td>Resources (XML)</td><td class="num">10</td><td class="num">1,132</td><td>Strings, themes, file-provider paths</td></tr>
+    <tr><td>Documentation (Markdown)</td><td class="num">5</td><td class="num">1,693</td><td>Design, data model, user manual, security review, releases</td></tr>
+  </table></div>
+
+  <h3>Structure</h3>
+  <div class="cards">
+    <div class="card"><div class="n">38</div><div class="l">Compose screens</div></div>
+    <div class="card"><div class="n">39</div><div class="l">ViewModels</div></div>
+    <div class="card"><div class="n">13</div><div class="l">Room entities</div></div>
+    <div class="card"><div class="n">15</div><div class="l">DAOs</div></div>
+    <div class="card"><div class="n">13</div><div class="l">repositories</div></div>
+    <div class="card"><div class="n">28</div><div class="l">declared dependencies</div></div>
+  </div>
+
+  <div class="note"><strong>On the comment ratio.</strong> 948 comment lines against 14,669 of code is deliberate and unevenly distributed: comments cluster where a decision would otherwise look arbitrary &mdash; why a flag lives on the tenancy rather than the bed, why one policy is <code>UPDATE</code> and not <code>KEEP</code>. Routine code carries none.</div>
+</section>
+
+<section id="coverage">
+  <h2>Test coverage</h2>
+  <p class="sub">559 tests across 89 classes, run on every build alongside the coverage gate. These are JVM unit tests over ViewModels, repositories, workers and pure logic; Compose UI itself is verified on a device rather than instrumented, which is why UI-only packages sit lower.</p>
+
+  <div class="cards">
+    <div class="card"><div class="n">95.88<small>%</small></div><div class="l">line &middot; 3,533 / 3,685</div></div>
+    <div class="card"><div class="n">90.05<small>%</small></div><div class="l">instruction</div></div>
+    <div class="card"><div class="n">85.38<small>%</small></div><div class="l">method</div></div>
+    <div class="card"><div class="n">97.21<small>%</small></div><div class="l">class</div></div>
+    <div class="card"><div class="n">74.69<small>%</small></div><div class="l">branch</div></div>
+  </div>
+
+  <h3>By package</h3>
+  <div class="scroll"><table>
+    <tr><th>Package</th><th class="num">Lines</th><th class="num">Covered</th><th style="width:26%">Coverage</th></tr>
+    <tr><td><code>ui.tenant</code></td><td class="num">465</td><td class="num">458</td><td><div class="bar"><span style="width:98.5%"></span></div> 98.5%</td></tr>
+    <tr><td><code>ui.property</code></td><td class="num">566</td><td class="num">557</td><td><div class="bar"><span style="width:98.4%"></span></div> 98.4%</td></tr>
+    <tr><td><code>ui.payment</code></td><td class="num">504</td><td class="num">492</td><td><div class="bar"><span style="width:97.6%"></span></div> 97.6%</td></tr>
+    <tr><td><code>ui.backup</code></td><td class="num">252</td><td class="num">250</td><td><div class="bar"><span style="width:99.2%"></span></div> 99.2%</td></tr>
+    <tr><td><code>pdf</code></td><td class="num">244</td><td class="num">240</td><td><div class="bar"><span style="width:98.4%"></span></div> 98.4%</td></tr>
+    <tr><td><code>ui.dashboard</code></td><td class="num">240</td><td class="num">237</td><td><div class="bar"><span style="width:98.8%"></span></div> 98.8%</td></tr>
+    <tr><td><code>work</code></td><td class="num">198</td><td class="num">196</td><td><div class="bar"><span style="width:99.0%"></span></div> 99.0%</td></tr>
+    <tr><td><code>backup</code></td><td class="num">179</td><td class="num">177</td><td><div class="bar"><span style="width:98.9%"></span></div> 98.9%</td></tr>
+    <tr><td><code>ui.auth</code></td><td class="num">150</td><td class="num">145</td><td><div class="bar"><span style="width:96.7%"></span></div> 96.7%</td></tr>
+    <tr><td><code>ui.expense</code></td><td class="num">104</td><td class="num">99</td><td><div class="bar"><span style="width:95.2%"></span></div> 95.2%</td></tr>
+    <tr><td><code>data.prefs</code></td><td class="num">95</td><td class="num">94</td><td><div class="bar"><span style="width:99.0%"></span></div> 99.0%</td></tr>
+    <tr><td><code>ui.note</code></td><td class="num">84</td><td class="num">81</td><td><div class="bar"><span style="width:96.4%"></span></div> 96.4%</td></tr>
+    <tr><td><code>data.repository</code></td><td class="num">334</td><td class="num">280</td><td><div class="bar w"><span style="width:83.8%"></span></div> 83.8%</td></tr>
+    <tr><td><code>ui.more</code></td><td class="num">38</td><td class="num">33</td><td><div class="bar w"><span style="width:86.8%"></span></div> 86.8%</td></tr>
+    <tr><td><code>ui</code></td><td class="num">30</td><td class="num">26</td><td><div class="bar w"><span style="width:86.7%"></span></div> 86.7%</td></tr>
+    <tr><td><code>media</code></td><td class="num">15</td><td class="num">12</td><td><div class="bar w"><span style="width:80.0%"></span></div> 80.0%</td></tr>
+    <tr><td><code>ui.common</code></td><td class="num">85</td><td class="num">56</td><td><div class="bar b"><span style="width:65.9%"></span></div> 65.9%</td></tr>
+    <tr><td><code>data</code>, <code>notify</code>, <code>security</code>, <code>contact</code>, <code>locale</code></td><td class="num">100</td><td class="num">100</td><td><div class="bar"><span style="width:100%"></span></div> 100%</td></tr>
+  </table></div>
+
+  <div class="note"><strong>Where the gaps are, and why.</strong> <code>ui.common</code> at 65.9% is the lowest, and it is mostly Composable helpers whose branches are exercised on the device rather than in JVM tests &mdash; the status-icon and label mapping logic inside it <em>is</em> unit-tested. <code>data.repository</code> at 83.8% is thin pass-through to Room DAOs, where a test would assert that a delegating call delegates. Branch coverage (74.69%) sits well below line coverage across the board, which is the honest signature of a suite that tests the paths a warden takes more thoroughly than every defensive early-return.</div>
+</section>
+
+<section id="security">
+  <h2>Security</h2>
+  <p class="sub">Reviewed 4 Sep 2026 against the OWASP Mobile Top 10 surfaces that exist in a local-only app. The threat model is a single warden's phone holding tenant names, phone numbers, ID-proof photos and rent records; the attackers designed against are another app on the same device, and someone who picks the phone up.</p>
+
+  <div class="scroll"><table>
+    <tr><th>#</th><th>Finding</th><th>Severity</th><th>Status</th></tr>
+    <tr><td class="num">1</td><td>Exported activity accepted an unvalidated navigation route &mdash; any app could crash Lodgy on launch. No data was reachable; the route replays only after the PIN gate.</td><td><span class="pill p-med">Medium</span></td><td><span class="pill p-fixed">Fixed</span> route allow-list</td></tr>
+    <tr><td class="num">2</td><td>FileProvider exposed the whole cache directory, which also held the unencrypted restore staging copy.</td><td><span class="pill p-acc">Low</span></td><td><span class="pill p-fixed">Fixed</span> scoped to <code>cache/camera/</code></td></tr>
+    <tr><td class="num">3</td><td>No backoff or lockout on repeated PIN attempts &mdash; nothing slowed a scripted attack over ADB.</td><td><span class="pill p-med">Medium</span></td><td><span class="pill p-fixed">Fixed</span> LODGY-77</td></tr>
+    <tr><td class="num">4</td><td>Short PIN space against an offline attacker. The algorithm is correct; the input space is 10<sup>4</sup>&ndash;10<sup>6</sup>.</td><td><span class="pill p-acc">Low</span></td><td><span class="pill p-acc">Accepted</span> needs root/device image</td></tr>
+    <tr><td class="num">5</td><td>Zip-slip in backup import &mdash; re-verified rather than assumed.</td><td><span class="pill p-none">&mdash;</span></td><td><span class="pill p-none">No finding</span></td></tr>
+    <tr><td class="num">6</td><td>No size or entry-count cap on an imported zip; a crafted file could fill the cache before confirmation.</td><td><span class="pill p-acc">Low</span></td><td><span class="pill p-acc">Accepted</span> warden-chosen file</td></tr>
+  </table></div>
+
+  <h3>Permissions actually shipped</h3>
+  <p class="sub">The app declares one permission. The rest arrive through WorkManager and the biometric library in the merged manifest &mdash; the file that decides what the device grants.</p>
+  <div class="scroll"><table>
+    <tr><th>Permission</th><th>Origin</th><th>Why it is not network access</th></tr>
+    <tr><td><code>POST_NOTIFICATIONS</code></td><td>Declared by Lodgy</td><td>Runtime-requested; degrades gracefully when denied</td></tr>
+    <tr><td><code>ACCESS_NETWORK_STATE</code></td><td>WorkManager</td><td>Reads connectivity state; cannot open a socket</td></tr>
+    <tr><td><code>WAKE_LOCK</code>, <code>RECEIVE_BOOT_COMPLETED</code>, <code>FOREGROUND_SERVICE</code></td><td>WorkManager</td><td>Scheduling only &mdash; the daily invoice, vacancy, dues and backup jobs</td></tr>
+    <tr><td><code>USE_BIOMETRIC</code>, <code>USE_FINGERPRINT</code></td><td>AndroidX Biometric</td><td>Local unlock; no credential leaves the device</td></tr>
+    <tr><td><strong><code>INTERNET</code></strong></td><td><strong>Absent</strong></td><td>Without it the process cannot open a socket at all &mdash; the app is network-<em>incapable</em>, not merely network-abstinent</td></tr>
+  </table></div>
+
+  <h3>Reviewed and clean</h3>
+  <ul>
+    <li><strong>One exported component.</strong> <code>MainActivity</code>, as a launcher requires. The FileProvider, WorkManager's initializer and the locale service are all <code>exported="false"</code>. No receivers, no exported services, no custom permissions.</li>
+    <li><strong><code>allowBackup="false"</code>.</strong> Stops <code>adb backup</code> lifting the unencrypted database and photos off the device.</li>
+    <li><strong>PIN storage.</strong> bcrypt via <code>BCrypt.gensalt()</code> at cost 10, per-hash random salt. No fixed salt, no home-rolled hashing, no fast digest anywhere.</li>
+    <li><strong>No logging of tenant data.</strong> No <code>Log</code>, <code>println</code> or <code>printStackTrace</code> anywhere in production source, so nothing reaches logcat.</li>
+    <li><strong>Outbound intents are tap-to-send.</strong> <code>ACTION_DIAL</code>, <code>wa.me</code> and <code>smsto:</code> open another app pre-filled; nothing is dialled or transmitted automatically, and no <code>CALL_PHONE</code> or <code>SEND_SMS</code> permission is requested.</li>
+  </ul>
+</section>
+
+<section id="nfr">
+  <h2>Non-functional characteristics</h2>
+  <p class="sub">The constraints the app is built to rather than the features it offers. Several of these are enforced mechanically &mdash; a build that violates them fails rather than shipping.</p>
+
+  <div class="scroll"><table>
+    <tr><th style="width:19%">Attribute</th><th>Position</th><th style="width:24%">How it is held</th></tr>
+    <tr><td><strong>Offline operation</strong></td><td>Every feature works with no connectivity. There is no backend, no sync and no API surface.</td><td>No <code>INTERNET</code> permission &mdash; enforced by the OS, not by discipline</td></tr>
+    <tr><td><strong>Data durability</strong></td><td>The warden's only copy lives on the phone, so a schema change ships a real migration or it does not ship. Currently schema v7 with 6 hand-written migrations.</td><td><code>fallbackToDestructiveMigration</code> never enabled; each migration tested against a populated database pulled from a real device</td></tr>
+    <tr><td><strong>Recoverability</strong></td><td>Manual export/import of a zip (database plus photos) through the system picker, and an unattended daily backup to a folder chosen once. A forgotten PIN is recoverable without losing data.</td><td>Round trip verified end to end; the dashboard shows a stale or failed backup as loudly as a healthy one</td></tr>
+    <tr><td><strong>Test quality</strong></td><td>Line coverage may not fall below 93%.</td><td><code>jacocoCoverageVerification</code> fails the build; currently 95.88%</td></tr>
+    <tr><td><strong>Compatibility</strong></td><td>Android 7.0 (API 24) and above, targeting API 37.</td><td><code>minSdk 24</code>, <code>targetSdk 37</code>, <code>compileSdk 37</code></td></tr>
+    <tr><td><strong>Localisation</strong></td><td>English and Hindi, switchable in-app, with English the first-launch default. 490 English strings against 483 Hindi &mdash; the seven differences are deliberate (app name, language names, per-language message templates).</td><td>Every string key diffed across both files: no missing keys, no format-specifier mismatches</td></tr>
+    <tr><td><strong>Accessibility</strong></td><td>Colour is never the only signal: each status carries its own icon and a text label alongside its RAG tint, so red-green colour blindness, a screen reader and a printout all read the same state.</td><td>Icon and label rendered together in the shared status components</td></tr>
+    <tr><td><strong>Theming</strong></td><td>Light and dark, following the system.</td><td><code>values-night</code>; the theme paints its own ground so no screen inherits an unthemed background</td></tr>
+    <tr><td><strong>Package size</strong></td><td>16.6 MB debug, of which 14.4 MB is unminified <code>classes.dex</code>. A size-reduction programme was considered and declined.</td><td>Minification deliberately off &mdash; the regression risk was judged higher than the benefit at this stage</td></tr>
+    <tr><td><strong>Privacy</strong></td><td>No analytics, no telemetry, no crash reporting, no account. Nothing about a tenant leaves the phone unless the warden exports it themselves.</td><td>Follows from having no network capability at all</td></tr>
+  </table></div>
+</section>
+
+<section id="delivery">
+  <h2>Delivery</h2>
+  <p class="sub">Work is tracked on a file-backed board, one JSON per ticket, with the full history of every status change kept in the ticket rather than in a chat log. Each ticket records the release it shipped in.</p>
+
+  <div class="cards">
+    <div class="card"><div class="n">89</div><div class="l">tickets</div></div>
+    <div class="card"><div class="n">27</div><div class="l">Delivered (through UAT)</div></div>
+    <div class="card"><div class="n">61</div><div class="l">Done, awaiting UAT</div></div>
+    <div class="card"><div class="n">1</div><div class="l">Won't Do</div></div>
+    <div class="card"><div class="n">56</div><div class="l">decision-log entries</div></div>
+  </div>
+
+  <h3>Releases</h3>
+  <div class="scroll"><table>
+    <tr><th>Release</th><th class="num">Tickets</th><th>Theme</th><th>State</th></tr>
+    <tr><td><code>0.1.0</code> build 1</td><td class="num">30</td><td>The first working app &mdash; property, tenants, rent, reports, backup, Hindi</td><td>Done, not UAT'd</td></tr>
+    <tr><td><code>0.2.0</code> build 2</td><td class="num">15</td><td>First feedback wave &mdash; finding things, transfers, credits, PDF receipts</td><td>Done, not UAT'd</td></tr>
+    <tr><td><code>0.3.0</code> build 3</td><td class="num">17</td><td>Hardening &mdash; security review, coverage, filters, confirmations, notifications</td><td>Done, not UAT'd</td></tr>
+    <tr><td><code>0.4.0</code> build 4</td><td class="num">26</td><td>Post-launch feedback &mdash; deletes, auto-backup, all-property views, non-rented rooms</td><td><strong>Delivered</strong>, closed 6 Sep</td></tr>
+    <tr><td><code>0.5.0</code> build 5</td><td class="num">1</td><td>Open &mdash; dashboard tiles that answer the question they raise</td><td>Current</td></tr>
+  </table></div>
+
+  <h3>By epic</h3>
+  <div class="scroll"><table>
+    <tr><th>Epic</th><th class="num">Tickets</th><th>Epic</th><th class="num">Tickets</th></tr>
+    <tr><td>Property Setup</td><td class="num">14</td><td>Usability</td><td class="num">8</td></tr>
+    <tr><td>Tenant Onboarding</td><td class="num">10</td><td>Notifications</td><td class="num">6</td></tr>
+    <tr><td>Reporting &amp; Dashboard</td><td class="num">10</td><td>Auth</td><td class="num">5</td></tr>
+    <tr><td>Backup &amp; Restore</td><td class="num">10</td><td>Appearance</td><td class="num">4</td></tr>
+    <tr><td>Rent &amp; Payments</td><td class="num">9</td><td>Other (7 epics)</td><td class="num">13</td></tr>
+  </table></div>
+
+  <div class="note"><strong>Reading the Done column honestly.</strong> 61 tickets sit at Done rather than Delivered. That is not a backlog of unfinished work &mdash; all 61 were built, tested and shipped across 0.1.0&ndash;0.3.0. It means only 0.4.0 and 0.5.0 have been through user acceptance by someone acting as the warden; the earlier releases have never had that pass.</div>
+</section>
+
+<section id="limits">
+  <h2>Accepted limits</h2>
+  <p class="sub">Recorded so that none of these reads as an oversight later. Each was considered, decided and written into the design.</p>
+  <ul>
+    <li><strong>The database is not encrypted at rest.</strong> The PIN gates the app, not the file. Extracting it requires root or a device image, which is out of scope for now; SQLCipher can be dropped in later without a schema change because it wraps the same Room database.</li>
+    <li><strong>No historical occupancy.</strong> A report for a past month uses today's bed states, and says so on screen rather than implying otherwise. True past-period occupancy needs bed-state snapshots, which are designed for but not built.</li>
+    <li><strong>No automatic messaging.</strong> Reminders open WhatsApp or SMS pre-filled and stop; the warden reviews and sends. This is why no paid API, no backend and no <code>SEND_SMS</code> permission are needed.</li>
+    <li><strong>No cloud sync and no account.</strong> Moving phones is the backup zip, by hand. Two people cannot share live data &mdash; that needs a real backend and is a phase-3 concern.</li>
+    <li><strong>Branch coverage is not gated.</strong> Only line coverage is enforced. At 74.69% branch coverage, defensive early-returns are the least-tested paths in the codebase.</li>
+    <li><strong>Google Drive is not integrated.</strong> Drive works because the system file picker offers it, and the app needs no Drive SDK, OAuth or network permission for that. The Drive-specific round trip was signed off by the product owner rather than demonstrated on a device with a Google account.</li>
+  </ul>
+</section>
+
+<footer>
+  Generated from commit <code>52696cb</code> on 7 Sep 2026. Line counts from the working tree; coverage from
+  <code>jacocoTestReport.xml</code>; test totals from the JUnit XML; permissions from the merged debug manifest;
+  ticket figures from <code>board/tickets/</code>. Security findings summarised from
+  <code>docs/SECURITY-REVIEW.md</code>, which carries the full reasoning for each.
+  Sources of record: <code>docs/DESIGN.md</code>, <code>docs/DATA-MODEL.md</code>,
+  <code>docs/USER-MANUAL.md</code>, <code>docs/RELEASES.md</code>.
+</footer>
+
+</div>
+</body>
+</html>

@@ -7,6 +7,11 @@ expenses, and reporting — all on-device, no backend, no account.
 Full product spec: [`docs/DESIGN.md`](docs/DESIGN.md). What the app does, in
 plain terms: [`docs/USER-MANUAL.md`](docs/USER-MANUAL.md).
 
+Code size, coverage, security posture and non-functional characteristics, all
+measured rather than estimated:
+[`docs/engineering-report.html`](docs/engineering-report.html). Screens as a
+warden sees them: [`docs/design/screenshots.html`](docs/design/screenshots.html).
+
 ## Tech stack
 
 | Layer | Choice |
