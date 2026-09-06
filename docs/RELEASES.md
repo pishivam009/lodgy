@@ -64,4 +64,6 @@ warehouses and flats without inventing floors and beds, navigation older wardens
 can actually find, warden and caretaker rooms that bill nobody, and confirmation
 on the updates that silently move money.
 
-Still open in this release: LODGY-75 (Google Drive backup guidance) is in Testing.
+Every ticket in this release has reached Done. The release itself stays open
+until they reach Delivered — that is the warden's call after UAT, not QA's — so
+`versionName` stays at 0.4.0 and the next section opens when UAT closes it.
