@@ -13,12 +13,12 @@
     "Correct in Hindi as well as English",
     "No string is left saying 'bed' in a place a warehouse can appear"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-06T09:10:00Z",
-  "updatedAt": "2026-09-06T10:55:00Z",
+  "updatedAt": "2026-09-06T13:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-06T09:10:00Z",
@@ -41,6 +41,30 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built to the rule in the description - generic where a figure spans both kinds, property-appropriate where the screen knows which kind it is showing - rather than renaming everything to 'unit'. HOME: dashboard_vacant_beds is now 'Vacant' / 'खाली' (AC1). ICONS: two new StatusIcons, UnitVacant and UnitOccupied, drawn as a door rather than a bed. BedStatus.icon and RoomFill.icon became functions taking singleUnit, so a tile picks its own symbol: the Corner shop tile in All rooms and the shop's grid now carry a door, hostel rooms and beds still carry a bed (AC2, AC4). Added RoomFill.spaceIcon for the All-rooms summary row, which counts ROOMS across every property and so always uses the neutral door - deliberately not flipping with whatever the warden happens to own, since an icon that changes meaning based on portfolio composition is worse than one that is simply generic (AC5). WORDING: BedStatus.label now takes singleUnit too, which turned up a real gap - unit_status_vacant and unit_status_occupied ('Vacant' / 'Let') were DEFINED BUT NEVER USED, so a shop's tile and its action sheet were showing the bed wording 'VACANT' / 'OCCUPIED'. They are now used (AC3). FINDING THAT CHANGES AC6, please check this rather than take my word: there is no separate vacant list any more. The Home tile has routed to All rooms filtered to hasSpace since LODGY-72, and VACANT_VIEW_ROUTE - kept only so older notifications still land somewhere - renders AllRoomsScreen too. So all five vacant_view_* strings ('Vacant Beds', 'Room %1$s . Bed %2$s', '%2$d bed(s)' and two more) were dead resources. I deleted them rather than translating strings nothing renders; that is what covers AC6 and AC8. The user manual described that screen as though it still existed, and has been corrected. LEFT ALONE ON PURPOSE: room_bed_summary ('%1$d vacant / %2$d beds') and floor_bed_summary are on RoomListScreen and the floor cards, which a single-unit property can never reach - it goes straight to its own grid - so 'bed' is correct there and generic wording would be worse for the hostel warden who does see them (AC4). VERIFIED ON DEVICE: Home reads 'Vacant 46'. All rooms shows a door on Corner shop and beds on 501 and 101, with door icons in the 16 Empty / 1 Part full / 3 Full summary. The shop's grid reads 'This property / Let / ₹18000 per month' with no 'bed' anywhere, and its sheet 'Corner shop / Let / Occupied by Shop tenant'. Room 501 is unchanged: 'Bed A / OCCUPIED / ₹4000 per bed'. Hindi correct throughout - 'खाली', 'यह प्रॉपर्टी', 'किराये पर', '₹18000 / महीना' (AC7). TESTS: 3 new covering the per-property icon split and the neutral spanning icon, plus two existing assertions updated for the new signatures. Full suite 544 pass, 0 failures, coverage 95.93% line against the 0.93 gate. Not schema-affecting."
+    },
+    {
+      "timestamp": "2026-09-06T12:47:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC8 - 'No string is left saying bed in a place a warehouse can appear'. The property screens were done well; the places a single-unit property's tenant shows up were missed entirely. (1) THE TENANT DIRECTORY, reproduced on the device just now: the Corner shop's tenant row reads 'Room Corner shop . Bed A'. That is R.string.bed_location, and it is used in five places - the directory, the tenant profile, the invoice list, the payment acknowledgement and the transfer screen - none of which were touched. It is worse than the word 'bed': 'Room Corner shop' shows the implicit room that LODGY-79 says must never be presented to the warden as if it were real. (2) THE LONG-VACANCY NOTIFICATION, which is the one I would fix first because it goes to the warden's phone rather than sitting on a screen. notify_vacancy_text is '%1$s - Room %2$s, Bed %3$s is still empty' and notify_vacancy_text_many is '%1$d beds are sitting empty'. A vacant shop reaches this: I ran BedDao's getLongVacantBeds query verbatim against the device database with the shop's bed vacant and it came back FIRST - 'Corner shop | Corner shop | A | SHOP'. So a warden with an empty shop gets 'Corner shop - Room Corner shop, Bed A is still empty. Worth advertising?'. VacantBedDetail carries no property type, so fixing this needs the query to carry it the way VacantBedChoice already does. WHAT PASSED, so it is not lost: AC1 the Home tile reads 'Vacant' / 'खाली'; AC2 the shop tile in All rooms carries a door and not a bed; AC4 hostel rooms keep the bed icon and bed wording; AC5 the All-rooms summary uses the neutral door; AC7 Hindi is correct on everything that was changed. Deleting the five dead vacant_view_* strings was right and the manual correction that went with it was a good catch. AC3 is also not met on the strength of (1): the tenant profile knows the tenancy's property and still prints 'Room X . Bed Y'."
+    },
+    {
+      "timestamp": "2026-09-06T13:15:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed, and the QA note was right that the miss was structural rather than a stray string - the property screens had been done and the screens where a single-unit property's TENANT appears had not. ROOT FIX: BedLocation now carries propertyType and propertyName, and BedLocationLabel.label() renders a single-unit property as its own name. That one change covers all five screens QA listed - directory, profile, invoice list, acknowledgement and the transfer screen's current location - because they all go through that label. Verified on the device: the shop tenant's row now reads 'Corner shop' where it read 'Room Corner shop . Bed A', and hostel rows still read 'Room 101 . Bed B'. THE NOTIFICATION: VacantBedDetail carries propertyType, and VacancyCheckWorker composes the location through notify_vacancy_where / notify_vacancy_where_unit, so an empty shop now reads 'Corner shop is still empty. Worth advertising?'. The multi-record wording moved from 'N beds are sitting empty' to 'N spaces', since one run can span a hostel and a warehouse at once. THREE MORE OF THE SAME I FOUND WHILE IN THERE, none of which QA had reached: the printable PDF packet used bed_location directly, so a shop printed as 'Room Corner shop . Bed A' - PacketHostelData now carries isSingleUnit; the transfer screen's TARGET list is built from VacantBedRow, which had no property type, so the row now carries it; and LODGY-84's own forgone-rent expense note had the same shape, so a warden room in a flat would have been logged as 'Forgone rent Room X . Bed A'. TESTS: 5 new - three on the vacancy worker (single-unit named as itself, hostel still names room and bed, the plural title) and three on the label contract, including that the default stays a hostel bed so every pre-existing construction site is unaffected. Full suite 555 pass, 0 failures, coverage 95.84% line against the 0.93 gate."
+    },
+    {
+      "timestamp": "2026-09-06T13:20:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS on re-test. I re-ran the two reproductions that failed it. (1) The tenant directory now shows 'Corner shop' for the shop's tenant, where it showed 'Room Corner shop . Bed A' - and hostel rows are untouched, still 'Room 101 . Bed B' and 'Room 501 . Bed A'. (2) The vacancy path: VacantBedDetail carries the property type and the worker composes the location from it, with tests asserting the single-unit branch is taken for a SHOP and the room-and-bed branch for a HOSTEL. Fixing it at BedLocation rather than at five call sites is the right shape - a sixth screen using that label gets it for free. The three extra instances the developer found on their own - the printable packet, the transfer target list and LODGY-84's own forgone-rent note - are the ones I had not reached, and finding them unprompted is the difference between AC8 being met and appearing to be met. AC8 now holds as literally as I can check it: I diffed every string key between the two languages and found no missing keys and no format-specifier mismatches, so nothing is left half-translated either. AC1-AC5 and AC7 re-confirmed as before. NOT FIXED and correctly out of scope: a single-unit property's floor still prints as '-' in the packet's floor heading. That is a floor label, not a bed word, and it belongs to LODGY-79's invariant rather than this ticket - filing it separately would be right if the PO wants the packet tidy."
     }
   ]
 }

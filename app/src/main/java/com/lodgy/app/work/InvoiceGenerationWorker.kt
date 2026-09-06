@@ -110,7 +110,13 @@ class InvoiceGenerationWorker @AssistedInject constructor(
             return
         }
         val room = bedRepository.getLocation(agreement.bedId)
-        val where = room?.let { applicationContext.getString(R.string.bed_location, it.roomNumber, it.bedLabel) }
+        val where = room?.let {
+            if (it.propertyType.isSingleUnit) {
+                it.propertyName.ifBlank { it.roomNumber }
+            } else {
+                applicationContext.getString(R.string.bed_location, it.roomNumber, it.bedLabel)
+            }
+        }
         expenseRepository.create(
             hostelId = hostelId,
             category = ExpenseCategory.ACCOMMODATION,

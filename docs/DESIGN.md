@@ -601,6 +601,13 @@ and each is invisible on the screen that introduces it.
   tenant profile clipped Record a credit, Move to another bed and Checkout on
   an ordinary phone, which read as three separate missing features
   (LODGY-34, LODGY-35, and a regression against LODGY-14).
+- **A tenant's location is rendered once, in `BedLocation.label()`.** It reaches the
+  directory, the profile, the invoice list, the acknowledgement and the transfer
+  screen, so a single-unit property printed as "Room Corner shop · Bed A" was
+  wrong in five places from one line. The projection carries `propertyType`, and a
+  property let whole is named as itself. The same rule applies wherever a location
+  is composed from a different projection — the vacancy nudge, the printable
+  packet, the transfer target list (LODGY-86).
 - **The word and the icon follow the property, not the schema.** Every property
   has beds underneath, but a shop, warehouse or flat is let whole, so a screen
   that knows which kind it is showing says *This property* / *Let* and draws a
@@ -779,3 +786,5 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Bed wording and the bed icon are chosen per property, not removed | A hostel warden thinks in beds, so renaming everything to "unit" would cost them the right word; a warehouse labelled with a bed pictogram was the actual complaint | LODGY-86 |
 | Marking a warden/caretaker room creates a tenant row per room, not one shared self record | One tenant with several active agreements would make getActiveByTenantId pick the wrong tenancy for transfer, checkout and invoicing; a duplicate name is untidy, acting on the wrong tenancy is a bug | LODGY-87 |
 | Vacancy and dues nudges run hourly, scheduled with UPDATE rather than KEEP | Both were already enqueued daily on every phone, and KEEP applies a new interval to fresh installs only - the change would have looked shipped and not been | LODGY-88 |
+| A tenant's location is composed in one place, and every projection that feeds it carries the property type | The same label reaches five screens plus the nudge, the packet and the transfer list; fixing it per call site guarantees the next screen gets it wrong again | LODGY-86 |
+| Counts and notifications that span properties say "spaces", not "beds" | One vacancy run can cover a hostel and a warehouse at once, so the wording has to be true of both | LODGY-86 |

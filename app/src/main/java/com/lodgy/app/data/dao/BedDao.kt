@@ -27,8 +27,11 @@ interface BedDao {
     fun getByRoomId(roomId: String): Flow<List<Bed>>
 
     @Query(
-        "SELECT rooms.roomNumber AS roomNumber, beds.label AS bedLabel FROM beds " +
-            "INNER JOIN rooms ON rooms.id = beds.roomId WHERE beds.id = :bedId",
+        "SELECT rooms.roomNumber AS roomNumber, beds.label AS bedLabel, " +
+            "hostels.propertyType AS propertyType, hostels.name AS propertyName FROM beds " +
+            "INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "INNER JOIN floors ON floors.id = rooms.floorId " +
+            "INNER JOIN hostels ON hostels.id = floors.hostelId WHERE beds.id = :bedId",
     )
     suspend fun getLocation(bedId: String): BedLocation?
 
@@ -70,9 +73,11 @@ interface BedDao {
 
     @Query(
         "SELECT beds.id AS bedId, beds.label AS bedLabel, rooms.roomNumber AS roomNumber, " +
-            "rooms.pricePerBed AS pricePerBed, floors.label AS floorLabel " +
+            "rooms.pricePerBed AS pricePerBed, floors.label AS floorLabel, " +
+            "hostels.propertyType AS propertyType " +
             "FROM beds INNER JOIN rooms ON rooms.id = beds.roomId " +
             "INNER JOIN floors ON floors.id = rooms.floorId " +
+            "INNER JOIN hostels ON hostels.id = floors.hostelId " +
             "WHERE floors.hostelId = :hostelId AND beds.status = 'VACANT' " +
             "ORDER BY floors.sortOrder, rooms.roomNumber, beds.label",
     )
@@ -82,7 +87,8 @@ interface BedDao {
      *  freed - the closest thing the schema has to "vacant since". */
     @Query(
         "SELECT beds.id AS bedId, beds.label AS bedLabel, rooms.roomNumber AS roomNumber, " +
-            "floors.label AS floorLabel, hostels.name AS hostelName, beds.updatedAt AS vacantSince " +
+            "floors.label AS floorLabel, hostels.name AS hostelName, beds.updatedAt AS vacantSince, " +
+            "hostels.propertyType AS propertyType " +
             "FROM beds INNER JOIN rooms ON rooms.id = beds.roomId " +
             "INNER JOIN floors ON floors.id = rooms.floorId " +
             "INNER JOIN hostels ON hostels.id = floors.hostelId " +

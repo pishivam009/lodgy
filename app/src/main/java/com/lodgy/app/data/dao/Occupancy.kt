@@ -20,6 +20,9 @@ data class VacantBedDetail(
     val floorLabel: String,
     val hostelName: String,
     val vacantSince: Long,
+    /** So the nudge can name a shop as itself rather than as a bed inside a room inside
+     *  itself, which is what a warden with an empty shop was being told (LODGY-86). */
+    val propertyType: PropertyType = PropertyType.HOSTEL,
 )
 
 /** A vacant bed with everything needed to describe and price it, in one query. */
@@ -45,4 +48,5 @@ data class VacantBedRow(
     val roomNumber: String,
     val pricePerBed: Double,
     val floorLabel: String,
+    val propertyType: PropertyType = PropertyType.HOSTEL,
 )

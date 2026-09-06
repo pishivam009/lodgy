@@ -51,6 +51,8 @@ data class PacketFloorData(val floorLabel: String, val tenancies: List<PacketTen
 
 data class PacketHostelData(
     val hostelName: String,
+    /** A shop, warehouse or flat is printed as itself, not as a bed in a room in itself. */
+    val isSingleUnit: Boolean = false,
     val address: String,
     val totalBeds: Int,
     val occupiedBeds: Int,
@@ -157,7 +159,14 @@ class DataPacketViewModel @Inject constructor(
                             }
                         PacketFloorData(floor.label, tenancies)
                     }
-                PacketHostelData(hostel.name, hostel.address, totalBeds, occupiedBeds, floors)
+                PacketHostelData(
+                    hostelName = hostel.name,
+                    isSingleUnit = hostel.propertyType.isSingleUnit,
+                    address = hostel.address,
+                    totalBeds = totalBeds,
+                    occupiedBeds = occupiedBeds,
+                    floors = floors,
+                )
             }
 
             _uiState.update { it.copy(loading = false, hostels = packet) }

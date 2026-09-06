@@ -143,6 +143,9 @@
     <string name="mark_own_room_body">This room stays occupied but is never billed - no rent, no invoices, no overdue reminders. Whose room is it?</string>
     <string name="mark_own_room_name">Name</string>
     <string name="mark_own_room_confirm">Mark as ours</string>
+    <string name="bed_sheet_mark_own_unit">Mark as warden / caretaker use</string>
+    <string name="mark_own_unit_title">Warden or caretaker use?</string>
+    <string name="mark_own_unit_body">This property stays occupied but is never billed - no rent, no invoices, no overdue reminders. Who is using it?</string>
     <string name="bed_status_occupied">OCCUPIED</string>
     <string name="bed_status_vacant">VACANT</string>
 
@@ -187,9 +190,14 @@
     <string name="multi_period_badge">Part of a multi-month payment</string>
     <string name="notify_channel_vacancy">Vacant rooms</string>
     <string name="notify_channel_dues">Payments and expenses</string>
-    <string name="notify_vacancy_title">Vacant for over %1$d days</string>
-    <string name="notify_vacancy_text">%1$s — Room %2$s, Bed %3$s is still empty. Worth advertising?</string>
-    <string name="notify_vacancy_text_many">%1$d beds are sitting empty, including %2$s Room %3$s, Bed %4$s. Worth advertising?</string>
+    <plurals name="notify_vacancy_title">
+        <item quantity="one">Vacant for over %1$d day</item>
+        <item quantity="other">Vacant for over %1$d days</item>
+    </plurals>
+    <string name="notify_vacancy_text">%1$s is still empty. Worth advertising?</string>
+    <string name="notify_vacancy_where">%1$s — Room %2$s, Bed %3$s</string>
+    <string name="notify_vacancy_where_unit">%1$s</string>
+    <string name="notify_vacancy_text_many">%1$d spaces are sitting empty, including %2$s.</string>
     <string name="notify_invoices_title">This month\'s invoices are ready</string>
     <string name="notify_invoices_text">%1$d invoice(s) generated, ₹%2$.0f due in total.</string>
     <string name="notify_overdue_title">Rent overdue</string>

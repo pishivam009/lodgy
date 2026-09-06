@@ -288,7 +288,7 @@ only future ones stop.
 
 Under **More → Notifications**, each category has its own switch:
 
-- **Long-vacant rooms.** A nudge when a bed has sat empty past a threshold you
+- **Long-vacant rooms.** A nudge when a space has sat empty past a threshold you
   set — **1, 2 or 3 days**, and nothing longer, because a room empty for a week
   is already a week of lost rent. Each bed is nudged once, not over and over; if
   it fills and later empties again, it counts as new.

@@ -14,12 +14,12 @@
     "Wording works for a shop, warehouse or flat as well as a bed (see LODGY-86)",
     "Correct in Hindi as well as English"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Product Owner",
   "createdAt": "2026-09-06T10:05:00Z",
-  "updatedAt": "2026-09-06T12:20:00Z",
+  "updatedAt": "2026-09-06T13:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-06T10:05:00Z",
@@ -48,6 +48,36 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built to the recorded decisions. The bed sheet's vacant branch now offers 'Mark as warden / caretaker room' beside 'Assign a tenant'; it opens one field pre-filled with the warden's own name from the warden record, so marking your own room is two taps and a confirm and marking a caretaker's is that plus typing their name (AC1, AC2). Confirming writes a real tenant and a real tenancy with agreedRent 0, deposit 0, billingCycleDay 1 and nonRevenue true, then flips the bed to OCCUPIED - byte for byte what the long route produces, so nothing downstream knows the shortcut exists (AC3). The full onboarding route to the same switch is untouched (AC7). The phone number is left blank, which is the whole point: requiring it is what made the long route absurd for a warden marking their own room. The warden can still open the profile and add one. VERIFIED ON DEVICE end to end: Room 102 Bed A, sheet -> Mark as warden / caretaker room -> dialog pre-filled 'Warden' -> Mark as ours. The database then held tenant 'Warden' with an ACTIVE tenancy: rent 0, deposit 0, billing day 1, nonRevenue 1, forgoneRentExpense 0 - so LODGY-84 stays off by default as it should. Bed A flipped to OCCUPIED and the grid updated immediately. AC6, the way back, checked by walking it rather than reading it: the occupied bed's sheet offers 'View tenant', and the profile carries Checkout - plus 'Forgone rent as an expense', correctly, since the tenancy is non-revenue. Cancel leaves the bed vacant; verified. Strings in English and Hindi. WHAT QA SHOULD PUSH ON, since it is the decision most likely to be wrong: marking a SECOND room as your own creates a second tenant row with the same name, by design (AC5, and the PO's recorded reasoning). Reusing one self record would give a single tenant several active agreements, and getActiveByTenantId returns the first ACTIVE one it finds - transfer, checkout, manual invoicing and the forgone-rent expense all go through it. If you think the duplicate is worse than that risk, bounce it. TESTS: 5 new covering the pre-filled name, the written tenancy, a caretaker's name replacing the warden's, a blank name writing nothing, and dismissing. Also fixed a latent fault in this test class while I was in it - the ViewModel's init reads were unstubbed in the new tests, and MockK's throw inside that coroutine surfaced as a failure on whichever test happened to run next; there is now a stubRoom() helper. Full suite 549 pass, 0 failures, coverage 95.96% line against the 0.93 gate. Not schema-affecting."
+    },
+    {
+      "timestamp": "2026-09-06T12:47:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC8 - 'Wording works for a shop, warehouse or flat as well as a bed'. Everything else works, and the core of the ticket is genuinely fixed. REPRODUCED ON THE DEVICE with a properly vacant shop (bed VACANT and its agreement CLOSED): the sheet offers 'Mark as warden / caretaker room', and the dialog reads 'Warden or caretaker room?' / 'This room stays occupied but is never billed - no rent, no invoices, no overdue reminders. Whose room is it?'. That is the word 'room' four times for a shop. It matters most for FLAT, which is the property type a warden is most likely to actually live in - the whole point of this ticket. It is the same defect as LODGY-86 and it was written in the same session, which is why AC8 pointed at LODGY-86 in the first place. WHAT PASSED: AC1 and AC2 - the action sits on the bed sheet where a warden already taps, and asks only for a name pre-filled with the warden's own. AC3 - confirming wrote tenant 'Warden' with an ACTIVE tenancy at rent 0, deposit 0, billing day 1, nonRevenue 1, forgoneRentExpense 0, and flipped the bed to OCCUPIED; identical to the long route. AC4 - the PO's four decisions are recorded before the build. AC6 - I walked the way back rather than reading it: the occupied bed's sheet offers View tenant, and the profile carries Checkout. AC7 - the onboarding route to the same switch still works. Cancel leaves the bed vacant. AC5 NEEDS THE PO, not the developer: the AC says marking several rooms must not litter the directory with duplicate people, and the implementation deliberately creates one tenant row per marked room. The PO's recorded reasoning is sound - one tenant with several active agreements would make getActiveByTenantId pick the wrong tenancy - but the AC as written is not met, and a board where the criterion and the decision contradict each other will mislead whoever reads it next. Please reword AC5 or reopen the decision."
+    },
+    {
+      "timestamp": "2026-09-06T13:15:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed for AC8. The sheet action and its dialog now pick wording by property type: a hostel bed still reads 'Mark as warden / caretaker room' and 'This room stays occupied...', while a shop, warehouse or flat reads 'Mark as warden / caretaker use' and 'This property stays occupied but is never billed - no rent, no invoices, no overdue reminders. Who is using it?'. QA's point about FLAT is the one that decided the wording: a warden living in one of their own flats is exactly who this feature is for, so 'room' was wrong in the case that matters most. Verified on the device in both directions and both languages - the vacant Corner shop shows the 'use' wording and Room 103 Bed A still shows the 'room' wording; Hindi reads 'वार्डन / केयरटेकर के उपयोग में बताएं' and 'यह प्रॉपर्टी भरी हुई रहेगी...'. AC5 IS NOT MINE TO CLOSE and I have left it for the PO, as QA asked - the criterion and the recorded decision genuinely contradict each other, and I would rather the board say so than paper over it. Full suite 555 pass, 0 failures, coverage 95.84% line."
+    },
+    {
+      "timestamp": "2026-09-06T13:16:00Z",
+      "actor": "Tester",
+      "action": "comment",
+      "note": "FOR THE PO, raised by QA and not resolved by the fix: AC5 says marking several rooms must not litter the tenant directory with duplicate people, and the recorded decision (2) says each marked room creates its own tenant row. Both cannot be true. The decision is the safer engineering call - one tenant holding several active agreements would make getActiveByTenantId return the wrong tenancy for transfer, checkout, manual invoicing and the forgone-rent expense - so the recommendation is to reword AC5 to say that duplicate names are accepted deliberately, rather than to reopen the decision. Left open so the contradiction is visible."
+    },
+    {
+      "timestamp": "2026-09-06T13:20:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS on re-test for AC8. Verified both branches on the device and in both languages: the vacant Corner shop offers 'Mark as warden / caretaker use' with 'This property stays occupied... Who is using it?', while Room 103 Bed A still offers 'Mark as warden / caretaker room'. Hindi correct on both. That closes the criterion that failed. AC5 IS DELIBERATELY LEFT OPEN AS A NOTE TO THE PO, not as a defect: the criterion as written and the recorded decision contradict each other, and the developer was right not to resolve it themselves. Everything else re-confirmed from the first run - the shortcut writes a normal tenancy identical to the long route, the way back through checkout works, and cancelling leaves the bed vacant. Passing on the basis that the code is correct and the open item is a wording decision on the board, not behaviour on the phone."
     }
   ]
 }

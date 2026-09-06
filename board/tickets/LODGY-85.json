@@ -13,12 +13,12 @@
     "Consistent with how BedGridScreen and AllRoomsScreen already name single-unit properties, not a third style",
     "Correct in Hindi as well as English"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-06T09:10:00Z",
-  "updatedAt": "2026-09-06T09:45:00Z",
+  "updatedAt": "2026-09-06T12:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-06T09:10:00Z",
@@ -41,6 +41,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built. BedPickerViewModel no longer touches hostelPreferences at all - it takes one BedRepository and calls a new DAO query, getVacantChoices(), which returns every vacant bed across every property with its hostel id, hostel name and property type, ordered by property name, floor sortOrder, room number, bed label. Grouping in the ViewModel therefore preserves the SQL order rather than re-sorting. It also replaces the old per-floor, per-room fan-out of flows - the picker used to run one query per floor and one per room, which grew with the property; it is now one query. SHAPE OF THE LIST: property header, then floor headers, then choices. A single-unit property is collapsed to one unlabelled floor in the ViewModel, so the screen never has to decide whether a floor is real - it reads 'The whole property' with the type ('Shop') beneath, and no floor, room number or bed label anywhere on it (AC3). A hostel is unchanged (AC4). This follows the wording BedGridScreen and AllRoomsScreen already use rather than inventing a third style (AC7). EMPTY STATES: 'nothing is vacant in any of your properties' and 'add a property first' are now distinguished by a new hasAnyBed() check, because they need different actions from the warden (AC6). The title changed from 'Pick a Vacant Bed' to 'Where are they moving in?' - it has to be true of a shop and a bed alike, and it reads as a question an older warden can answer (AC5). VERIFIED ON DEVICE with a deliberately mixed portfolio - I freed one space in Corner shop and one in Moonlight so all three properties appeared at once. The list read: 'Corner shop / The whole property / Shop', then 'Moonlight / Ground / Room 501 . Bed A', then 'Sunrise PG' with its floors and 46 beds. Before this change the same screen showed Sunrise PG only. Correct in Hindi: 'वे कहाँ रह रहे हैं?', 'पूरी प्रॉपर्टी', 'दुकान', 'कमरा 501 · बेड A'. The fixture's occupancy has been restored to what it was. NOT DONE, and flagged rather than swept in: the transfer screen is hostel-scoped in the same way and has the same bed-only wording, as recorded in the description. Moving a tenant to a different property is a different decision from onboarding, so it needs the PO rather than me. TESTS: 6 new covering all-properties, hostel floor grouping, single-unit collapsing, a mixed portfolio, and the two empty states. Full suite 541 pass, 0 failures, coverage 95.91% line against the 0.93 gate. Not schema-affecting - the new query and hasAnyBed() read existing columns."
+    },
+    {
+      "timestamp": "2026-09-06T12:45:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all eight. The fix is real and I verified it against the failure, not just the success: with a deliberately mixed portfolio the picker listed 'Corner shop / The whole property / Shop', then 'Moonlight / Ground / Room 501 . Bed A', then 'Sunrise PG' with its floors - where before it showed only whichever property happened to be selected (AC1, AC2). AC3 is the one I pushed on: I built a genuinely vacant shop - bed VACANT and its agreement CLOSED, not just a flipped status - and it appeared as 'The whole property' with 'Shop' beneath, with no floor heading, no room number and no bed label anywhere on the row. AC4: hostels keep floor headings and bed labels, unchanged. AC5: both kinds sat in one list and each read correctly. AC6: 'Nothing is vacant in any of your properties' and 'Add a property first' are now separate states, which matters because they need different actions. AC7: this is the same vocabulary BedGridScreen and AllRoomsScreen already use. AC8: correct in Hindi - 'वे कहाँ रह रहे हैं?', 'पूरी प्रॉपर्टी', 'दुकान'. Also noted and correct: a property with nothing vacant does not appear at all, and the per-floor and per-room flow fan-out was replaced by one query. The developer flagged that TransferViewModel is still hostel-scoped with bed-only wording; I agree that is a separate decision and it is not a defect in this ticket."
     }
   ]
 }

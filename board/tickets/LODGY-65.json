@@ -9,12 +9,12 @@
     "If AC5 is reversed: every update gets a confirmation, LODGY-57's note is annotated to say it was superseded and by what, so a future reader is not misled",
     "Whichever way it goes, the rule is written down somewhere a developer will find it - DESIGN.md, next to the UI invariants in 4.12"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:05:59+00:00",
-  "updatedAt": "2026-09-06T08:40:00Z",
+  "updatedAt": "2026-09-06T12:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:05:59+00:00",
@@ -49,6 +49,14 @@
       "actor": "Developer",
       "action": "comment",
       "note": "QA NOTE - state of the emulator I left behind. The app data was cleared once during testing (needed to get WorkManager to re-run the daily job, which has no other trigger without root), then the real fixture was pushed back, so the DB content is the same three properties and six tenants as before. Two things did change: the PIN is now 1111 (four digits) rather than the previous six-digit one, because pm clear resets the PIN-length preference and the hash has to match it; and the fixture now carries my verification artefacts - Sunrise PG's phone has a trailing 1, Room 101's amenities have a trailing X and its price is 5500 rather than 5000, the caretaker's forgone-rent switch is ON at 5000, and there is one ACCOMMODATION expense dated 6 Sep 2026. Left in place deliberately: they are the evidence. Reset them if they get in the way of your own run."
+    },
+    {
+      "timestamp": "2026-09-06T12:45:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. AC1 and AC4 confirmed by reading the board history and DESIGN.md 4.12 - the decision is recorded and the rule is written where a developer will find it. AC2 is the substance and I checked it in both directions on the device rather than trusting the handoff. CONFIRMS: room 101's price per bed 5000 -> 5500 showed both figures and named what it affects; Corner shop's monthly rent 18000 -> 20000 showed 'Monthly rent goes from Rs 18000 to Rs 20000'; renaming Sunrise PG, which has 2 reconciliation marks, read 'You have reconciled 2 month(s) against its old name'. DOES NOT CONFIRM, which is the half most likely to have been over-built: Sunrise PG's phone number, Corner shop's address, room 101's amenities and its room number all saved silently. Cancel is clean - I cancelled the price change and the room kept 5000 while an amenities edit made in the same session persisted, so cancelling abandons only the pending change. THE INVOICE-AMOUNT CLAIM CHECKED RATHER THAN ACCEPTED, since the developer asked: InvoiceRepository exposes create, delete, existsForPeriod and updateStatus only, InvoiceDao's @Update is never called with a changed amountDue, and the six screens referencing amountDue all read it for display. There is genuinely no path to edit an invoice amount, so the fourth item on the PO's list cannot be built without first building the thing it would confirm. That is a new ticket if the PO wants it, not a defect here. The transfer confirmation was not on the PO's list and the developer added it - I agree with the call: picking a bed silently rewrites the rent, which is exactly the invisible-money case the rule names."
     }
   ]
 }

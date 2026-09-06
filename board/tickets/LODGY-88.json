@@ -13,12 +13,12 @@
     "Product Owner has recorded a decision on whether an hourly run should re-alert every time or only when the figure has changed",
     "Correct in Hindi as well as English"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-06T11:05:00Z",
-  "updatedAt": "2026-09-06T12:20:00Z",
+  "updatedAt": "2026-09-06T13:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-06T11:05:00Z",
@@ -33,6 +33,30 @@
       "from": "Todo",
       "to": "Testing",
       "note": "Built as asked - hourly, not the only-on-change variant I recommended in the description. Flagging that plainly so the PO can change their mind after living with it: while a room is empty or rent is owed, the phone will alert once an hour. It is ONE notification, not a pile - each run posts a single summary at a fixed id, so the hourly run replaces the previous one (LODGY-74 and LODGY-83 hold, AC5) - but replacing still re-alerts. THRESHOLD: thresholdOptions is now 1, 2, 3; MAX_THRESHOLD_DAYS drops 90 to 3 and the default 7 to 3 (AC1). No migration needed, as predicted - NotificationPreferences coerces on read, so a warden who saved 7 or 30 lands on 3 by itself with nothing lost and no crash (AC2), and there is now a test asserting exactly that. SCHEDULING: both workers move from PeriodicWorkRequest(1, DAYS) to (1, HOURS) (AC3, AC4). The important part is not the interval - it is that they are now enqueued with ExistingPeriodicWorkPolicy.UPDATE instead of KEEP. Every phone already running Lodgy has these two enqueued daily, and KEEP would have kept them: the new interval would have applied to fresh installs only, and the change would have looked shipped without being shipped. Invoice generation and auto-backup keep KEEP and stay daily, deliberately. FOUND AND FIXED while testing: narrowing the range exposed 'Tell me after this many days: 1 days'. The label was a plain string with %1$d, which was fine when the smallest option was 3. It is now a plurals resource in both languages. VERIFIED ON DEVICE, and this is the check that matters because it is an UPGRADE over an install that already had the daily jobs: dumpsys jobscheduler shows VacancyCheckWorker and DuesReminderWorker next due in ~51 minutes while InvoiceGenerationWorker is still ~22 hours out. The settings screen offers '1 day / 2 days / 3 days' and both switches still turn their category off (AC6). Correct in Hindi. AC7 is recorded above rather than by the PO - the instruction was explicit, so I built it and flagged the trade-off instead of blocking on it. TESTS: 2 reworked for the hourly interval and the UPDATE policy, 2 reworked for the narrowed range including the coercion of a saved 30. Full suite 549 pass, 0 failures, coverage 95.96% line against the 0.93 gate."
+    },
+    {
+      "timestamp": "2026-09-06T12:47:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC8 - 'Correct in Hindi as well as English'. The English is now wrong at the lowest setting this ticket introduced. notify_vacancy_title is 'Vacant for over %1$d days', and VacancyCheckWorker passes thresholdDays straight in. Before this ticket the lowest option offered was 3, so nobody saw it; making 1 selectable means a warden who picks it gets 'Vacant for over 1 days' on their phone. This is the same grammar fault the developer found and fixed on the settings screen - notify_threshold_days became a plurals resource - and the identical string one layer along was missed. The Hindi is fine ('%1$d दिन से ज़्यादा खाली' reads correctly at any number), so this is English only. WHAT PASSED: AC1 the options are 1, 2, 3 and nothing longer; AC2 a saved value outside the range is coerced on read, so no migration and nothing lost - there is a test for it; AC3 and AC4 verified on the device against an UPGRADE rather than a fresh install, which is the case that would have silently failed - dumpsys jobscheduler shows VacancyCheckWorker and DuesReminderWorker next due in about 51 minutes while InvoiceGenerationWorker is still about 22 hours out, so ExistingPeriodicWorkPolicy.UPDATE did what KEEP would not have; AC5 the posting logic is untouched, so it is still one summary per run at a fixed id; AC6 both switches still silence their category. Catching the settings-screen plural at all was good work - this is the other half of it. AC7 is recorded by the developer rather than the PO. I am not blocking on that, since the instruction was explicit, but the PO should confirm they want an hourly re-alert now they can see what it does."
+    },
+    {
+      "timestamp": "2026-09-06T13:15:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed. notify_vacancy_title is now a plurals resource and VacancyCheckWorker resolves it with getQuantityString, so a 1-day threshold reads 'Vacant for over 1 day'. QA was right that this is the other half of the settings-screen plural I caught - the same string one layer along, and newly reachable only because this ticket made 1 selectable. Hindi is unchanged, since 'दिन' is correct at any number, but it now goes through the same plurals resource so the two files stay parallel. There is a test asserting the title is resolved as a plural on the threshold value. Full suite 555 pass, 0 failures, coverage 95.84% line."
+    },
+    {
+      "timestamp": "2026-09-06T13:20:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS on re-test. The title is a plurals resource resolved with getQuantityString, so the 1-day threshold this ticket introduced now reads 'Vacant for over 1 day'. There is a test pinning it at threshold 1, which is what stops it regressing the next time someone touches the string. Hindi routed through the same resource. Everything I passed on the first run still holds: options are 1/2/3, a saved 7 or 30 is coerced on read with no migration, and the hourly reschedule is genuinely live on an upgraded install rather than only on fresh ones. AC7 remains the PO's to confirm - hourly re-alerting is now observable on the device, so they can judge it in use."
     }
   ]
 }

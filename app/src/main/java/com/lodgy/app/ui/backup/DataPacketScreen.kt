@@ -91,11 +91,17 @@ fun DataPacketScreen(onBack: () -> Unit, viewModel: DataPacketViewModel = hiltVi
                         PacketTenancy(
                             tenantName = tenancy.tenantName,
                             phone = tenancy.phone,
-                            roomAndBed = context.getString(
-                                R.string.bed_location,
-                                tenancy.roomNumber,
-                                tenancy.bedLabel,
-                            ),
+                            // A property let whole is named as itself; its room and bed rows
+                            // exist only to keep the hierarchy intact (LODGY-79, LODGY-86).
+                            roomAndBed = if (hostel.isSingleUnit) {
+                                hostel.hostelName
+                            } else {
+                                context.getString(
+                                    R.string.bed_location,
+                                    tenancy.roomNumber,
+                                    tenancy.bedLabel,
+                                )
+                            },
                             status = if (tenancy.active) activeLabel else vacatedLabel,
                             amenities = tenancy.amenities,
                             agreedRent = context.getString(R.string.currency_amount, tenancy.agreedRent),

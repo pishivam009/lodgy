@@ -3,6 +3,8 @@ package com.lodgy.app.work
 import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
+import com.lodgy.app.R
+import com.lodgy.app.data.entity.PropertyType
 import com.lodgy.app.data.dao.VacantBedDetail
 import com.lodgy.app.data.prefs.NotificationPreferences
 import com.lodgy.app.data.repository.BedRepository
@@ -28,13 +30,14 @@ class VacancyCheckWorkerTest {
     private val preferences: NotificationPreferences = mockk(relaxed = true)
     private val notifications: LodgyNotifications = mockk(relaxed = true)
 
-    private fun bed(id: String) = VacantBedDetail(
+    private fun bed(id: String, propertyType: PropertyType = PropertyType.HOSTEL) = VacantBedDetail(
         bedId = id,
         bedLabel = "A",
         roomNumber = "101",
         floorLabel = "Ground",
         hostelName = "Sunrise",
         vacantSince = 0L,
+        propertyType = propertyType,
     )
 
     @Before
@@ -114,5 +117,44 @@ class VacancyCheckWorkerTest {
         worker().doWork()
 
         verify(exactly = 1) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    /**
+     * LODGY-86. A warden with an empty shop was told "Corner shop - Room Corner shop, Bed A is
+     * still empty" - the implicit room and bed LODGY-79 says they must never be shown.
+     */
+    @Test
+    fun `a vacant single-unit property is named as itself, not as a room and a bed`() = runTest {
+        coEvery { bedRepository.getLongVacantBeds(any()) } returns
+            listOf(bed("b1", PropertyType.SHOP))
+        coEvery { bedRepository.getVacantBedIds() } returns listOf("b1")
+
+        worker().doWork()
+
+        verify { context.getString(R.string.notify_vacancy_where_unit, "Sunrise") }
+        verify(exactly = 0) { context.getString(R.string.notify_vacancy_where, any(), any(), any()) }
+    }
+
+    @Test
+    fun `a vacant hostel bed still names its room and bed`() = runTest {
+        coEvery { bedRepository.getLongVacantBeds(any()) } returns listOf(bed("b1"))
+        coEvery { bedRepository.getVacantBedIds() } returns listOf("b1")
+
+        worker().doWork()
+
+        verify { context.getString(R.string.notify_vacancy_where, "Sunrise", "101", "A") }
+    }
+
+    /** The title is a plural because LODGY-88 made a 1-day threshold selectable, which read
+     *  "Vacant for over 1 days". */
+    @Test
+    fun `the title is resolved as a plural on the threshold`() = runTest {
+        every { preferences.vacancyThresholdDays } returns flowOf(1)
+        coEvery { bedRepository.getLongVacantBeds(any()) } returns listOf(bed("b1"))
+        coEvery { bedRepository.getVacantBedIds() } returns listOf("b1")
+
+        worker().doWork()
+
+        verify { context.resources.getQuantityString(R.plurals.notify_vacancy_title, 1, 1) }
     }
 }

@@ -120,10 +120,22 @@ fun BedGridScreen(
     uiState.markingOwnRoom?.let { name ->
         AlertDialog(
             onDismissRequest = viewModel::onMarkOwnRoomDismissed,
-            title = { Text(stringResource(R.string.mark_own_room_title)) },
+            // A shop, warehouse or flat has no room to speak of - it IS the thing being used,
+            // and a warden living in their own flat is exactly who this is for (LODGY-86).
+            title = {
+                Text(
+                    stringResource(
+                        if (uiState.isSingleUnit) R.string.mark_own_unit_title else R.string.mark_own_room_title,
+                    ),
+                )
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(stringResource(R.string.mark_own_room_body))
+                    Text(
+                        stringResource(
+                            if (uiState.isSingleUnit) R.string.mark_own_unit_body else R.string.mark_own_room_body,
+                        ),
+                    )
                     OutlinedTextField(
                         value = name,
                         onValueChange = viewModel::onMarkOwnRoomNameChange,
@@ -226,7 +238,15 @@ private fun BedActionSheet(
                 // tenant, with a phone number, before you could say the room is yours
                 // (LODGY-87).
                 TextButton(onClick = onMarkOwnRoom) {
-                    Text(stringResource(R.string.bed_sheet_mark_own_room))
+                    Text(
+                        stringResource(
+                            if (uiState.isSingleUnit) {
+                                R.string.bed_sheet_mark_own_unit
+                            } else {
+                                R.string.bed_sheet_mark_own_room
+                            },
+                        ),
+                    )
                 }
             }
         }
