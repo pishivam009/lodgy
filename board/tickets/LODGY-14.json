@@ -8,12 +8,12 @@
     "Bed becomes VACANT immediately after checkout",
     "Tenant's history remains viewable after checkout (status VACATED, not deleted)"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:45:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -44,6 +44,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - checked Ravi Kumar out on-device. Set a Rs.1500 damage deduction against his Rs.10000 deposit: refund live-updated to Rs.8500 before confirming (AC1). Confirmed checkout: Room 101/Bed A flipped to VACANT immediately (checked BedGridScreen right after) and also dropped out of the Vacant Beds view's exclusion correctly (AC2). Ravi's row in the Tenants directory now shows a VACATED chip instead of disappearing - opened his profile afterward and it's still fully there (phone, emergency contact, notes, Call/WhatsApp/SMS) with only \"Checkout tenant\" gone since he's no longer active (AC3)."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and I checked this hardest because it is money going back out. Checked out a tenant with a Rs 10000 deposit and a Rs 2500 damage deduction: the refund updated to Rs 7500 as I typed, so I can turn the phone round and show them. Afterwards the agreement closed, the bed went back to vacant, and the tenant stayed in my records rather than disappearing."
     }
   ]
 }

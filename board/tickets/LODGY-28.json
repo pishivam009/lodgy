@@ -7,12 +7,12 @@
     "Export produces a single zip file at a user-chosen location",
     "Zip contains both the DB file and all referenced photos"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T18:00:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - both AC confirmed on-device. More -> Backup & Restore -> Export opened the standard SAF CreateDocument picker with a sensible default name (lodgy-backup-2026-09-03.zip), saved to Downloads without error (AC1). Pulled the zip via adb and verified with Python's zipfile: 4 entries (lodgy.db + 3 photos/*.jpg), zip.testzip() returns None (no CRC/integrity errors, opens cleanly), and lodgy.db's wardens/tenants/hostels tables are all readable and intact - the wal_checkpoint(FULL) the developer mentioned worked correctly. Cross-checked one photo filename against the live DB's tenants.photoPath column and confirmed it's Test Tenant's actual saved photo, satisfying 'contains... all referenced photos' (AC2). Observation, not a fail: the zip also contains 2 photo files that aren't referenced by any tenant/DB row (confirmed via query - Test Tenant's idProofPhotoPath is still null, Ravi/Priya have no photos at all) - these are orphaned files from the same PhotoStorage-persists-on-pick-not-on-save behavior already reported on LODGY-11 (a picked/captured photo is copied into app-private storage immediately, before the tenant form is ever saved, so an abandoned pick leaves a permanent dangling file). AC2 only requires referenced photos be included, which holds, but every future export will keep including these orphans and any others like them since nothing ever cleans up unreferenced photo files - worth a follow-up cleanup pass once LODGY-11's save-timing issue is fixed, not blocking this ticket on it."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and I tested it rather than trusting it: exported a backup, then deliberately wrecked my live data - renamed a property, deleted a tenant - and the export still held everything. One file, photos included, and it goes wherever I choose to put it."
     }
   ]
 }

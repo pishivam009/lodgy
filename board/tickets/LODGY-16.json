@@ -7,12 +7,12 @@
     "Invoice can be created for a period earlier than the current month",
     "Manually added invoices behave identically to auto-generated ones for payment tracking"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:30:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - created a July 2026 invoice for Ravi Kumar (current month was September) - accepted with no error, appeared as \"7/2026, UNPAID\" in the invoice list (AC1). Tried creating a second invoice for the same tenant+period: form showed \"An invoice already exists for this period\" in red, Create Invoice disabled - confirms it shares InvoiceRepository.existsForPeriod with the auto-generation path rather than a separate check. Then recorded two partial payments and a final payment against this manually-created invoice via the normal RecordPaymentScreen (see LODGY-17) - status tracked PARTIAL then PAID exactly like an auto-generated invoice would, satisfying AC2."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and it is the reason LODGY-90 is a gap rather than a disaster: when a month does go missing I can add it by hand with the right period and date. Backdating works, which is what makes it usable for tidying up history."
     }
   ]
 }

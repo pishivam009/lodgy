@@ -7,12 +7,12 @@
     "Can create, edit, and list multiple hostels",
     "A hostel switcher is visible and changes the active hostel context"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T14:40:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - exercised on-device (emulator). Created two hostels (\"Sunrise PG Boys\", \"Green Valley\") via the FAB, both listed correctly (AC1). Edited the first hostel's name (appended \"Boys\") and its address, and the change persisted after navigating away and back (AC1). Initially the Home dashboard showed the empty state even with two hostels created - looked like a bug at first - but this is by design: HostelListScreen's card tap is the switcher (viewModel.selectHostel(id) fires on open, and the tapped card highlights via primaryContainer), not a separate always-visible widget. Tapping a hostel row persisted it as selected and the Home dashboard immediately reflected that hostel's name and metrics on the next visit (AC2 confirmed). Recommend Product Owner consider a more discoverable switcher affordance later (a dropdown/chip in the top bar) since a first-time warden might not realize tapping a list row is what changes context - filing as a UX polish note, not a functional defect."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Three properties on one phone, and the switcher chips let me flip between them or see everything at once. Adding a fourth took a name and nothing else."
     }
   ]
 }

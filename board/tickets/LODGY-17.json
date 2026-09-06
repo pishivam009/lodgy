@@ -8,12 +8,12 @@
     "Full payment sets status PAID",
     "Multiple partial payments against one invoice are all retained"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:35:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -44,6 +44,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all three AC confirmed on a single invoice (Ravi Kumar, 7/2026, Rs.5000 due). Recorded Rs.2000: status flipped to PARTIAL, row showed \"Rs.2000 of Rs.5000\" (AC1). Recorded a second partial of Rs.1000 without touching the first: row showed \"Rs.3000 of Rs.5000\" - both payments retained and summed, not overwritten (AC3). Recorded the remaining Rs.2000 (form correctly pre-filled the exact remaining balance): status flipped to PAID, amount shown as the full Rs.5000 with Record/Reminder buttons gone from the row (AC2)."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Recorded a part payment of Rs 1500 against a Rs 4000 invoice; it went to PARTIAL and the row reads 'Rs 1500 of Rs 4000'. Part payments are the normal case here, not the exception, so having the status follow the money by itself is what makes the list trustworthy."
     }
   ]
 }

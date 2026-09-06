@@ -10,12 +10,12 @@
     "Dashboard or payment list surfaces these flagged multi-period payments so a warden can review them",
     "No change to how a normal single-period payment is recorded or displayed"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -52,6 +52,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all five, verified against the database. Set Ramesh up with three open invoices (5/2026 2200 after credit, 6/2026 6000, 7/2026 6000). AC1: 'Pay several months at once' takes one amount and applies it across them in a single action; entering 10000 instead of the prefilled 14200 recalculated the preview live to 2200 + 6000 + 1800, oldest first. AC2: after saving, each invoice's paid-so-far was correct - 5/2026 PAID, 6/2026 PAID, 7/2026 PARTIAL showing '1800 of 6000'. AC3: all three payment rows share one multiPeriodGroupId and each invoice row is labelled 'Part of a multi-month payment'. AC4: the payment list surfaces that label on every affected invoice, so the warden can spot and review them. AC5: recorded an ordinary single payment on a fresh 8/2026 invoice - it saved through the unchanged Record Payment screen, its payment row has multiPeriodGroupId NULL, and the invoice shows Paid with no multi-month label."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Somebody paying three months at once is unusual enough that I want it marked rather than blended into the totals, and the flag on the row does that."
     }
   ]
 }

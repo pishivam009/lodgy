@@ -8,12 +8,12 @@
     "A bulk import path (e.g. CSV) exists for wardens who do want to bring over structured history, as an alternative to one-by-one manual entry",
     "Skipping historical backfill entirely does not block using the app for new activity going forward"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -50,6 +50,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all three, including a real CSV import. AC1: the agreement screen has 'Dues carried forward (optional)' with a plain-language hint; entering 3000 for a tenant backdated to 5 Jun 2026 created a single opening invoice (period 5/2026, amountDue 3000, dueDate = move-in) instead of demanding every past month be re-entered. AC2: More > Import past history (CSV) documents the column order and validates before committing - fed it a 4-line file mixing valid rows, an unknown phone and a malformed line, and it reported '2 of 3 row(s) can be imported', '1 row(s) have a phone number no tenant in the app uses - add those tenants first.' and 'Line 4 could not be read: garbage,row,here', then imported exactly the 2 good rows. Verified in the DB: 3/2026 5000 PAID and 4/2026 5000 PARTIAL with a 2000 payment - amounts, statuses and payment rows all correct. AC3: the screen states plainly that skipping changes nothing, and the app worked normally throughout without any backfill."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Carrying forward what somebody already owed as a single opening invoice, instead of re-typing a year of past months, is the difference between starting to use this app and giving up in the first week."
     }
   ]
 }

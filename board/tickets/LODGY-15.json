@@ -8,12 +8,12 @@
     "No duplicate invoice is created for the same tenant+period",
     "Job survives app restarts (WorkManager persistence)"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T17:30:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -44,6 +44,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - AC3 confirmed directly on-device: `adb shell dumpsys jobscheduler | grep -A20 InvoiceGenerationWorker` shows the job live as `androidx.work.systemjobscheduler:u0a229/1 #InvoiceGenerationWorker#`, periodic, TIMING_DELAY constraint pending (~20h to next run), confirming WorkManager persisted the schedule independent of the app process (survived multiple force-stops/relaunches during this session's testing) - satisfies AC3. AC1/AC2 could not be exercised live: this AVD has no root (`adb root` -> 'cannot run as root in production builds'), so the device clock can't be advanced to a tenant's billingCycleDay, and `adb shell cmd jobscheduler run -f com.lodgy.app 1` (and the numeric job hash from dumpsys) both returned 'Could not find job' - this build doesn't support force-running a WorkManager-owned SystemJobService job via the jobscheduler shell command, and there's no WorkManager test/inspector API surface reachable without instrumentation. Verified AC1/AC2 by code review instead: InvoiceGenerationWorker.doWork() (work/InvoiceGenerationWorker.kt:21-37) filters tenancyAgreementRepository.getAllActive() by billingCycleDay==today (AC1's trigger condition, correctly using the real device Calendar), and guards every creation with invoiceRepository.existsForPeriod() (InvoiceRepository.kt:16-17, a genuine DB lookup keyed on tenancyAgreementId+periodMonth+periodYear, not an in-memory check that would miss a re-run) before calling create() - a re-run of the same job on the same day for the same agreement cannot double-insert, satisfying AC2 by construction. No off-by-one or edge case found (billingCycleDay is pre-constrained to 1-28 elsewhere per the developer's In Progress note, so every month has the day). Passing on the strength of confirmed AC3 plus sound, direct code verification of AC1/AC2 - the same category of environment limitation already accepted for LODGY-4/5's biometric paths on this hardware-less/rootless AVD."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted for what it does - invoices appear on the billing day without me doing anything, and re-running never doubles them up. But it fires only on the exact day with no catch-up, so a phone that is off or asleep on the 5th means September is never billed and nothing tells me. Filed as LODGY-90 rather than held against this ticket, since what was asked for here works."
     }
   ]
 }

@@ -25,7 +25,11 @@ the thing 1.0 would be claiming.
 - `Won't Do` tickets keep the version they were scoped into. They record a
   decision taken in that wave.
 
-## 0.1.0 (build 1) — the first working app
+## 0.1.0 (build 1) — the first working app — DELIVERED
+
+Accepted under UAT on 7 Sep 2026, together with 0.2.0 and 0.3.0 — the three
+releases had shipped without a user-acceptance pass, and that sweep is what
+turned up LODGY-90.
 
 **LODGY-1 … LODGY-30.** Everything needed to run a hostel end to end, offline:
 project scaffold and Room schema, PIN and biometric lock, the property hierarchy
@@ -35,7 +39,7 @@ payment recording, SMS reminders, the home dashboard, vacancy views, monthly
 reports with PDF/CSV export, tenant notes and timeline, expenses, zip
 export/import for moving phones, and Hindi alongside English.
 
-## 0.2.0 (build 2) — what the warden asked for after using it
+## 0.2.0 (build 2) — what the warden asked for after using it — DELIVERED
 
 **LODGY-31 … LODGY-45.** The first feedback wave, mostly about finding things:
 quick call/WhatsApp/SMS, dark mode, room and bed shown next to every tenant,
@@ -45,7 +49,7 @@ on the tenant directory, all-rooms without drilling through floors, floor
 occupancy summaries, flagging odd multi-month payments, reconciliation against
 paper registers, lightweight historical backfill, and the printable data packet.
 
-## 0.3.0 (build 3) — hardening
+## 0.3.0 (build 3) — hardening — DELIVERED
 
 **LODGY-46 … LODGY-62.** Less new surface, more trust: a security review pass and
 its fixes, higher automated coverage, planned move-out dates, configurable PIN
@@ -55,7 +59,7 @@ actions, English as the first-launch default, long-vacancy nudges, local
 notifications for dues and expenses, screen transitions, and status icons.
 LODGY-48 (APK size) was closed Won't Do in this wave.
 
-## 0.4.0 (build 4) — post-launch feedback and fixes — SHIPPED
+## 0.4.0 (build 4) — post-launch feedback and fixes — DELIVERED
 
 **LODGY-63 … LODGY-84.** What real use turned up, including two crashes and a
 double-booking: delete that does not break history, RAG room tiles, daily
@@ -73,6 +77,9 @@ within the release rather than deferred.
 
 ## 0.5.0 (build 5) — open — CURRENT
 
+- **LODGY-90** — invoice auto-generation fires only on the exact billing day
+  with no catch-up, so a phone asleep on the 5th skips that month's rent and
+  says nothing. Raised in UAT of 0.1.0; open.
 - **LODGY-89** — the Home tiles. Overdue invoices now opens the Payments list
   already filtered to what is actually late and scoped to the property Home was
   showing, so the number and the list agree. A chevron marks the tiles that lead

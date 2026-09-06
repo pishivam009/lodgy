@@ -7,12 +7,12 @@
     "App has a consistent Material theme",
     "Navigating between placeholder screens works"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T16:40:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - confirmed implicitly across this entire testing pass rather than in isolation: consistent Material3 theme and a working Home/Property/Tenants/Payments/More bottom nav were exercised continuously through dozens of screens (property setup, tenant onboarding, billing, checkout, notes, expenses) with no visual inconsistency, dead route, or navigation dead-end encountered anywhere."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Five tabs, always in the same place, and the app opens on Home. I never once had to think about where I was."
     }
   ]
 }

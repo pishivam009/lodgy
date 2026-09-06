@@ -7,12 +7,12 @@
     "All four metrics are visible and correct against seed data",
     "Dashboard reflects the currently selected hostel"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T17:00:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -59,6 +59,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - re-verified both fixes on-device with the exact repro from the FAIL note. After reinstalling the fixed build, Home correctly showed \"Rs.5000 collected today\" and \"13 vacant beds\" (both now include Ravi Kumar's post-checkout data correctly). Then, without restarting the app, onboarded a new tenant onto a vacant bed from the Tenants tab and switched back to Home: vacant beds dropped from 13 to 12 immediately, live, with no restart or hostel-switch needed - confirms the LifecycleResumeEffect refresh is working. Both bugs closed."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Money in today, what is overdue, what is empty and who is leaving - that is the four things I want before I have finished my tea. The backup warning underneath is a good nag."
     }
   ]
 }

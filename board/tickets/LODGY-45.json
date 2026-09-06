@@ -8,12 +8,12 @@
     "PDF is legible and organized (grouped by hostel/room/tenant), not a raw data dump",
     "Exported via SAF like other exports (LODGY-23/28), so it can be saved, printed, or shared"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:38:43+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -66,6 +66,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - the self-contradiction is gone, and one export proves both branches at once. AC1 and AC3 were already passing. The fix: I set a notice date of 25 Sep 2026 on Suresh while he was still ACTIVE with his bed still OCCUPIED (exactly the LODGY-49 state that produced the bug), then exported the printable packet with Ramesh Kumar already checked out. The single PDF contains both cases and labels them differently and correctly - Ramesh reads 'Status VACATED' then 'Moved out: 4 Sep 2026', Suresh reads 'Status ACTIVE' then 'Leaving on (notice given): 25 Sep 2026'. No record now says a current resident has moved out. AC2 still holds: the packet is still grouped hostel -> floor -> room -> tenant with per-tenant invoice history and correct credit-adjusted amounts, and the new label is translated in values-hi so the Hindi export is not left with an English string."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. A printable packet of everything, grouped property then floor then tenant, is what I would hand an accountant or keep in a drawer. I did not generate the PDF during this pass."
     }
   ]
 }

@@ -8,12 +8,12 @@
     "PDF is saved via SAF to a location the warden picks, same pattern as LODGY-23/LODGY-28",
     "Numbers on the PDF match the underlying invoice/payment records exactly"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -50,6 +50,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - exported two real PDFs and checked them at file level. AC1: the Receipt button on each invoice row opens an acknowledgement showing tenant, room+bed, period, invoice amount, credit applied, total paid and balance; for invoice 8/2026 the generated PDF also carries a Payments table with Date '4 Sep 2026' and Mode 'CASH', so payment mode and date are both present. AC2: the SAF picker opens with a sensible default name (lodgy-receipt-8-2026.pdf) and writes to the chosen location - same pattern as LODGY-23/28. AC3: numbers match the records exactly - pulled the files and extracted their text: invoice 5/2026 rendered 3000 invoice / 800 credit / 2200 due against DB rows amountDue=3000.0 and credits.amount=800.0; invoice 8/2026 rendered 6000/6000/0. Both files are structurally valid (%PDF-1.4 header, %%EOF, correct page tree) and carry a '1 / 1' page footer."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. A tenant asking for proof of payment is routine and a screenshot is not proof. Receipt sits on the invoice row where I would look for it. I did not render one to a file during this pass."
     }
   ]
 }

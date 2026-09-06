@@ -7,12 +7,12 @@
     "Product decision recorded: either (a) implement periodic occupancy snapshots so past-period reports show true historical occupancy, or (b) keep current-state occupancy but label it clearly on the report so it isn't misread as historical",
     "If (a): Monthly Report's occupancy % for a past period reflects that period's actual bed/occupancy state"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.3.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - option (b), and implemented well. AC1: the product decision is recorded in the UI itself rather than only in a doc. For a past period the tile is labelled 'Occupancy (today)' and the report carries the explicit caveat 'Occupancy is measured from the beds as they stand today, not as they stood in this period - the app does not keep a history of bed occupancy.' For the current period the plain 'Occupancy' label is used, which is correct since current-period occupancy really is today's. The caveat also survives into the CSV export. AC2 does not apply - (a) was not chosen. Cosmetic note for the PO, not a fail: the CSV emits two rows both keyed 'Occupancy' (the value and the caveat), which is awkward for anyone parsing it in a spreadsheet."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted as an answer rather than a feature. The finding is that a report for an old month uses today's bed states, and the app says so on the report instead of quietly pretending otherwise. I would rather be told a number is approximate than be given a confident wrong one."
     }
   ]
 }

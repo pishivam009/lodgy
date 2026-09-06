@@ -7,12 +7,12 @@
     "Expense list can filter by category",
     "Expense list can sort by date or amount"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.3.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS. AC1: the category filter works - with a WIFI 1000 and an ELECTRICITY 3000 logged, selecting WIFI left only the WIFI row and the header total correctly dropped from 4000 to 1000, so the summary respects the filter rather than always showing the unfiltered total. AC2: Sort by Date / Amount both present; sorting by Amount ordered 3000 then 1000. Recurring entries are badged RECURRING in the list, which is what LODGY-60's expense reminder keys off."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Same on expenses - by category, and sorted by date or amount when I am looking for where the money went."
     }
   ]
 }

@@ -7,12 +7,12 @@
     "Numbers reconcile with underlying invoice/payment/expense records",
     "Report can be viewed for any past month, not just the current one"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T17:05:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -59,6 +59,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - re-verified on-device with the exact repro from the FAIL note. After reinstalling the fixed build, opened Monthly Report for Sunrise PG Boys with Month=7/Year=2026 (Ravi Kumar already checked out): Total collected now correctly shows Rs.5000 and Total dues shows Rs.0, matching the underlying paid invoice instead of the prior Rs.0/Rs.0. Confirmed AC1 holds for a past period involving a checked-out tenant. Bug closed."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Collected, dues, credits, occupancy and income-minus-expense for a month, per property. It is the page I would read at month end, and it is honest that the occupancy figure is today's rather than that month's."
     }
   ]
 }

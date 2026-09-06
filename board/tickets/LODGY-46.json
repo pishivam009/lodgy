@@ -10,12 +10,12 @@
     "Backup export/import (LODGY-28/29) reviewed for zip-slip/path-traversal safety (stageImport's existing '..'/'/' filtering should be re-verified, not assumed)",
     "Findings written up with severity and suggested fixes, even if some are accepted as out-of-scope for a local-only, no-backend app"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.3.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -46,6 +46,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - re-verified every finding independently rather than accepting the write-up. AC1: read AndroidManifest.xml directly - MainActivity is the only exported=true component (launcher requirement); FileProvider, androidx.startup InitializationProvider (WorkManager's default initializer removed via tools:node=remove) and AppLocalesMetadataHolderService are all exported=false; no receivers, no exported services, allowBackup=false, and exactly one permission (POST_NOTIFICATIONS). AC2: res/xml/file_paths.xml grants only <cache-path path='camera/'>, not all of cacheDir - correct, since the restore staging area under cacheDir holds a plaintext copy of the whole DB during an import. AC3: PinHasher uses BCrypt.gensalt() (random per-hash salt, cost 10, salt embedded in the hash) and BCrypt.checkpw - no fixed salt, no home-rolled digest, no fast hash. AC4: re-read stageImport myself rather than assuming - the DB entry is accepted only on exact name equality, and photo entries are rejected if blank, containing '..' or containing '/', so nothing can escape the staging directory; the '..' check also covers Windows-style traversal. AC5: docs/SECURITY-REVIEW.md rates 6 findings with severity and status (2 FIXED, 1 OPEN with a concrete suggested fix, 2 ACCEPTED against DESIGN.md 5, 1 re-verified clean) plus a 'reviewed and clean' section. I also live-tested the finding-1 fix: launched the exported MainActivity with --es com.lodgy.app.NOTIFICATION_ROUTE 'evil_route_does_not_exist' and the app started normally with no crash - isSupportedNotificationRoute is genuinely wired in at LodgyNavHost.kt:102, not merely written."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. I cannot audit this myself, so I judge whether the findings were acted on: the two mediums are fixed, the accepted risks are written down with reasons rather than quietly dropped, and the one about somebody guessing my PIN was properly fixed in LODGY-77. That is a review that changed the app rather than one that produced a document."
     }
   ]
 }

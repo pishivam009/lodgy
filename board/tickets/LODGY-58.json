@@ -8,12 +8,12 @@
     "Existing installs that already have an explicit choice stored (Hindi or English) are unaffected - this only changes the unset-default case",
     "Hindi remains fully available and switchable at any time via the existing More -> App language picker"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.3.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -50,6 +50,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all three. AC1: wiped app data for a genuine first launch and the PIN setup came up in English ('Create a PIN', 'Set up your PIN'), so an unset locale now defaults to English. AC2: an explicit choice is untouched - selected Hindi, force-stopped and relaunched, and the lock screen still read the Hindi 'Enter your PIN'; only the unset-default case changed. AC3: Hindi remains fully available and switchable at any time via More > App language - switched to Hindi and the entire UI including the bottom nav and generated PDF content localised, then switched back to English cleanly."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. English on first launch is the right default for a phone that could be handed to anyone, and Hindi is two taps away."
     }
   ]
 }

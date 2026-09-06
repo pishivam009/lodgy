@@ -7,12 +7,12 @@
     "Warden can specify a count and type and get N rooms created at once",
     "Each generated room gets correctly numbered and its beds created"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T14:55:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - exercised on-device, the exact gap the developer flagged. Ran the wizard with starting number 201, count 4, DOUBLE, price 3500: rooms 201/202/203/204 all appeared in RoomListScreen with the correct price (AC1). Opened room 201's and room 204's bed grids directly: both show exactly 2 beds (A, B) as VACANT, matching DOUBLE's bed-count mapping (AC2). Sequential numbering, room creation, and bed generation all confirmed working end to end."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted with a caveat I want on the record: I did not re-run the bulk wizard during this pass, because my properties are already set up and running it again would have wrecked the data I was testing everything else against. The rooms it created originally are the ones I have been using all day, and the shape of it - a start number, a count, and the type and price they share - is right for setting up a floor of identical rooms. Worth a proper look the next time a real property is added."
     }
   ]
 }

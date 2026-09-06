@@ -7,12 +7,12 @@
     "Each floor card shows counts like 'X vacant / Y occupied' (beds or rooms, consistent with how VacantViewScreen counts)",
     "Counts update live when a checkout/onboarding changes a bed's status, without needing to leave and reopen the floor list"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS. AC1: each floor card shows 'X vacant / Y occupied' - Ground read '0 vacant / 0 occupied' before any rooms existed, then '5 vacant / 1 occupied' once a tenant was in, matching how VacantViewScreen counts (bed level). A floor with no rooms still reports 0/0 rather than vanishing. AC2: counts are live - FloorListViewModel combines the floors flow with bedRepository.observeOccupancyByHostel(), a Room Flow that invalidates on any beds-table write, so an onboarding, transfer or checkout updates the card without leaving and reopening the list. Confirmed by the counts being correct immediately after a bed transfer and again after checkout."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. The floor cards say how many rooms are free before I open them, so I can see which floor has space from the list."
     }
   ]
 }

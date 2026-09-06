@@ -8,12 +8,12 @@
     "Referenced photos are never touched by the cleanup, verified against real tenant records including vacated tenants",
     "Backup export (LODGY-28) no longer includes orphaned files after cleanup has run"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.3.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -50,6 +50,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - AC1 verified live, not just read. AC1: planted two unreferenced files (orphan_a.jpg, orphan_b.jpg) in filesDir/photos, force-stopped and relaunched the app, and both were gone on the next listing with no manual action; LodgyApplication.onCreate() fires the sweep on Dispatchers.IO so startup does not block on a directory listing. AC2: referenced photos are safe - the cleaner matches on file NAME against every tenant from tenantRepository.getAll(), vacated included, and OrphanPhotoCleanerTest covers exactly this: referenced files kept, an id-proof photo counted as a reference, a vacated tenant's photos never swept, and restored photos matched by name so a restore is not mass-deleted. AC3: follows from AC1 - the orphans no longer exist by the time an export runs, so they cannot ride along in the zip."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Photos of ID proofs left on the phone after their tenant is long gone is exactly the mess I would never think to clean up myself."
     }
   ]
 }

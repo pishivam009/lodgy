@@ -7,12 +7,12 @@
     "Photo and ID proof photo are captured via camera or gallery and stored locally",
     "All fields are editable after creation"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T19:10:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -65,6 +65,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - re-ran the exact FAIL repro on-device. From Test Tenant's Edit form, tapped 'Take Photo' on the ID Proof field: system Camera opened, captured, tapped Done - landed directly back on the Edit Tenant form (no PIN screen), with the captured photo showing in the ID Proof slot and the Photo field/name/phone all still intact. Tapped Save and reopened the profile: the ID Proof photo persisted correctly. Confirms AC1's camera path now works end-to-end alongside the already-passing gallery path, with no data loss across the camera round-trip."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Name and phone are the only things it insists on, and the photos are optional - which matters, because a tenant at the door will give me a name and a number but will not wait while I photograph their ID. I onboarded someone in ten taps and five typed fields."
     }
   ]
 }

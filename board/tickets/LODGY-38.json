@@ -7,12 +7,12 @@
     "More tab shows the app's versionName/versionCode somewhere visible (e.g. a footer line)",
     "Value updates automatically per build - not a hardcoded string that goes stale"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-06T08:35:00Z",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -49,6 +49,14 @@
       "actor": "Developer",
       "action": "comment",
       "note": "Releases are now numbered and every ticket carries the one it shipped in, recorded here because this is the ticket that put the version in front of the warden. docs/RELEASES.md is the list: 0.1.0 the first working app (LODGY-1..30), 0.2.0 the first feedback wave (31..45), 0.3.0 hardening (46..62), 0.4.0 post-launch feedback and fixes (63..84, current). app/build.gradle.kts moved from versionCode 1 / versionName '0.1' to 4 / '0.4.0', which is the point of this ticket: the More screen was truthfully reporting a number that had stopped matching what the warden actually had after three waves of work. The board shows each ticket's version, and CLAUDE.md now tells every session to stamp new tickets and to bump the app version when a release closes."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. The version and build are on the More screen, which is what I would read out if I ever had to report a problem. It says v0.5.0 (build 5) and matches the build I am running."
     }
   ]
 }

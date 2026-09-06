@@ -7,12 +7,12 @@
     "Creating a DOUBLE room creates exactly 2 beds, TRIPLE creates 3",
     "Bed status flips correctly on tenant onboarding/checkout"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:05:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -61,6 +61,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - AC2 confirmed. Onboarded a tenant onto Room 101/Bed A: bed flipped from VACANT to OCCUPIED immediately (visible in BedGridScreen right after save). That bed then correctly dropped out of the vacant-bed picker list when onboarding a second tenant. Checkout-side flip (setVacant) will get its own end-to-end confirmation under LODGY-14, but the mechanism is the same setOccupied/setVacant pairing already proven working here."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. A double room generates Bed A and Bed B on its own; I never type bed names. Each bed carries its own vacant or occupied state, which is the only way the vacancy numbers can be right in a shared room."
     }
   ]
 }

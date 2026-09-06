@@ -7,12 +7,12 @@
     "Timeline sorts by occurredOn, not createdAt",
     "Editing a note's occurredOn re-sorts it correctly in the timeline"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T16:05:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -35,6 +35,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - this is the one worth spelling out precisely since createdAt-order and occurredOn-order can coincide by accident. Created a COMPLAINT note dated 1 Sep, then a GENERAL note dated 28 Aug (created SECOND but occurring EARLIER) - timeline correctly showed 1 Sep above 28 Aug, proving sort-by-occurredOn rather than sort-by-createdAt (AC1, since createdAt order would have put them the other way if it were sorting on that). Then edited the 28-Aug GENERAL note's date forward to 2 Sep (later than the COMPLAINT note's 1 Sep, despite still being the first-created row): it immediately jumped to the top of the timeline, above the COMPLAINT note (AC2)."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and it does more than I expected. The timeline is not only my notes - the credit I recorded for Priya appeared on it by itself, dated, as did her earlier room moves. The history builds itself from what I do, which is the only way it will still be complete in a year."
     }
   ]
 }

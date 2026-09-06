@@ -6,12 +6,12 @@
   "acceptanceCriteria": [
     "Export produces a readable PDF or CSV with the same numbers as the on-screen report"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T17:50:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - AC confirmed on-device with a real number reconciliation. Opened Monthly Report for Sunrise PG Boys, Month=9/Year=2026 (Rs.0 collected, Rs.4000 dues, 14% occupancy, Rs.2950 expense, -Rs.2950 net), tapped the export icon: the standard SAF CreateDocument picker opened with a sensible pre-filled name (lodgy-report-9-2026.csv), saved to Downloads. Pulled the file via adb and its contents are: Hostel=Sunrise PG Boys, Month=9, Year=2026, Total collected=0.00, Total dues=4000.00, Occupancy=14%, Total Expense=2950.00, Income - expense=-2950.00 - every field matches the on-screen report exactly, satisfying the AC in full. File is well-formed (quoted key/value CSV rows, stable 2-decimal amount formatting) and opened/parsed without issue via a plain file read. No PDF was built, which is fine per the AC's 'PDF or CSV' wording and the developer's explicit Phase-2 scoping note."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. The report exports as a file I can keep or send on. I did not generate one during this pass - it uses the same picker as the backup, which worked - so I am accepting on that rather than on having opened the exported file."
     }
   ]
 }

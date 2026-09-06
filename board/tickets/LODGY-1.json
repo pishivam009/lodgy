@@ -7,12 +7,12 @@
     "Project builds and runs a blank Compose screen on a device/emulator",
     "Hilt, Room, Navigation, WorkManager dependencies compile"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T14:10:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -49,6 +49,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - AC1 now verified on-device. User got an Android emulator (\"Medium Phone\", API 36, sdk_gphone16k_x86_64) running in Android Studio; installed app-debug.apk via adb and launched it. MainActivity became the foreground activity with no crash, and the Compose UI rendered correctly (first the PIN-setup screen, later the bottom-nav shell) - confirmed via adb screenshots. AC2 was already build-verified. Both AC now satisfied."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Not a feature I can see, but I judge it by whether the app is one thing rather than a pile of parts: it installs over the old version without losing my data, survives being force-stopped mid-task, and comes back where it should."
     }
   ]
 }

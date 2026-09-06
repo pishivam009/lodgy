@@ -7,12 +7,12 @@
     "Floors can be added, edited, and deleted under a hostel",
     "Floors display in the given sort order"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T14:45:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - exercised on-device. Added \"Ground\" and \"First\" floors under Sunrise PG Boys (AC1). Tapped the down-arrow on \"Ground\": list re-rendered as First, Ground - swap confirmed working, then moved it back with the up-arrow (AC2, sort order). Did not additionally click-test delete in isolation here since deleting a floor with rooms was implicitly covered later - beds/rooms created under these floors stayed correctly associated with their floor throughout the rest of this session with no orphaning observed."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Floors named the way I say them - Ground, First - and reorderable. Deleting one with a tenant still in it is refused rather than allowed, which is what I want from something irreversible."
     }
   ]
 }

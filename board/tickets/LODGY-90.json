@@ -1,0 +1,29 @@
+{
+  "id": "LODGY-90",
+  "epic": "Rent & Payments",
+  "title": "A missed billing day silently skips that month's rent invoice, with no catch-up",
+  "description": "Found during UAT of 0.1.0-0.3.0, while looking at a monthly report that showed no dues. Today is the 7th, the tenancies bill on the 5th, and there is no September invoice for anyone.\n\nCHECKED IN CODE RATHER THAN GUESSED. InvoiceGenerationWorker filters `.filter { it.billingCycleDay == dayOfMonth }` - exact equality against today's date - and there is no catch-up anywhere: the only other paths that create an invoice are the manual form, the opening balance on a new agreement, and the history import, all of them warden-driven. So if the daily worker does not run on the one calendar day that matches, that month is never billed. The next run that matches is a month later, and by then the month has simply gone.\n\nWHY THIS IS A WARDEN PROBLEM AND NOT A THEORETICAL ONE. WorkManager's periodic work is best-effort: it is deferred by Doze, by battery saver, and by the phone being off. Missing one specific calendar day over the course of a year is not unlikely - it is close to expected. What makes it serious is that it fails SILENTLY. There is no invoice, so there is no due, so it never appears in overdue counts, never triggers a reminder, and never shows on the dashboard. The warden does not discover a missing month by being told; they discover it when a tenant's balance looks wrong, possibly months later, by which time the conversation is 'I think you owe me for September' with nothing to show.\n\nIt is recoverable today only because LODGY-16 exists - the warden can add the invoice by hand once they notice. That is a real mitigation and it is why this is a gap rather than a broken feature.\n\nSUGGESTED SHAPE, for the PO to weigh: on each run, for every active agreement, generate any missing invoice for the current period once the billing day has PASSED, rather than only on the day itself. `existsForPeriod` already makes that safe against duplicates - it is the guard the current code relies on - so the change is from 'is today the day' to 'has the day been reached and is the invoice missing'. That also makes the first run after a phone is switched back on do the right thing.\n\nNOT A DEFECT IN LODGY-15, whose acceptance criteria are met exactly as written: created on the configured cycle day, no duplicates, survives restarts. This is the case those criteria did not consider.",
+  "acceptanceCriteria": [
+    "A month whose billing day passed without the worker running still gets its invoice on the next run",
+    "No duplicate is ever created for a tenant and period, however many runs occur",
+    "A phone switched off across the billing day and back on afterwards produces the invoice, not a gap",
+    "An invoice is never created before its billing day has been reached",
+    "Backdated and manually entered invoices are unaffected, and the opening-balance invoice still cannot collide with a generated one",
+    "A warden who has been running the app for months sees no retrospective flood of invoices for periods before this change",
+    "Non-revenue tenancies still generate nothing, and the forgone-rent expense keeps its once-per-month guard"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-07T00:15:00Z",
+  "updatedAt": "2026-09-07T00:15:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-07T00:15:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "Filed from UAT of the 0.1.0 wave, looking at LODGY-15's auto-generation. Raised as High because it is rent going unbilled without anything telling the warden - the failure is silent, which is worse than the failure being large. Proposing rather than assigning; AC6 in particular is a product decision, since a naive fix could backfill every missed month at once on an existing phone."
+    }
+  ]
+}

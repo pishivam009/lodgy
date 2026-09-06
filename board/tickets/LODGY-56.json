@@ -8,12 +8,12 @@
     "Produces valid, correctly-paginated multi-page PDFs when content overflows a single page",
     "LODGY-37 and LODGY-45 both consume this module rather than each rolling their own PDF generation"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.3.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T21:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T21:00:00+00:00",
@@ -44,6 +44,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all three. AC1: pdf/ is a genuinely content-agnostic module (LodgyPdfRenderer, PdfLayout, PdfBlockLayout, PdfContent) with page setup and text/table helpers and no knowledge of any specific document. Devanagari is handled correctly - I switched the app to Hindi and exported the records packet: the output embeds shaped Devanagari as Type3 glyph procedures (10 embedded fonts vs 3 for the English export, 88KB vs 53KB) and round-trips real Devanagari codepoints through its ToUnicode map, so Hindi renders as text rather than tofu. AC2: pagination is covered by PdfLayoutTest - content that fits stays on one page, overflowing content breaks onto further pages, a table's header row repeats on every continuation page, a line taller than a page is placed instead of looping forever, and empty content still yields one page; the real exports carry correct 'n / n' footers and valid page trees. AC3: both consumers call the shared renderer - AcknowledgementScreen.kt:106 (LODGY-37) and DataPacketScreen.kt:128 (LODGY-45) each do LodgyPdfRenderer().render(content, it). No second pipeline. Minor observation for the PO, not a fail: because Android emits Type3 fonts, copy-pasting Hindi text OUT of the PDF gives slightly mangled matras - visual rendering is correct, so this only matters if someone needs to machine-read the Hindi output."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. I only see the result, which is that the receipt and the packet look like the same app produced them."
     }
   ]
 }

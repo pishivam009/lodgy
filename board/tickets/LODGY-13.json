@@ -7,12 +7,12 @@
     "Assigned bed shows OCCUPIED immediately",
     "An already-occupied bed cannot be selected during onboarding"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:20:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - onboarded Ravi Kumar onto Room 101/Bed A, then immediately opened Room 101's bed grid: Bed A showed OCCUPIED, no stale cache (AC1). Started onboarding a second tenant right after: the vacant-bed picker no longer listed \"Room 101 - Bed A\" at all - confirmed structurally unselectable, not just blocked after picking it (AC2)."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. The bed flips to occupied the moment I save, and I could not find a way to get two people onto one bed - I went looking, because that is the mistake that would cost me most."
     }
   ]
 }

@@ -7,12 +7,12 @@
     "Tapping opens the default SMS app pre-filled with tenant number and message",
     "No SEND_SMS permission is requested"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T17:40:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - both this ticket's AC confirmed on-device. From Priya Sharma's Rs.4000 unpaid invoice's Reminder screen, selected SMS channel: tapped Open SMS and Google Messages opened directly to a conversation with (987) 650-0003 (Priya's correct number) with the reminder text pre-filled in the compose field, nothing sent (AC1). `adb shell dumpsys package com.lodgy.app` requested-permissions list has no SEND_SMS anywhere (AC2). Note: the Hindi message text itself has a real bug (the English words 'due date' left untranslated mid-sentence) but that's a message-content defect in the shared ReminderMessageBuilder/reminder_template_hi string, not a violation of either of this ticket's AC (opening the app correctly, and not requesting SEND_SMS) - filed and failed on LODGY-18 where the message-content AC actually lives, not duplicating here."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Same preview-then-hand-off as WhatsApp, with SMS as the channel. For tenants who do not use WhatsApp this is the one that matters, and it behaves identically so there is nothing new to learn."
     }
   ]
 }

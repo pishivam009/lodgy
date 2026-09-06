@@ -8,12 +8,12 @@
     "Billing cycle day (1-28) is validated",
     "Agreement is linked to exactly one bed"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:15:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -44,6 +44,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all three AC confirmed on-device across two full onboarding runs. AC1: opened the date picker and selected Sept 1 (a date before \"today\", Sept 3) as move-in date - accepted with no error. AC2: typed billing cycle day 31 - field and helper text turned red (\"1-28, so it stays valid every month\") and Save & Move In disabled; corrected to 5/10 for the two tenants and it re-enabled. AC3: both agreements only ever reachable via the bed-picker flow (Room 101/Bed A for Ravi, Room 102/Bed A for Priya) - no way to reach the agreement form without a bed already chosen, and both beds correctly flipped to OCCUPIED on save."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Rent, deposit, billing day and move-in date, with the billing day limited to 1-28 so it stays valid in February. The move-in date defaults to today and can be moved back, which is what I need for someone already living here."
     }
   ]
 }

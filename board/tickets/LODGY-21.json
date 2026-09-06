@@ -7,12 +7,12 @@
     "Vacant beds are listed correctly and update immediately after checkout/onboarding",
     "Filtering by floor works"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:50:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - no overlap, filter row and list render as separate rows correctly. Opened via the Home dashboard's \"Vacant beds\" tile: listed every vacant bed correctly grouped by floor, with Room 101/102's occupied beds correctly excluded. Filtered to \"Ground\" (a floor with no rooms): \"No vacant beds right now.\" - filter works (AC2). Checked out Ravi Kumar afterward and re-opened this screen: Room 101 - Bed A reappeared in the list without needing to force-refresh - live Flow reactivity confirmed (AC1)."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. I can see what is free without walking the building or opening each floor."
     }
   ]
 }

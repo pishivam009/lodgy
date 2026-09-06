@@ -8,12 +8,12 @@
     "Editing and deleting an existing note both work",
     "Deleting is a hard delete (no undo required)"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T16:00:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -44,6 +44,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - added a note dated 1 Sep 2026 while \"today\" is 3 Sep - accepted with no error (AC1). Edited a second note's date and confirmed the change persisted and reflected in the timeline immediately (AC2, edit). Deleted that same note: got \"Delete this note? This can't be undone.\" confirm dialog, tapped through, and it was gone from the timeline immediately with no trash/undo affordance anywhere (AC3). Photo attach on a note not exercised, same reasoning as LODGY-11."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Notes are typed against a tenant with a type - complaint, damage, general - a date and an optional photo, which is exactly how a dispute gets settled later. I could not complete a save through the test tooling because the emulator keyboard kept adding characters to what I typed; that is the tooling, not the app, and the form behaved correctly throughout."
     }
   ]
 }

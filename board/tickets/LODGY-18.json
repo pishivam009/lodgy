@@ -8,12 +8,12 @@
     "Message includes tenant name, amount due, and due date",
     "No auto-send occurs without the warden's explicit tap"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T19:20:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -60,6 +60,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - backfilled a fresh Rs.4000 unpaid invoice for Priya Sharma (due 3 Sep) and opened its Reminder screen with Hindi selected. Preview now reads fully in Hindi: 'नमस्ते Priya Sharma जी, आपका ₹4000 किराया बकाया है, नियत तारीख 3 सितंबर। – Sunrise PG Boys' - no English words embedded. English template unaffected (still correct). AC2 holds for both languages now."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. The reminder shows the exact message before anything opens, and says plainly that nothing sends automatically. What sold me is that the MESSAGE language is separate from the app language - my app is in English but the preview for Priya was in Hindi, which is what she actually reads."
     }
   ]
 }

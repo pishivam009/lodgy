@@ -7,12 +7,12 @@
     "Importing a valid export fully restores hostels/tenants/invoices/photos",
     "Importing does not silently merge with existing data - warns before overwrite"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T19:35:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -59,6 +59,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - re-ran the exact FAIL repro carefully, checking mCurrentFocus at every step rather than assuming. Tapped Import, picked the backup zip: this time the picker closed straight back onto Backup & Restore and the 'Replace all data on this device?' confirmation dialog appeared immediately (AC2 confirmed - no silent merge, explicit warning with the correct body text). Tapped 'Replace & Restore': 'Restore complete' dialog appeared, tapped Restart - the app process restarted (new PID confirmed via adb), came back up to the PIN lock screen (expected, cold start), and after unlocking, the Home dashboard showed the exact hostel/invoice/vacant-bed data captured in that backup export, confirming AC1 (full restore, including data that had since changed) end to end."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Imported the backup I had just made and everything came back: the renamed property was right again and the deleted tenant was there. It warns me first that it replaces everything, which it should, and it restarts afterwards so nothing is half-loaded."
     }
   ]
 }

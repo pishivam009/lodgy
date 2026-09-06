@@ -7,12 +7,12 @@
     "Tenant directory can filter to Active-only (hide vacated) and sort by name or room",
     "Filter/sort state resets sensibly and doesn't silently hide data the warden forgot was filtered"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -49,6 +49,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS. AC1: the tenant directory has an Active only / All filter and a Sort by Name / Room control; sorting by Room uses the real bed location (roomSortKey in TenantDirectoryViewModel handles numeric room prefixes and puts tenants with no room last). AC2: verified the important half live - after checking Ramesh out, the default Active-only view showed the explicit banner '1 vacated tenant(s) hidden by this filter', so hidden data is announced rather than silently dropped; switching to All brought the vacated tenant back. Minor UX nit for the PO, not a fail: when the filter hides everything, that banner sits above the empty-state text 'No tenants yet. Tap + to onboard your first one.', which reads oddly since there IS a tenant."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Search by name or phone, filter to active only, sort by name or room. With the directory spanning every property, sorting by room is how I find someone when I know where they live but not their name."
     }
   ]
 }

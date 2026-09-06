@@ -12,12 +12,12 @@
     "If WhatsApp is not installed on the device, the WhatsApp button fails gracefully (e.g. disabled state or a clear message) instead of crashing",
     "Buttons remain accessible on a vacated tenant's profile too, not just active tenants"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T00:20:00+00:00",
-  "updatedAt": "2026-09-03T15:55:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T00:20:00+00:00",
@@ -48,6 +48,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all 7 AC confirmed on-device. Call/WhatsApp/SMS all present on the profile (AC1). Call opened the Google Dialer pre-filled with (987) 650-0001, sitting on the dial pad with no call placed until the warden taps the green button themselves (AC2). WhatsApp isn't installed on this AVD (`pm list packages` confirms) - tapping it produced no crash and no navigation; code inspection confirms a runCatching + ActivityNotFoundException->Toast fallback is in place, matching AC6's letter and spirit. SMS opened Google Messages with a new conversation to (987) 650-0001, empty compose field, nothing sent (AC4; hit one flaky repro along the way where the tap briefly opened Chrome instead, but a clean retap reproduced the correct Messages hand-off every subsequent time - reads as an emulator input-timing blip, not app behavior, since `pm resolve-activity` independently confirms Messages is this device's sole/default handler for smsto:). `dumpsys package com.lodgy.app` lists no CALL_PHONE or SEND_SMS among requested permissions (AC5). After checking Ravi Kumar out (VACATED), all three buttons were still present and worked identically on his profile (AC7)."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Call, WhatsApp and SMS straight from the tenant's page. Most of what I do with a tenant's record ends in contacting them, so having it there rather than copying the number out saves a step every time."
     }
   ]
 }

@@ -8,12 +8,12 @@
     "Reconciled periods are visually distinguished from not-yet-reconciled ones in the Monthly Report / Payments views",
     "This is a manual attestation, not an automated diff against anything - it does not block or alter any data"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:38:43+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -60,6 +60,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - and I specifically tried to break the new hostel-matching logic, because keying a badge on period alone would have been an easy and invisible bug. AC1 and AC3 were already passing and still are. AC2 is now met on BOTH surfaces the criterion names. The test that matters: I built a second hostel (Moonlight, Room 501, tenant Priya) and gave it an invoice for 8/2026 - the SAME period already marked reconciled on Sunrise PG. Filtered the invoice list to month 8 so both sat side by side: Sunrise's 8/2026 row carried 'Checked against register' and Moonlight's 8/2026 row did NOT. So the badge follows the hostel, not just the period - a period-only match would have wrongly flagged Priya's invoice. Then I marked Moonlight's 8/2026 reconciled on its own Monthly Report and returned to the invoice list WITHOUT restarting: Priya's row picked up the badge immediately, confirming it is driven by an observed query rather than a one-shot read. The badge pairs a check icon with the text 'Checked against register' in the LODGY-36 GOOD token, so it satisfies LODGY-62's icon-plus-label rule rather than relying on colour alone, and it is translated in values-hi."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. I keep a paper register and the app has to agree with it. Marking a month as checked, and seeing that mark on the report and on the invoice rows, is what lets me stop re-checking the same month."
     }
   ]
 }

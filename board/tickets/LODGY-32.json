@@ -9,12 +9,12 @@
     "Switching applies immediately without restarting the app",
     "Preference persists across app restarts"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:38:43+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -67,6 +67,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - retested the original repro and then went after the fix's blast radius, since wrapping LodgyTheme's content in a Surface touches every screen in the app. AC1: the PIN lock screen now renders a dark ground with light, fully legible digits and readable 'Enter your PIN' - the light-page/dark-keypad/near-black-digit mix is gone. I also checked the OTHER Scaffold-less screen the developer flagged: cleared app data with the system in night mode so first launch came up on PinSetupScreen with the theme still on its SYSTEM default, and it renders correctly in dark too (dark ground, legible keypad, readable 'Create a PIN' and the 4/5/6-digit chips). Then I checked the fix had not regressed light mode, which is the real risk of a theme-wide change: switched Appearance to Light and walked More, invoices, tenant directory, tenant profile, monthly report, bed grid and printable records - all correct, no washed-out or double-painted surfaces. Scaffold screens simply overdraw the same background colour, as expected. AC2/AC3/AC4 re-verified: Light/Dark/System default all selectable from More, switching applies instantly with no restart, and the choice survived a force-stop. Also confirmed the RAG tokens still read correctly in dark - bed grid shows green VACANT against red OCCUPIED, invoice badges keep their Unpaid/Partial/Paid colours."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Switched to dark and back on the device: everything stayed legible, and the amber backup warning still reads as a warning against the dark background rather than washing out."
     }
   ]
 }

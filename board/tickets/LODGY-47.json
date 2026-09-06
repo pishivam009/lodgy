@@ -8,12 +8,12 @@
     "New unit tests added for BackupManager (export/stageImport/applyStaged) and InvoiceGenerationWorker's doWork() logic, which currently have no dedicated tests",
     "Coverage gate in build.gradle.kts reviewed and raised if the new tests support it"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.3.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -44,6 +44,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS. AC1: ./gradlew jacocoTestReport produces the report and it does identify the thin spots - overall LINE coverage is now 97.12% (2802 covered / 83 missed), the remaining misses being one-line synthetic lambdas and Compose helpers. AC2: both named gaps are closed - BackupManagerTest.kt has 7 tests covering export, stageImport and applyStaged, and InvoiceGenerationWorkerTest.kt has 5 tests exercising doWork(). AC3: the gate was reviewed and raised - git history shows minimum 0.80 -> 0.93, with an in-file comment explaining the choice (measured 97.1%, set a few points below so a whole untested feature trips it but one uncovered branch does not block a build). jacocoCoverageVerification passes and the full testDebugUnitTest suite is green."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Coverage is above 95% and the build refuses to fall below 93%. I care about that only because it is why I have not once had a number come back wrong in all the poking I have done today."
     }
   ]
 }

@@ -8,12 +8,12 @@
     "IDs are UUID strings, not autoincrement",
     "Room compiles and generates a working schema export"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": null,
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-02T14:10:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -50,6 +50,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS on all 3 ACs. AC1: diffed every field in all 11 entity files against DESIGN.md section 3 line by line - exact match on Hostel, Floor, Room, Bed, Tenant, TenancyAgreement, Invoice, TenantNote (including nullability: moveOutDate/depositRefundAmount/photoPath/note all correctly nullable). Warden/Payment/Expense carry updatedAt beyond the section-3 code sketch, but that sketch contradicts the section's own prose ('every entity carries createdAt/updatedAt') and this ticket's description says the same verbatim - siding with the explicit universal rule over the abbreviated sketch is correct, not a deviation worth failing on. AC2: confirmed every @PrimaryKey is `val id: String = UUID.randomUUID().toString()`, no autoGenerate anywhere; cross-checked the exported schema JSON - all 11 tables have PK 'id' with TEXT affinity. AC3: ran `gradlew clean assembleDebug` from a cold build (not just incremental) - BUILD SUCCESSFUL, 42/42 tasks executed including kspDebugKotlin; app/schemas/com.lodgy.app.data.LodgyDatabase/1.json regenerated correctly after the clean, all 11 tables present. Also verified FK/index structure in the schema JSON matches DESIGN.md's parent-child hierarchy exactly (hostels->wardens, floors->hostels, rooms->floors, beds->rooms, tenancy_agreements->tenants+beds, invoices->tenancy_agreements, payments->invoices, tenant_notes->tenants, expenses->hostels), each with a supporting index. DatabaseModule's androidx.room.Room / entity Room naming note checked - no actual import collision in the file. No test suite exists yet to run (greenfield, expected at this stage)."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. The schema is the part I have to trust most and cannot inspect, so I judge it by what survives. I have onboarded and checked out tenants, taken and deleted payments, recorded credits and expenses, and restored a whole backup over the top - and every number came back consistent. Nothing has ever come back contradicting itself."
     }
   ]
 }

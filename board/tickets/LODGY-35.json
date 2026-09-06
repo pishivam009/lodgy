@@ -10,12 +10,12 @@
     "Credit history is visible on the tenant's notes/timeline",
     "Reports (Monthly Report, CSV export) reflect the adjusted amounts by summing invoice + credit rows, not by reading a pre-adjusted cached total"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:38:43+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -68,6 +68,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS. AC2, the criterion this previously failed on, is met: 'Record a credit' is reachable on an ACTIVE tenant's profile at stock 420dpi now that the screen scrolls. AC1, AC3, AC4 and AC5 were already verified in the previous round and I spot-checked that the developer's changes did not disturb them - the credits table is still separate with the invoice's own amountDue unmutated, the invoice list still shows 'Credit: ₹800' as a labelled line above the reduced effective total, the timeline still shows the credit entry, and the Monthly Report still reports Credits as its own figure alongside Total collected. Worth noting for the record that this ticket and LODGY-34 were both fixed by the same single modifier on TenantProfileScreen's root Column, and the same change also restores Checkout, which had regressed against the already-delivered LODGY-14."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and this is the messy case I most wanted to see handled. Priya paid a plumber Rs 1200; I recorded it against her August invoice and what she owes dropped from Rs 4000 to Rs 2800, with 'Credit: Rs 1200' on the row. I can point at that line when she asks why the number changed."
     }
   ]
 }

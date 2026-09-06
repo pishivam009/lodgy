@@ -90,7 +90,7 @@
     <div class="card"><div class="n">559</div><div class="l">unit tests, 0 failing</div></div>
     <div class="card"><div class="n">95.88<small>%</small></div><div class="l">line coverage &middot; gate 93%</div></div>
     <div class="card"><div class="n">0</div><div class="l">open security findings</div></div>
-    <div class="card"><div class="n">89</div><div class="l">tickets, 5 releases</div></div>
+    <div class="card"><div class="n">90</div><div class="l">tickets, 5 releases</div></div>
   </div>
 </section>
 
@@ -216,9 +216,9 @@
   <p class="sub">Work is tracked on a file-backed board, one JSON per ticket, with the full history of every status change kept in the ticket rather than in a chat log. Each ticket records the release it shipped in.</p>
 
   <div class="cards">
-    <div class="card"><div class="n">89</div><div class="l">tickets</div></div>
-    <div class="card"><div class="n">27</div><div class="l">Delivered (through UAT)</div></div>
-    <div class="card"><div class="n">61</div><div class="l">Done, awaiting UAT</div></div>
+    <div class="card"><div class="n">90</div><div class="l">tickets</div></div>
+    <div class="card"><div class="n">88</div><div class="l">Delivered (through UAT)</div></div>
+    <div class="card"><div class="n">1</div><div class="l">open (LODGY-90)</div></div>
     <div class="card"><div class="n">1</div><div class="l">Won't Do</div></div>
     <div class="card"><div class="n">56</div><div class="l">decision-log entries</div></div>
   </div>
@@ -226,11 +226,11 @@
   <h3>Releases</h3>
   <div class="scroll"><table>
     <tr><th>Release</th><th class="num">Tickets</th><th>Theme</th><th>State</th></tr>
-    <tr><td><code>0.1.0</code> build 1</td><td class="num">30</td><td>The first working app &mdash; property, tenants, rent, reports, backup, Hindi</td><td>Done, not UAT'd</td></tr>
-    <tr><td><code>0.2.0</code> build 2</td><td class="num">15</td><td>First feedback wave &mdash; finding things, transfers, credits, PDF receipts</td><td>Done, not UAT'd</td></tr>
-    <tr><td><code>0.3.0</code> build 3</td><td class="num">17</td><td>Hardening &mdash; security review, coverage, filters, confirmations, notifications</td><td>Done, not UAT'd</td></tr>
+    <tr><td><code>0.1.0</code> build 1</td><td class="num">30</td><td>The first working app &mdash; property, tenants, rent, reports, backup, Hindi</td><td><strong>Delivered</strong></td></tr>
+    <tr><td><code>0.2.0</code> build 2</td><td class="num">15</td><td>First feedback wave &mdash; finding things, transfers, credits, PDF receipts</td><td><strong>Delivered</strong></td></tr>
+    <tr><td><code>0.3.0</code> build 3</td><td class="num">17</td><td>Hardening &mdash; security review, coverage, filters, confirmations, notifications</td><td><strong>Delivered</strong></td></tr>
     <tr><td><code>0.4.0</code> build 4</td><td class="num">26</td><td>Post-launch feedback &mdash; deletes, auto-backup, all-property views, non-rented rooms</td><td><strong>Delivered</strong>, closed 6 Sep</td></tr>
-    <tr><td><code>0.5.0</code> build 5</td><td class="num">1</td><td>Open &mdash; dashboard tiles that answer the question they raise</td><td>Current</td></tr>
+    <tr><td><code>0.5.0</code> build 5</td><td class="num">2</td><td>Open &mdash; dashboard tiles that answer the question they raise; a missed billing day that skips a month silently</td><td>Current</td></tr>
   </table></div>
 
   <h3>By epic</h3>
@@ -243,7 +243,7 @@
     <tr><td>Rent &amp; Payments</td><td class="num">9</td><td>Other (7 epics)</td><td class="num">13</td></tr>
   </table></div>
 
-  <div class="note"><strong>Reading the Done column honestly.</strong> 61 tickets sit at Done rather than Delivered. That is not a backlog of unfinished work &mdash; all 61 were built, tested and shipped across 0.1.0&ndash;0.3.0. It means only 0.4.0 and 0.5.0 have been through user acceptance by someone acting as the warden; the earlier releases have never had that pass.</div>
+  <div class="note"><strong>What UAT turned up.</strong> All 88 tickets have now been through user acceptance by someone working as the warden &mdash; onboarding, part payments, corrections, a checkout with a deposit deduction, a tenant-paid repair credited back, backup and restore. Two things came out of it rather than one: LODGY-68's dashboard tile instructed a tap on text that was not a tap target (fixed inside 0.4.0), and invoice auto-generation fires only on the exact billing day with no catch-up, so a phone asleep on the 5th skips that month's rent silently &mdash; filed as LODGY-90 and open.</div>
 </section>
 
 <section id="limits">

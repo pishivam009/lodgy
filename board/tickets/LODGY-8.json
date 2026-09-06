@@ -7,12 +7,12 @@
     "Room type, price, and amenities are captured and editable",
     "Deleting a room is blocked or warned if it has active tenants"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T15:00:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - both AC now fully exercisable and confirmed. AC1: created rooms with each type/price/amenities combination, edited an existing room's number/price - all fields save and reload correctly (see LODGY-9's Done note for detail). AC2: with a tenant actually onboarded onto Room 101/Bed A (LODGY-13), tried deleting Room 101 - got a clear blocking dialog: \"Can't delete this room - Room 101 has a bed with an active tenant. Check that tenant out first.\" No silent failure, no crash."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Room number, type, price per bed and free-text amenities is exactly the set I would write in a register, and nothing more."
     }
   ]
 }

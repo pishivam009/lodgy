@@ -7,12 +7,12 @@
     "All categories from DESIGN.md are selectable",
     "Recurring flag is stored and editable"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T16:30:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -43,6 +43,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - logged one expense in each of the 7 categories (WIFI 500, WATER 300, ELECTRICITY 800, TAX 200, MAINTENANCE 400, REPAIR 600, OTHER 150) - all selectable and saved correctly with their own chip label on the list (AC1). Edited the WIFI expense afterward, toggled Recurring on, saved - a \"RECURRING\" badge appeared on that row, confirming the flag is both stored and editable (AC2)."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Category, amount, date, note and a recurring flag. Nothing I would have to work around."
     }
   ]
 }

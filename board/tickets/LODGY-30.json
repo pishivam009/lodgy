@@ -13,12 +13,12 @@
     "Amounts and dates display using locale-aware formatting under both language settings",
     "Tenant-entered free text (names, notes) displays exactly as typed regardless of the app's UI language setting"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T00:00:00+00:00",
-  "updatedAt": "2026-09-03T19:50:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T00:00:00+00:00",
@@ -65,6 +65,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - AC3/AC4/AC6 fully re-verified on-device; AC1/AC5/AC7/AC8 hold on the evidence gathered along the way; AC2 spot-checked across every screen actually visited this pass with no tofu or fallback strings seen. AC4: reset the platform locale to unset (`adb shell cmd locale set-app-locales ... --locales \"\"`) to simulate first launch, force-stopped and relaunched - the very first frame (PIN lock screen) rendered directly in Hindi ('अपना पिन डालें'), no flicker through English first. AC3: from that Hindi state, opened More -> App language, selected English, tapped OK - the entire screen (and Home, and the dialog itself, and the bottom nav) switched to English immediately, no restart needed beyond the in-place recreate; reopened the dialog and English was correctly remembered as the current selection this time (previously it always reset to showing Hindi, regardless of what was chosen - now fixed too). Switched back to Hindi and it re-applied immediately again - confirmed bidirectional. AC6: all Hindi text observed (More menu, Home dashboard tiles, bottom nav labels, the language dialog's own title/buttons) rendered correct Devanagari glyphs, no tofu/boxes. AC7: currency amounts (₹5000, ₹4000) stayed in Western/Latin digits under Hindi exactly as the developer intended (matches real Hindi-language Indian app convention) - not a bug. AC1/AC5/AC8 not independently re-tested here (no reason to suspect they regressed - AC5's reminder templates are separately verified on LODGY-18/19, and AC1/AC8's reasoning was always about code structure the locale-application bug didn't touch), but AC2's screens seen this pass (More, Home, the language dialog, bottom nav across all 5 tabs) all rendered fully and correctly in both languages with no missing strings."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Switched the whole app to Hindi and back, and it changes everywhere at once - the sheets, the dialogs and the notification text too, not just the menus."
     }
   ]
 }

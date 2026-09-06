@@ -9,12 +9,12 @@
     "Invoice list rows and the payment recording screen show room+bed, not just tenant name",
     "A vacated tenant's historical room+bed still displays (not blanked out after checkout)"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T11:38:43+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -61,6 +61,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - both original repros fixed, and I went looking for the bug the fix could have introduced. AC1: onboarded a brand-new tenant (Suresh) and 'Room 101 · Bed A' appeared on the directory row IMMEDIATELY, where before it stayed blank until an app restart. AC2: the profile shows room+bed prominently under the name. Transfer case: moved Suresh from Room 101 Bed A to Room 102 Bed B and both the profile header and the directory row updated to the new bed on return, with no restart - previously both kept showing the old room. AC3: invoice rows and the Record Payment screen still show room+bed (verified on Priya's invoice - 'Room 501 · Bed A'). AC4: a vacated tenant still resolves to their last bed - Ramesh Kumar shows 'Room 102 · Bed A' with a VACATED badge rather than being blanked. THE RISK I CHASED: the developer replaced the DAO's SQL ordering (ORDER BY status='ACTIVE' DESC, moveInDate DESC) with a hand-written Kotlin comparator, so I tested the returning-tenant case DESIGN.md section 3 explicitly calls out. Injected a second agreement for Ramesh - ACTIVE, on Room 101 Bed A, with a move-in date EARLIER than his existing CLOSED one - which discriminates the two orderings: if status is weighed first the app must show Room 101 Bed A, if date is weighed first it would wrongly show Room 102 Bed A. Both the directory and the profile resolved to Room 101 · Bed A, so the comparator matches the SQL precedence exactly. Synthetic row removed afterwards."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and it is the single change that most matches how I think. I know people as 'Room 102, Bed A' before I know them by name, and the room and bed now sit beside the name in the directory, on invoices and on payments."
     }
   ]
 }

@@ -6,12 +6,12 @@
   "acceptanceCriteria": [
     "Monthly report's expense total matches the sum of that month's expense entries"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.1.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-02T12:55:59.648423+00:00",
-  "updatedAt": "2026-09-03T16:35:00+00:00",
+  "updatedAt": "2026-09-07T00:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-02T12:55:59.648423+00:00",
@@ -34,6 +34,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - logged 7 expenses today totalling Rs.2950 by hand (500+300+800+200+400+600+150). Monthly Report for September 2026 showed \"Total expenses this period: Rs.2950\" - exact match. Unlike LODGY-22's total-collected/total-dues figures, this rollup queries ExpenseRepository directly with no dependency on tenancyAgreementRepository.getAllActive(), so it isn't affected by the checked-out-tenant bug filed on LODGY-20/22."
+    },
+    {
+      "timestamp": "2026-09-07T00:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. The month's expenses land in the report as a total and pull the income-minus-expense figure down, which is the number that tells me whether the month was worth it."
     }
   ]
 }
