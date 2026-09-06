@@ -12,18 +12,56 @@
     "A warden who has been running the app for months sees no retrospective flood of invoices for periods before this change",
     "Non-revenue tenancies still generate nothing, and the forgone-rent expense keeps its once-per-month guard"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-07T00:15:00Z",
-  "updatedAt": "2026-09-07T00:15:00Z",
+  "updatedAt": "2026-09-07T01:47:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T00:15:00Z",
       "actor": "User",
       "action": "created",
       "note": "Filed from UAT of the 0.1.0 wave, looking at LODGY-15's auto-generation. Raised as High because it is rent going unbilled without anything telling the warden - the failure is silent, which is worse than the failure being large. Proposing rather than assigning; AC6 in particular is a product decision, since a naive fix could backfill every missed month at once on an existing phone."
+    },
+    {
+      "timestamp": "2026-09-07T01:00:00Z",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED, so AC6 does not block the build. SCOPE IS THE CURRENT PERIOD ONLY: on each run, generate the invoice for the month now in progress if its billing day has been reached and the invoice is missing. It does NOT walk backwards through earlier months. WHY NOT DEEPER. The realistic failure this ticket was raised for is a phone off or dozing across the billing day - hours or days, inside the same month - and current-period catch-up fixes that completely. Backfilling across months is a different and worse proposition: by the time a month has fully passed the warden has probably collected that rent in cash and reconciled it against their paper register, and the tenant may have moved out. Generating those invoices unbidden would create dues that are not owed, on a screen the warden trusts to tell them who is late. A month that is entirely missed stays the warden's call through manual entry (LODGY-16), which is a deliberate one-by-one decision rather than a silent bulk write. That also answers AC6 directly: because only the period in progress is ever considered, an existing phone can produce at most the invoice it should already have had, so there is no retrospective flood to guard against. REQUIRED WITH IT, and the developer should treat this as part of the ticket rather than a nicety: the change must not bill a tenancy that began AFTER this period's billing day. Today the exact-day match hides that - someone onboarded on the 20th with a billing day of 5 simply is not matched. Once the rule becomes 'the day has passed', that same tenant would be invoiced the moment they are added, which would be a new bug worse than the one being fixed."
+    },
+    {
+      "timestamp": "2026-09-07T01:01:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting to the recorded decision: current-period catch-up only, guarded so a tenancy that began after this period's billing day is not billed for it."
+    },
+    {
+      "timestamp": "2026-09-07T01:40:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built to the recorded decision. The rule changes from 'is today the billing day' to 'has this period's billing day been reached', so a phone that was off or dozing on the 5th bills that month the next time the worker runs. Only the period in progress is ever considered, which is what makes AC6 hold by construction rather than by a guard - there is no set of earlier months to flood from. TWO THINGS BEYOND THE OBVIOUS CHANGE, both of which would have been bugs. First, the guard the PO asked for: a tenancy that began after this period's billing day is not billed for it, or catching up would invoice someone the instant they were onboarded. Second, and I found this only when checking against the real data - move-in has to be compared at DAY granularity, because the Shop tenant moved in on the 5th at some hour and a midnight comparison would have judged them to have arrived after their own billing day and left them unbilled for a month they lived through. ALSO CHANGED, deliberately: the invoice is dated from its billing day rather than from whenever the catch-up ran. A late-generated invoice now reads as overdue since the 5th instead of as due today, which is what the warden's arrears figure should say. The decision is extracted as shouldBillPeriod() in work/BillingSchedule.kt rather than left inline. Every interesting case here is which side of a date something falls, and while it lived in the worker those cases could only be tested by waiting for the right day of the month - two existing tests were built around 'a day that is not today' and were unrunnable in any principled way. VERIFIED ON DEVICE against exactly the situation the ticket describes, not a synthetic one: I took the live database in which today is the 7th, billing day is the 5th, and September had NEVER been billed - 0 invoices. Fresh install, unlock, and the worker created 3: Suresh Rs 5500, Priya Rs 4000, Shop tenant Rs 18000, all dated 2026-09-05 00:00 rather than today. Home's overdue count went 4 -> 7, so they surface as already late, which is true. Ran it a second time: still 3 invoices and still 1 ACCOMMODATION expense, so AC2 and the LODGY-84 once-per-month guard both hold. The three non-revenue tenancies generated nothing (AC7). AC4 - never before the billing day - is covered by the pure-function tests rather than on the device, since every billable tenancy in the fixture bills on the 5th and I would have had to move the clock to show it. AC5: the manual, backdated and history-import paths are untouched, and the opening-balance invoice is still dated the month BEFORE move-in so it cannot collide with a generated one. TESTS: 8 new on the pure predicate covering both sides of every boundary, plus 4 reworked worker tests (the two that asserted the old exact-day rule now assert catch-up, plus the billing-day dating and the started-after-the-day guard). Full suite 569 pass, 0 failures, coverage 95.89% line against the 0.93 gate. Not schema-affecting."
+    },
+    {
+      "timestamp": "2026-09-07T01:45:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all seven. The one I checked hardest is AC6, because a naive fix here could have written months of invoices onto a warden's phone in one run: the implementation only ever considers the period in progress, so the flood is impossible by construction rather than prevented by a limit that could be got wrong. The device run bears that out - a database that had never billed September produced exactly three invoices, one per billable tenancy, not one per missed period. AC1 and AC3 verified on the device against the real failure rather than a mock: 0 September invoices before, 3 after, on a fixture where the billing day had genuinely passed unbilled. AC2 by running it twice - still 3. AC7 held in the same run: three non-revenue tenancies produced no invoice, and the ACCOMMODATION expense stayed at 1. AC4 is covered by the pure-function tests rather than on the device, and I am satisfied with that here - the alternative was advancing the system clock, and the predicate is tested on both sides of every boundary including the 1 and 28 ends of the permitted range. Extracting shouldBillPeriod() is what made that possible; the two tests it replaced were built around 'a day that is not today' and could never have covered this properly. AC5 by inspection: the manual, backdated and history-import paths are untouched, and the opening-balance invoice is still dated the month before move-in. THE DEVELOPER FOUND SOMETHING QA WOULD HAVE MISSED, and it is worth recording: comparing move-in to the billing date at raw-timestamp precision would have left the Shop tenant - who moved in ON the 5th, at some hour - judged to have arrived after their own billing day, unbilled for a month they lived through. That is a silent under-billing, the same class of fault this ticket exists to fix, and it only shows up against real data where move-in carries a time of day. Comparing at day granularity is right and there is a test naming the reason. Dating the invoice from its billing day rather than the catch-up moment was not asked for and is correct: Home went from 4 overdue to 7, which is the truthful number, where dating from today would have shown the rent as not yet late."
+    },
+    {
+      "timestamp": "2026-09-07T01:47:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. This was mine, and it is the one that actually worried me - not because it would go wrong loudly, but because it would go wrong quietly. Rent that was never billed does not show up anywhere: not in what I am owed, not in the reminders, not on the front screen. I would have found it when a tenant and I disagreed about September, months later, with nothing to show them. Now the month gets billed as soon as the app next runs, and - this is the part I care about - it says the rent was due on the 5th rather than pretending it just became due. My overdue count went from 4 to 7 the moment it caught up, which is the right number and the one I would have chased. I am content that it does not go back further than the current month. If a whole month passed without me opening the app I have almost certainly taken that rent in cash and written it in my register, and I would rather add that one by hand than have the app invent bills for months I have already settled."
     }
   ]
 }

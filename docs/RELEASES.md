@@ -77,9 +77,11 @@ within the release rather than deferred.
 
 ## 0.5.0 (build 5) — open — CURRENT
 
-- **LODGY-90** — invoice auto-generation fires only on the exact billing day
-  with no catch-up, so a phone asleep on the 5th skips that month's rent and
-  says nothing. Raised in UAT of 0.1.0; open.
+- **LODGY-90** — invoice auto-generation fired only on the exact billing day
+  with no catch-up, so a phone asleep on the 5th skipped that month's rent and
+  said nothing. Raised in UAT of 0.1.0; now bills once the day has been reached,
+  dated from that day so the arrears are honest, and only ever for the period in
+  progress.
 - **LODGY-89** — the Home tiles. Overdue invoices now opens the Payments list
   already filtered to what is actually late and scoped to the property Home was
   showing, so the number and the list agree. A chevron marks the tiles that lead

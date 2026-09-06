@@ -74,7 +74,7 @@
 <header>
   <h1>Lodgy engineering report</h1>
   <p class="lede">Code, coverage, security posture and non-functional characteristics of the app as it stands. Every figure here was measured from this commit &mdash; the JaCoCo XML, the JUnit results, the merged manifest and the board &mdash; not estimated.</p>
-  <p class="meta">Lodgy <code>v0.5.0 (build 5)</code> &middot; commit <code>52696cb</code> &middot; schema v7 &middot; measured 7 Sep 2026</p>
+  <p class="meta">Lodgy <code>v0.5.0 (build 5)</code> &middot; commit <code>4f67105</code> &middot; schema v7 &middot; measured 7 Sep 2026</p>
   <nav>
     <a href="#glance">At a glance</a><a href="#codebase">Codebase</a><a href="#coverage">Test coverage</a>
     <a href="#security">Security</a><a href="#nfr">Non-functional</a><a href="#delivery">Delivery</a>
@@ -87,8 +87,8 @@
   <p class="sub">The five numbers that describe the project's health. The coverage gate is enforced by the build, not by convention &mdash; a change that drops line coverage below 93% fails <code>jacocoCoverageVerification</code> and does not ship.</p>
   <div class="cards">
     <div class="card"><div class="n">27,353</div><div class="l">lines of Kotlin</div></div>
-    <div class="card"><div class="n">559</div><div class="l">unit tests, 0 failing</div></div>
-    <div class="card"><div class="n">95.88<small>%</small></div><div class="l">line coverage &middot; gate 93%</div></div>
+    <div class="card"><div class="n">569</div><div class="l">unit tests, 0 failing</div></div>
+    <div class="card"><div class="n">95.89<small>%</small></div><div class="l">line coverage &middot; gate 93%</div></div>
     <div class="card"><div class="n">0</div><div class="l">open security findings</div></div>
     <div class="card"><div class="n">90</div><div class="l">tickets, 5 releases</div></div>
   </div>
@@ -121,10 +121,10 @@
 
 <section id="coverage">
   <h2>Test coverage</h2>
-  <p class="sub">559 tests across 89 classes, run on every build alongside the coverage gate. These are JVM unit tests over ViewModels, repositories, workers and pure logic; Compose UI itself is verified on a device rather than instrumented, which is why UI-only packages sit lower.</p>
+  <p class="sub">569 tests across 90 classes, run on every build alongside the coverage gate. These are JVM unit tests over ViewModels, repositories, workers and pure logic; Compose UI itself is verified on a device rather than instrumented, which is why UI-only packages sit lower.</p>
 
   <div class="cards">
-    <div class="card"><div class="n">95.88<small>%</small></div><div class="l">line &middot; 3,533 / 3,685</div></div>
+    <div class="card"><div class="n">95.89<small>%</small></div><div class="l">line &middot; 3,551 / 3,704</div></div>
     <div class="card"><div class="n">90.05<small>%</small></div><div class="l">instruction</div></div>
     <div class="card"><div class="n">85.38<small>%</small></div><div class="l">method</div></div>
     <div class="card"><div class="n">97.21<small>%</small></div><div class="l">class</div></div>
@@ -217,8 +217,8 @@
 
   <div class="cards">
     <div class="card"><div class="n">90</div><div class="l">tickets</div></div>
-    <div class="card"><div class="n">88</div><div class="l">Delivered (through UAT)</div></div>
-    <div class="card"><div class="n">1</div><div class="l">open (LODGY-90)</div></div>
+    <div class="card"><div class="n">89</div><div class="l">Delivered (through UAT)</div></div>
+    <div class="card"><div class="n">0</div><div class="l">open</div></div>
     <div class="card"><div class="n">1</div><div class="l">Won't Do</div></div>
     <div class="card"><div class="n">56</div><div class="l">decision-log entries</div></div>
   </div>
@@ -230,7 +230,7 @@
     <tr><td><code>0.2.0</code> build 2</td><td class="num">15</td><td>First feedback wave &mdash; finding things, transfers, credits, PDF receipts</td><td><strong>Delivered</strong></td></tr>
     <tr><td><code>0.3.0</code> build 3</td><td class="num">17</td><td>Hardening &mdash; security review, coverage, filters, confirmations, notifications</td><td><strong>Delivered</strong></td></tr>
     <tr><td><code>0.4.0</code> build 4</td><td class="num">26</td><td>Post-launch feedback &mdash; deletes, auto-backup, all-property views, non-rented rooms</td><td><strong>Delivered</strong>, closed 6 Sep</td></tr>
-    <tr><td><code>0.5.0</code> build 5</td><td class="num">2</td><td>Open &mdash; dashboard tiles that answer the question they raise; a missed billing day that skips a month silently</td><td>Current</td></tr>
+    <tr><td><code>0.5.0</code> build 5</td><td class="num">2</td><td>Open &mdash; dashboard tiles that answer the question they raise; a missed billing day that skipped a month silently, now caught up</td><td>Current</td></tr>
   </table></div>
 
   <h3>By epic</h3>
@@ -243,7 +243,7 @@
     <tr><td>Rent &amp; Payments</td><td class="num">9</td><td>Other (7 epics)</td><td class="num">13</td></tr>
   </table></div>
 
-  <div class="note"><strong>What UAT turned up.</strong> All 88 tickets have now been through user acceptance by someone working as the warden &mdash; onboarding, part payments, corrections, a checkout with a deposit deduction, a tenant-paid repair credited back, backup and restore. Two things came out of it rather than one: LODGY-68's dashboard tile instructed a tap on text that was not a tap target (fixed inside 0.4.0), and invoice auto-generation fires only on the exact billing day with no catch-up, so a phone asleep on the 5th skips that month's rent silently &mdash; filed as LODGY-90 and open.</div>
+  <div class="note"><strong>What UAT turned up.</strong> All 88 tickets have now been through user acceptance by someone working as the warden &mdash; onboarding, part payments, corrections, a checkout with a deposit deduction, a tenant-paid repair credited back, backup and restore. Two things came out of it rather than one: LODGY-68's dashboard tile instructed a tap on text that was not a tap target (fixed inside 0.4.0), and invoice auto-generation fires only on the exact billing day with no catch-up, so a phone asleep on the 5th skips that month's rent silently &mdash; filed as LODGY-90, fixed and delivered the same day.</div>
 </section>
 
 <section id="limits">

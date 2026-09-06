@@ -217,6 +217,11 @@ only future ones stop.
 
 ## 4. Rent and payments
 
+- **A missed day catches up.** If your phone is off or asleep on someone's
+  billing day, their invoice is created the next time the check runs, dated from
+  the day it was actually due — so it shows as overdue from that date rather
+  than looking like it only just became due. A month that passes entirely
+  without the app running is still yours to add by hand.
 - **Invoices generate themselves.** A daily background check creates the
   month's invoice for every active agreement whose billing cycle day is today,
   at the agreed rent. Invoices are immutable snapshots: changing the rent

@@ -357,7 +357,27 @@ Notes:
   forgone-rent expense for the non-revenue agreements that opted in, on the same
   billing day — one pass over the day's tenancies, two outcomes (LODGY-84).
 - WorkManager job generates the month's invoice for every ACTIVE agreement
-  on its billing cycle day.
+  **once its billing cycle day has been reached**, not only on the day itself.
+  Matching the exact day meant a phone that was off or dozing on the 5th never
+  billed that month and said nothing about it: no invoice means no due, so
+  nothing appeared in the overdue count, the reminders or the dashboard, and the
+  warden found out when a balance looked wrong months later (LODGY-90).
+  - Only the **period in progress** is ever considered. It does not walk back
+    through earlier months: by the time a month has fully passed the rent has
+    probably been taken in cash and reconciled against the paper register, and
+    inventing dues that are not owed is worse than the gap. A wholly missed month
+    stays a manual decision (4.4, LODGY-16).
+  - The invoice is dated from **its billing day**, not from when the catch-up
+    ran, so a late-generated invoice reads as overdue since the 5th rather than
+    as due today — the arrears figure stays true to when the rent was owed.
+  - A tenancy that began **after** this period's billing day is not billed for
+    it. The old exact-day rule hid that case by never matching it; under "the day
+    has passed" a tenant onboarded on the 20th would otherwise be invoiced the
+    instant they were added. Move-in is compared at day granularity, so someone
+    who moved in *on* the billing day at any hour is billed for that period.
+  - The decision is `shouldBillPeriod()`, kept pure and out of the worker: every
+    interesting case is about which side of a date something falls, and a test
+    that has to wait for the 5th of the month is no test.
 - Record a payment against an invoice — full or partial; invoice status
   updates automatically (UNPAID → PARTIAL → PAID).
 - Reminder button per unpaid/partial invoice: opens WhatsApp (`wa.me`) or
@@ -811,3 +831,6 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Overdue is defined once and shared by the tile and the list | UNPAID is not the same set - it misses a late part-paid invoice and includes next month's; a count that disagrees with the list it opens destroys trust in both | LODGY-89 |
 | A tappable Home tile passes Home's hostel filter to its destination | Otherwise tapping "1 overdue" while filtered to Moonlight would list every property's arrears | LODGY-89 |
 | Tiles that lead somewhere show a chevron; tiles that do not, do not | Consistency is achieved by making the difference visible, not by forcing every tile to navigate somewhere it has no business going | LODGY-89 |
+| Invoice generation catches up within the period, but never across months | A phone asleep on the billing day silently skipped a month's rent; backfilling further would invent dues for months already settled in cash | LODGY-90 |
+| A caught-up invoice is dated from its billing day, not from the catch-up | Otherwise rent owed since the 5th would present as due today, understating arrears on the screen the warden trusts for who is late | LODGY-90 |
+| The billing decision is a pure function, not a condition inside the worker | Every case is a date boundary; leaving it in the worker made the edges testable only by waiting for the right day of the month | LODGY-90 |

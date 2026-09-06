@@ -21,6 +21,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import java.util.Calendar
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -105,10 +106,44 @@ class InvoiceGenerationWorkerTest {
         coVerify { invoiceRepository.create("a1", thisMonth, thisYear, 5000.0, any()) }
     }
 
+    /** LODGY-90 changed the rule from "is today the billing day" to "has it been reached", so a day
+     *  earlier in the month is now billed rather than skipped - that is the whole fix. */
     @Test
-    fun `agreements billing on another day are left alone`() = runTest {
-        val otherDay = if (today == 1) 2 else 1
-        coEvery { agreementRepository.getAllActive() } returns listOf(agreement("a1", otherDay))
+    fun `an agreement whose billing day has already passed this month is billed`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(agreement("a1", 1))
+        coEvery { invoiceRepository.existsForPeriod("a1", thisMonth, thisYear) } returns false
+        coEvery { invoiceRepository.create(any(), any(), any(), any(), any()) } returns mockk(relaxed = true)
+        coEvery { creditRepository.applyPendingTo(any(), any()) } returns Unit
+
+        worker().doWork()
+
+        coVerify { invoiceRepository.create("a1", thisMonth, thisYear, 5000.0, any()) }
+    }
+
+    /** A caught-up invoice is dated from its billing day, not from the day the catch-up ran, so it
+     *  reads as overdue since that day rather than as due today. */
+    @Test
+    fun `the invoice is dated from the billing day, not from today`() = runTest {
+        val dueDate = slot<Long>()
+        coEvery { agreementRepository.getAllActive() } returns listOf(agreement("a1", 1))
+        coEvery { invoiceRepository.existsForPeriod("a1", thisMonth, thisYear) } returns false
+        coEvery { invoiceRepository.create(any(), any(), any(), any(), capture(dueDate)) } returns mockk(relaxed = true)
+        coEvery { creditRepository.applyPendingTo(any(), any()) } returns Unit
+
+        worker().doWork()
+
+        val dated = Calendar.getInstance().apply { timeInMillis = dueDate.captured }
+        assertEquals(1, dated.get(Calendar.DAY_OF_MONTH))
+        assertEquals(0, dated.get(Calendar.HOUR_OF_DAY))
+    }
+
+    /** A tenancy that began after this period's billing day must not be billed for it - otherwise
+     *  catching up would invoice someone the moment they were onboarded (LODGY-90). */
+    @Test
+    fun `a tenancy that started after the billing day is not billed for this period`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", 1).copy(moveInDate = System.currentTimeMillis()),
+        )
 
         worker().doWork()
 
@@ -296,17 +331,18 @@ class InvoiceGenerationWorkerTest {
 
     /** An opted-in room whose billing day is not today waits its turn, exactly as a billable
      *  tenancy does - the expense rides on the same monthly beat. */
+    /** The forgone-rent expense rides the same beat, so it catches up the same way - and its own
+     *  once-per-month guard is what stops a late run double-recording it. */
     @Test
-    fun `an opted-in room billing on another day records nothing today`() = runTest {
-        val otherDay = if (today == 1) 2 else 1
+    fun `an opted-in room whose billing day has passed records its expense on catch-up`() = runTest {
         coEvery { agreementRepository.getAllActive() } returns listOf(
-            agreement("a1", otherDay, nonRevenue = true, forgoneRentExpense = true),
+            agreement("a1", 1, nonRevenue = true, forgoneRentExpense = true, forgoneRentAmount = 4500.0),
         )
         stubForgoneRent()
 
         worker().doWork()
 
-        coVerify(exactly = 0) { expenseRepository.create(any(), any(), any(), any(), any(), any(), any()) }
+        coVerify { expenseRepository.create(any(), any(), 4500.0, any(), any(), any(), "a1") }
     }
 
     @Test

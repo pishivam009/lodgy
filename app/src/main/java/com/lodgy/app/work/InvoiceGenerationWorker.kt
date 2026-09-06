@@ -39,22 +39,35 @@ class InvoiceGenerationWorker @AssistedInject constructor(
         val dayOfMonth = today.get(Calendar.DAY_OF_MONTH)
         val periodMonth = today.get(Calendar.MONTH) + 1
         val periodYear = today.get(Calendar.YEAR)
-        val dueDate = today.timeInMillis
-
         var created = 0
         var totalDue = 0.0
 
-        val dueToday = tenancyAgreementRepository.getAllActive()
-            .filter { it.billingCycleDay == dayOfMonth }
+        // Only the period in progress is ever considered, so a phone that has been off for weeks
+        // produces the invoice it should already have had and nothing more - it cannot backfill
+        // months the warden has since settled in cash (LODGY-90).
+        val due = tenancyAgreementRepository.getAllActive().filter {
+            shouldBillPeriod(
+                billingCycleDay = it.billingCycleDay,
+                dayOfMonth = dayOfMonth,
+                // Normalised to midnight: a tenant who moved in ON the billing day, at whatever
+                // hour, is living there for that period and must be billed for it.
+                moveInDate = startOfDay(it.moveInDate),
+                periodBillingDate = billingDate(periodYear, periodMonth, it.billingCycleDay),
+            )
+        }
 
-        dueToday
+        due
             // A warden's or caretaker's room bills nobody, so it must never generate an invoice -
             // one would show as overdue forever and pollute the money figures (LODGY-82).
             .filter { !it.nonRevenue }
             .forEach { agreement ->
                 if (!invoiceRepository.existsForPeriod(agreement.id, periodMonth, periodYear)) {
                     val invoice = invoiceRepository.create(
-                        agreement.id, periodMonth, periodYear, agreement.agreedRent, dueDate,
+                        agreement.id, periodMonth, periodYear, agreement.agreedRent,
+                        // Dated from the billing day, not from whenever the catch-up happened, so a
+                        // late-generated invoice reads as overdue since the 5th rather than as due
+                        // today. The warden's arrears figure stays true to when the rent was owed.
+                        billingDate(periodYear, periodMonth, agreement.billingCycleDay),
                     )
                     creditRepository.applyPendingTo(agreement.tenantId, invoice.id)
                     created++
@@ -66,7 +79,7 @@ class InvoiceGenerationWorker @AssistedInject constructor(
         // accommodation can ask for the rent they give up to show as a cost (LODGY-84). It rides on
         // the tenancy's own billing day so the expense lands with the month's other money, and it is
         // an EXPENSE - a cost, never a receivable - so it cannot reappear as a due.
-        dueToday
+        due
             .filter { it.nonRevenue && it.forgoneRentExpense }
             .forEach { recordForgoneRent(it, today) }
 
@@ -135,3 +148,18 @@ class InvoiceGenerationWorker @AssistedInject constructor(
 /** Fixed id so a later run replaces the previous summary rather than stacking another one up.
  *  A literal rather than a hash so it cannot collide with a per-record id derived from a UUID. */
 private const val INVOICE_SUMMARY_NOTIFICATION_ID = 1_000_101
+
+/** Local midnight on this period's billing day. Billing days are limited to 1-28, so this is a real
+ *  date in every month and needs no clamping. */
+private fun billingDate(year: Int, month: Int, day: Int): Long = Calendar.getInstance().apply {
+    clear()
+    set(year, month - 1, day, 0, 0, 0)
+}.timeInMillis
+
+private fun startOfDay(millis: Long): Long = Calendar.getInstance().apply {
+    timeInMillis = millis
+    set(Calendar.HOUR_OF_DAY, 0)
+    set(Calendar.MINUTE, 0)
+    set(Calendar.SECOND, 0)
+    set(Calendar.MILLISECOND, 0)
+}.timeInMillis
