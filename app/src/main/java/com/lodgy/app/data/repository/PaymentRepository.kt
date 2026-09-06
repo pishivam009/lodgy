@@ -15,6 +15,8 @@ class PaymentRepository @Inject constructor(private val paymentDao: PaymentDao) 
     suspend fun getTotalPaid(invoiceId: String): Double =
         paymentDao.getByInvoiceId(invoiceId).first().sumOf { it.amount }
 
+    suspend fun delete(payment: Payment) = paymentDao.delete(payment)
+
     fun getMultiPeriod(): Flow<List<Payment>> = paymentDao.getMultiPeriod()
 
     suspend fun create(

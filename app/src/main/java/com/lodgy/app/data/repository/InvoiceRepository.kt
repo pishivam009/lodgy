@@ -13,6 +13,10 @@ class InvoiceRepository @Inject constructor(private val invoiceDao: InvoiceDao) 
 
     suspend fun getById(id: String): Invoice? = invoiceDao.getById(id)
 
+    /** Deleted only once the caller has confirmed no payment or credit still points at it, so it
+     *  never orphans money (LODGY-64, AC4). */
+    suspend fun delete(invoice: Invoice) = invoiceDao.delete(invoice)
+
     suspend fun existsForPeriod(tenancyAgreementId: String, periodMonth: Int, periodYear: Int): Boolean =
         invoiceDao.getForPeriod(tenancyAgreementId, periodMonth, periodYear) != null
 

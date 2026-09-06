@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -16,7 +15,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.RoomType
+import com.lodgy.app.ui.common.UpdateConfirmDialog
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 
@@ -104,19 +103,9 @@ fun RoomFormScreen(
         }
     }
 
-    if (uiState.showTypeChangeConfirm) {
-        AlertDialog(
-            onDismissRequest = viewModel::dismissTypeChangeConfirm,
-            title = { Text(stringResource(R.string.room_type_change_confirm_title)) },
-            text = { Text(stringResource(R.string.room_type_change_confirm_body)) },
-            confirmButton = {
-                TextButton(onClick = viewModel::confirmTypeChange) {
-                    Text(stringResource(R.string.room_type_change_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = viewModel::dismissTypeChangeConfirm) { Text(stringResource(R.string.cancel)) }
-            },
-        )
-    }
+    UpdateConfirmDialog(
+        changes = uiState.pendingChanges,
+        onConfirm = viewModel::confirmChanges,
+        onDismiss = viewModel::dismissChanges,
+    )
 }

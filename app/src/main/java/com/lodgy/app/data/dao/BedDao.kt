@@ -91,6 +91,31 @@ interface BedDao {
     )
     suspend fun getLongVacantBeds(vacantSinceBefore: Long): List<VacantBedDetail>
 
+    /** Every vacant space the warden has, across every property, for onboarding (LODGY-85).
+     *  Ordered by property first so the picker groups the way the warden thinks. */
+    @Query(
+        "SELECT beds.id AS bedId, beds.label AS bedLabel, rooms.roomNumber AS roomNumber, " +
+            "floors.label AS floorLabel, hostels.id AS hostelId, hostels.name AS hostelName, " +
+            "hostels.propertyType AS propertyType " +
+            "FROM beds INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "INNER JOIN floors ON floors.id = rooms.floorId " +
+            "INNER JOIN hostels ON hostels.id = floors.hostelId " +
+            "WHERE beds.status = 'VACANT' " +
+            "ORDER BY hostels.name, floors.sortOrder, rooms.roomNumber, beds.label",
+    )
+    suspend fun getVacantChoices(): List<VacantBedChoice>
+
+    /** The market rate the warden is forgoing on a non-revenue room, which is what the
+     *  forgone-rent expense defaults to (LODGY-84). */
+    @Query(
+        "SELECT rooms.pricePerBed FROM beds " +
+            "INNER JOIN rooms ON rooms.id = beds.roomId WHERE beds.id = :bedId",
+    )
+    suspend fun getRoomPrice(bedId: String): Double?
+
+    @Query("SELECT COUNT(*) > 0 FROM beds")
+    suspend fun hasAnyBed(): Boolean
+
     @Query("SELECT id FROM beds WHERE status = 'VACANT'")
     suspend fun getVacantBedIds(): List<String>
 

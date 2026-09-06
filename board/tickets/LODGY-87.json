@@ -1,0 +1,53 @@
+{
+  "id": "LODGY-87",
+  "epic": "Tenant Onboarding",
+  "title": "Marking a room as the warden's or a caretaker's needs a full tenant onboarding first",
+  "description": "User-reported as a question - 'how do I assign a vacancy to self?' - which is the tell: the capability exists and cannot be found. LODGY-82 models a warden's or caretaker's room correctly, but the ONLY way to reach that switch is to onboard a person. Confirmed in code: the non-revenue flag lives on TenancyAgreement and is set on AgreementFormScreen, which is the last step of the onboarding chain (bed -> TenantFormScreen -> AgreementFormScreen). TenantFormUiState.canSave requires a non-blank name AND phone, so a warden marking their own room has to type themselves in as a tenant with a phone number before they can say 'this one is mine'. That is why the test fixture contains a tenant literally named 'Caretaker'. The bed sheet (BedActionSheet in BedGridScreen) is where a warden already taps a vacant bed, and it currently offers exactly one action - 'Assign a tenant' - so it is the obvious home for a second. \n\nWHAT THE PO NEEDS TO SETTLE, because the shortcut cannot be built without deciding these. (1) WHOSE NAME. The warden's own row already has a name, so 'my own room' can create the tenancy without asking anything; a caretaker's room needs a name, so it needs one field. Are those one action or two? (2) DUPLICATE PEOPLE. Marking three rooms as the warden's own would create three identical tenant rows unless the same self record is reused - and reusing it means one tenant holding several active tenancies, which nothing else in the app does today ('one active per tenant' is stated in DESIGN.md's schema notes). (3) BILLING CYCLE DAY is required on an agreement and is meaningless for a room that bills nobody, EXCEPT that LODGY-84's forgone-rent expense is generated on it, so it cannot just be junk. (4) UNDOING IT: today you check the tenant out; is that the answer, or does the sheet need 'this is no longer my room'? \n\nCONSTRAINT, not up for grabs: whatever this becomes must stay a flag on a normal tenancy (LODGY-82's recorded decision). A separate occupancy type would fork every code path that touches occupancy, and the room's history would stop reading like any other room's.",
+  "acceptanceCriteria": [
+    "A warden can mark a vacant room or unit as their own, or a caretaker's, without filling in a tenant profile",
+    "It is reachable from where a warden already taps a vacant space, not hidden behind onboarding",
+    "The result is identical to what LODGY-82 produces today - a normal tenancy carrying the non-revenue flag, so occupancy, history and the no-invoice guarantee are unchanged",
+    "Product Owner has recorded a decision on the four questions in the description before it is built",
+    "Marking several rooms does not litter the tenant directory with duplicate people",
+    "There is a way back: a room marked this way can be un-marked, and the route is discoverable",
+    "The existing full onboarding route to the same switch keeps working, since a named caretaker with a phone number is still worth capturing",
+    "Wording works for a shop, warehouse or flat as well as a bed (see LODGY-86)",
+    "Correct in Hindi as well as English"
+  ],
+  "status": "Testing",
+  "priority": "Medium",
+  "version": "0.4.0",
+  "assigneeRole": "Product Owner",
+  "createdAt": "2026-09-06T10:05:00Z",
+  "updatedAt": "2026-09-06T12:20:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-06T10:05:00Z",
+      "actor": "Developer",
+      "action": "created",
+      "note": "Raised from the user asking 'how do I assign a vacancy to self?' during a session on LODGY-85. The answer today is: onboard yourself as a tenant with a name and phone, then flip 'Warden / caretaker room' on the agreement form - or tap the bed and use Assign a tenant, which skips only the bed-picking step. That the user had to ask is the point. Assigned to the Product Owner rather than straight to Todo-for-dev because the four questions in the description are product decisions, not implementation details - particularly whether one self record holds several active tenancies, which cuts against 'one active agreement per tenant' as the schema notes describe it."
+    },
+    {
+      "timestamp": "2026-09-06T11:10:00Z",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "DECIDED, all four, so this can be built. (1) WHOSE NAME - one action, not two. The bed sheet gains 'Mark as warden / caretaker room' next to 'Assign a tenant', and it opens a single field pre-filled with the warden's own name from the warden record. Marking your own room is then two taps and a confirm; marking a caretaker's is the same plus typing their name. Two separate actions would make the sheet a menu, and the difference between the two cases IS just the name. (2) DUPLICATE PEOPLE - each marked room creates its own tenant row, and the app does NOT reuse one 'self' record across rooms. Reuse would mean one tenant holding several active agreements, and getActiveByTenantId returns the first ACTIVE one it finds - transfer, checkout, manual invoicing and LODGY-84's forgone rent all go through it, so the app would silently act on the wrong tenancy. A duplicate name in the directory is untidy; acting on the wrong tenancy is a bug. In practice there is nothing to duplicate: a warden lives in one room, and caretakers have their own names. (3) BILLING CYCLE DAY - 1. It has to be valid (1-28) and it is not junk, because LODGY-84 generates the forgone-rent expense on it, and the first of the month is where a monthly cost belongs. (4) UNDOING IT - checkout, which already exists and needs nothing new. The sheet on an occupied bed offers 'View tenant', the profile has Checkout, and checkout closes the agreement and frees the bed exactly as it does for a paying tenant. That satisfies AC6 as long as QA confirms the route is genuinely walkable, so please walk it rather than reading it here. NOT UP FOR GRABS, restated: this stays a flag on a normal tenancy (LODGY-82). The shortcut skips the profile FORM, not the record."
+    },
+    {
+      "timestamp": "2026-09-06T11:11:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting to the recorded decisions."
+    },
+    {
+      "timestamp": "2026-09-06T12:20:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built to the recorded decisions. The bed sheet's vacant branch now offers 'Mark as warden / caretaker room' beside 'Assign a tenant'; it opens one field pre-filled with the warden's own name from the warden record, so marking your own room is two taps and a confirm and marking a caretaker's is that plus typing their name (AC1, AC2). Confirming writes a real tenant and a real tenancy with agreedRent 0, deposit 0, billingCycleDay 1 and nonRevenue true, then flips the bed to OCCUPIED - byte for byte what the long route produces, so nothing downstream knows the shortcut exists (AC3). The full onboarding route to the same switch is untouched (AC7). The phone number is left blank, which is the whole point: requiring it is what made the long route absurd for a warden marking their own room. The warden can still open the profile and add one. VERIFIED ON DEVICE end to end: Room 102 Bed A, sheet -> Mark as warden / caretaker room -> dialog pre-filled 'Warden' -> Mark as ours. The database then held tenant 'Warden' with an ACTIVE tenancy: rent 0, deposit 0, billing day 1, nonRevenue 1, forgoneRentExpense 0 - so LODGY-84 stays off by default as it should. Bed A flipped to OCCUPIED and the grid updated immediately. AC6, the way back, checked by walking it rather than reading it: the occupied bed's sheet offers 'View tenant', and the profile carries Checkout - plus 'Forgone rent as an expense', correctly, since the tenancy is non-revenue. Cancel leaves the bed vacant; verified. Strings in English and Hindi. WHAT QA SHOULD PUSH ON, since it is the decision most likely to be wrong: marking a SECOND room as your own creates a second tenant row with the same name, by design (AC5, and the PO's recorded reasoning). Reusing one self record would give a single tenant several active agreements, and getActiveByTenantId returns the first ACTIVE one it finds - transfer, checkout, manual invoicing and the forgone-rent expense all go through it. If you think the duplicate is worse than that risk, bounce it. TESTS: 5 new covering the pre-filled name, the written tenancy, a caretaker's name replacing the warden's, a blank name writing nothing, and dismissing. Also fixed a latent fault in this test class while I was in it - the ViewModel's init reads were unstubbed in the new tests, and MockK's throw inside that coroutine surfaced as a failure on whichever test happened to run next; there is now a stubRoom() helper. Full suite 549 pass, 0 failures, coverage 95.96% line against the 0.93 gate. Not schema-affecting."
+    }
+  ]
+}

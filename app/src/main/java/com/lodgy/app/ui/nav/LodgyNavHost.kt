@@ -54,6 +54,7 @@ import com.lodgy.app.ui.payment.ReminderScreen
 import com.lodgy.app.ui.tenant.AgreementFormScreen
 import com.lodgy.app.ui.tenant.BedPickerScreen
 import com.lodgy.app.ui.tenant.CheckoutScreen
+import com.lodgy.app.ui.tenant.ForgoneRentScreen
 import com.lodgy.app.ui.tenant.TenantDirectoryScreen
 import com.lodgy.app.ui.tenant.TenantFormScreen
 import com.lodgy.app.ui.tenant.TenantProfileScreen
@@ -75,6 +76,7 @@ private const val TENANT_PROFILE_ROUTE = "tenant_profile"
 private const val AGREEMENT_FORM_ROUTE = "agreement_form"
 private const val CHECKOUT_ROUTE = "checkout"
 private const val TRANSFER_ROUTE = "transfer"
+private const val FORGONE_RENT_ROUTE = "forgone_rent"
 private const val CREDIT_FORM_ROUTE = "credit_form"
 private const val ACKNOWLEDGEMENT_ROUTE = "acknowledgement"
 private const val MULTI_PERIOD_PAYMENT_ROUTE = "multi_period_payment"
@@ -105,27 +107,39 @@ fun LodgyNavHost(pendingRoute: String? = null) {
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
-    val isTopLevelDestination = LodgyDestination.entries.any { it.route == currentDestination?.route }
 
     Scaffold(
+        // The bottom navigation stays on every screen, not just the five top-level tabs, so Home is
+        // always one tap away and the one persistent landmark never vanishes when a warden is deep
+        // in the app and lost. Older wardens could not find the bare back chevron or a way home
+        // (LODGY-80). It lives here on the Scaffold, outside the NavHost, so it stays put while inner
+        // content slides (LODGY-61); the chevron and system back are untouched - this adds a route
+        // home, it does not replace going back.
         bottomBar = {
-            if (isTopLevelDestination) {
-                NavigationBar {
-                    LodgyDestination.entries.forEach { destination ->
-                        val label = stringResource(destination.labelRes)
-                        NavigationBarItem(
-                            selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true,
-                            onClick = {
-                                navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(destination.icon, contentDescription = label) },
-                            label = { Text(label) },
-                        )
-                    }
+            NavigationBar {
+                LodgyDestination.entries.forEach { destination ->
+                    val label = stringResource(destination.labelRes)
+                    NavigationBarItem(
+                        // On an inner screen no tab is the current one, so nothing is highlighted -
+                        // the bar is a way out, not a claim about where you are.
+                        selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true,
+                        onClick = {
+                            // Land on the tab's ROOT, clearing any inner screens in the way - so
+                            // Home always shows the dashboard, even from a Home-section inner screen
+                            // like the monthly report or the vacant-beds view (LODGY-80, AC2). The
+                            // multi-back-stack saveState/restoreState was dropped deliberately: it
+                            // restored the current section's saved sub-position, which stranded a
+                            // warden on that inner screen instead of taking them out. "Tap Home = the
+                            // home screen" is what these users expect, and reaching the section root
+                            // matters more than remembering a scroll position.
+                            navController.navigate(destination.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        },
+                        icon = { Icon(destination.icon, contentDescription = label) },
+                        label = { Text(label) },
+                    )
                 }
             }
         },
@@ -168,6 +182,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                         LodgyDestination.Home -> DashboardScreen(
                             onOpenVacantBeds = { navController.navigate("$ALL_ROOMS_ROUTE?hasSpace=true") },
                             onOpenMonthlyReport = { navController.navigate(MONTHLY_REPORT_ROUTE) },
+                            onOpenBackup = { navController.navigate(BACKUP_ROUTE) },
                         )
                         LodgyDestination.More -> MoreScreen(
                             onOpenExpenses = { navController.navigate(EXPENSE_LIST_ROUTE) },
@@ -308,6 +323,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                     onEdit = { tenantId -> navController.navigate("$TENANT_FORM_ROUTE?tenantId=$tenantId") },
                     onCheckout = { tenantId -> navController.navigate("$CHECKOUT_ROUTE/$tenantId") },
                     onTransfer = { tenantId -> navController.navigate("$TRANSFER_ROUTE/$tenantId") },
+                    onForgoneRent = { tenantId -> navController.navigate("$FORGONE_RENT_ROUTE/$tenantId") },
                     onRecordCredit = { tenantId -> navController.navigate("$CREDIT_FORM_ROUTE/$tenantId") },
                     onPaySeveralMonths = { tenantId -> navController.navigate("$MULTI_PERIOD_PAYMENT_ROUTE/$tenantId") },
                     onOpenNotes = { tenantId -> navController.navigate("$NOTES_TIMELINE_ROUTE/$tenantId") },
@@ -377,6 +393,16 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             }
 
             composable(
+                route = "$FORGONE_RENT_ROUTE/{tenantId}",
+                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+            ) {
+                ForgoneRentScreen(
+                    onBack = { navController.popBackStack() },
+                    onDone = { navController.popBackStack() },
+                )
+            }
+
+            composable(
                 route = "$CHECKOUT_ROUTE/{tenantId}",
                 arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
             ) {
@@ -389,7 +415,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             composable(BED_PICKER_ROUTE) {
                 BedPickerScreen(
                     onBack = { navController.popBackStack() },
-                    onBedSelected = { option -> navController.navigate("$TENANT_FORM_ROUTE?bedId=${option.bed.id}") },
+                    onBedSelected = { choice -> navController.navigate("$TENANT_FORM_ROUTE?bedId=${choice.bedId}") },
                 )
             }
 

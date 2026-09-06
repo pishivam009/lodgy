@@ -3,15 +3,21 @@ package com.lodgy.app.ui.dashboard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.background
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,14 +27,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import android.text.format.DateUtils
 import com.lodgy.app.R
+import com.lodgy.app.backup.BackupHealth
 import com.lodgy.app.ui.icons.CommonIcons
+import com.lodgy.app.ui.icons.StatusIcons
+import com.lodgy.app.ui.theme.LodgyStatus
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -40,6 +51,7 @@ private data class StatTile(val value: String, val labelRes: Int, val onClick: (
 fun DashboardScreen(
     onOpenVacantBeds: () -> Unit = {},
     onOpenMonthlyReport: () -> Unit = {},
+    onOpenBackup: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -106,6 +118,14 @@ fun DashboardScreen(
                 items(tiles) { tile -> StatCard(tile) }
             }
 
+            BackupTile(
+                health = uiState.backupHealth,
+                lastBackupTime = uiState.lastBackupTime,
+                running = uiState.backupRunning,
+                onBackupNow = viewModel::backupNow,
+                onSetUp = onOpenBackup,
+            )
+
             if (uiState.upcomingMoveOuts.isNotEmpty()) {
                 Text(stringResource(R.string.dashboard_upcoming_move_outs), style = MaterialTheme.typography.labelLarge)
                 val dateFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
@@ -129,6 +149,89 @@ fun DashboardScreen(
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * The automatic-backup status, as prominent when it is broken as when it is fine (LODGY-68). The
+ * RAG container tint is the LODGY-36 status token, so a failed or stale backup does not read like a
+ * working one. The icon on the right runs a backup immediately when a folder is set, or leads to
+ * the folder setup when one is not.
+ */
+@Composable
+private fun BackupTile(
+    health: BackupHealth,
+    lastBackupTime: Long?,
+    running: Boolean,
+    onBackupNow: () -> Unit,
+    onSetUp: () -> Unit,
+) {
+    val palette = LodgyStatus.colors[health.level]
+    // A backup that has never worked or has failed is fixed by (re-)choosing the folder, not by
+    // retrying against the folder that is gone. So those two states send the icon to the picker;
+    // a set-up, working backup runs on the spot (LODGY-68, AC7).
+    val actionIsChooseFolder = health == BackupHealth.NOT_CONFIGURED || health == BackupHealth.FAILED
+
+    val statusText = when (health) {
+        BackupHealth.NOT_CONFIGURED -> stringResource(R.string.dashboard_backup_not_set_up)
+        BackupHealth.NEVER -> stringResource(R.string.dashboard_backup_never)
+        BackupHealth.FAILED -> stringResource(R.string.dashboard_backup_failed)
+        BackupHealth.STALE, BackupHealth.RECENT -> {
+            val relative = lastBackupTime?.let {
+                DateUtils.getRelativeTimeSpanString(
+                    it, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS,
+                ).toString()
+            }.orEmpty()
+            stringResource(R.string.dashboard_backup_last, relative)
+        }
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = palette.container),
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    modifier = Modifier.size(28.dp).background(palette.accent, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        if (health.level == com.lodgy.app.ui.theme.StatusLevel.GOOD) StatusIcons.Check else StatusIcons.Alert,
+                        contentDescription = null,
+                        tint = palette.container,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                Column {
+                    Text(
+                        stringResource(R.string.dashboard_backup_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = palette.onContainer,
+                    )
+                    Text(statusText, style = MaterialTheme.typography.bodySmall, color = palette.onContainer)
+                }
+            }
+            if (running) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = palette.accent)
+            } else {
+                IconButton(onClick = { if (actionIsChooseFolder) onSetUp() else onBackupNow() }) {
+                    Icon(
+                        if (actionIsChooseFolder) CommonIcons.Edit else CommonIcons.Export,
+                        contentDescription = stringResource(
+                            if (health == BackupHealth.FAILED) R.string.dashboard_backup_repick
+                            else if (actionIsChooseFolder) R.string.dashboard_backup_set_up_action
+                            else R.string.dashboard_backup_now,
+                        ),
+                        tint = palette.onContainer,
+                    )
                 }
             }
         }

@@ -2,6 +2,7 @@
   "id": "LODGY-77",
   "epic": "Auth",
   "priority": "Medium",
+  "version": "0.4.0",
   "title": "Slow down repeated wrong PIN attempts (security review finding 3)",
   "description": "The last open item from the LODGY-46 security review, which recorded it as 'OPEN, recommend a ticket' - this is that ticket. It was deliberately not fixed during the review because the fix adds a way for a warden to lock themselves out of their own records, which needed a product decision first. That decision is now unblocked by LODGY-76. THE FINDING: PinLockViewModel verifies the PIN and clears the field on failure, with no delay, no attempt counter and no lockout. Anyone holding the phone can try PINs as fast as they can tap, and nothing at all slows a scripted attempt driven over ADB. A 4-digit PIN is 10,000 possibilities - not hand-guessable in one sitting, but thin, and LODGY-50 made 5 and 6 digits available precisely because 4 is the weak end. WHY IT WAS HELD BACK, AND WHY IT IS SAFE NOW: a delay or lockout with no recovery route would have made a forgotten PIN fail faster and harder - the warden's own honest fumbling looks identical to an attack. LODGY-76 now adds a sanctioned way out (export a backup from the lock screen, then reset), so a warden who trips the delay is inconvenienced rather than trapped. Build this AFTER LODGY-76, not before, or the combination is worse than either alone. SUGGESTED SHAPE, from the review: count consecutive failures in AuthPreferences and impose an increasing delay - free for the first few attempts, then seconds, then longer - persisted so that force-stopping the app or rebooting the phone does not reset the counter, which is the obvious way around a naive in-memory implementation. A successful unlock clears it. DELIBERATELY NOT A HARD LOCKOUT. Slowing attempts defeats the realistic attack (someone tapping, or a script) at almost no cost to a warden who mistypes twice. A permanent lockout after N tries adds real risk of a warden destroying their own access, and buys little against an attacker who already has the phone and an unencrypted database they could read with a cable anyway (DESIGN.md 5). The point is proportionality, not maximum severity. The delay must be visible - a warden who cannot tell the difference between 'wrong PIN' and 'the app is making me wait' will assume the app is broken and may reinstall it, destroying their data.",
   "acceptanceCriteria": [
@@ -15,16 +16,40 @@
     "LODGY-76's forgot-PIN route stays reachable while a delay is in effect - a warden who has genuinely forgotten must not be made to wait out a penalty to reach their escape hatch",
     "Built after LODGY-76, and docs/SECURITY-REVIEW.md finding 3 is updated from OPEN to resolved with what was actually done"
   ],
-  "status": "Todo",
+  "status": "Done",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:49:35+00:00",
-  "updatedAt": "2026-09-04T13:49:35+00:00",
+  "updatedAt": "2026-09-05T18:14:41Z",
   "history": [
     {
       "timestamp": "2026-09-04T13:49:35+00:00",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed to close the last open item from the LODGY-46 security review, which explicitly recommended a ticket and never got one. Held back at the time because a lockout without a recovery route makes a forgotten PIN permanent faster; LODGY-76 now provides that route, so this is unblocked - but it must be built after it, not before. Specced as a graduated delay rather than a hard lockout, on the grounds of proportionality: the data sits in an unencrypted database that anyone with the phone and a cable could already read."
+    },
+    {
+      "timestamp": "2026-09-05T17:58:27Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting now that LODGY-76 has shipped the escape hatch. Building the review's suggested shape: count consecutive PIN failures in AuthPreferences (DataStore, so it survives force-stop and reboot), free for the first 5, then an increasing delay (30s, 60s, 120s, capped at 5 min), a successful unlock or biometric clears the count, the lock screen says it is waiting and roughly how long, no permanent lockout, and the LODGY-76 Forgot-PIN link stays tappable throughout. Delay schedule and the persistence go in pure/testable pieces; then SECURITY-REVIEW.md finding 3 moves from OPEN to resolved."
+    },
+    {
+      "timestamp": "2026-09-05T18:13:54Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built the review's suggested shape and verified it end to end on the emulator.\n\nWHAT WAS BUILT.\n- PinBackoff (pure, unit-tested): first 5 attempts free, then 30s doubling to a 5-minute cap; plus lockedUntil(count, lastFailedAt).\n- AuthPreferences: failedPinAttempts + lastFailedPinAt persisted in DataStore, with recordFailedPinAttempt(now)->count and resetFailedPinAttempts (AC3 persistence).\n- PinLockViewModel: a wrong PIN records a failure and, past the free allowance, sets lockedUntilMillis; onDigit/onBackspace are frozen while locked; a correct PIN or a biometric unlock clears the count (AC4/AC7); init restores an in-force wait so a restart can't dodge it; onLockoutElapsed re-enables entry.\n- PinLockScreen: shows 'Too many wrong PINs. Please wait about N seconds...' counting down once a second (AC5), keeps the LODGY-76 Forgot-PIN link reachable throughout (AC8), and the keypad does nothing while locked.\n\nVERIFIED ON DEVICE (Hindi UI):\n- Five wrong PINs: no wait (AC2). The sixth: the countdown message appeared ('...about 28 seconds...') and ticked down; typing the CORRECT PIN during the wait did nothing - entry frozen (AC1).\n- AC3 (the 'obvious way around'): while locked, force-stopped the app and relaunched -> it came back STILL LOCKED with the countdown resumed from the persisted state (a naive in-memory counter would have reset). The stored failed_pin_attempts was confirmed in the DataStore file.\n- After the wait elapsed, the correct PIN unlocked to the dashboard AND failed_pin_attempts was cleared to 0 (AC4). No permanent lockout - it always elapses (AC6).\n- AC7 biometric: unit-verified that a biometric success bypasses PIN entry and clears the count; the emulator has no fingerprint enrolled so it wasn't exercised live.\n\nAC9: docs/SECURITY-REVIEW.md finding 3 moved from OPEN to RESOLVED with what was done.\n\n500 tests pass (was 489; +11), line coverage 96.92% (gate 0.93), jacocoCoverageVerification green, assembleDebug OK. Docs updated: DESIGN.md 4.1, SECURITY-REVIEW.md finding 3, USER-MANUAL.md 1, and a 'Too many wrong tries' figure in screenshots.html.\n\nNOTE emulator PIN remains 1111 (4-digit); the failure count is reset (unlocked cleanly)."
+    },
+    {
+      "timestamp": "2026-09-05T18:14:41Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - verified on the emulator against a real database, all nine ACs hold.\n\nAC1 a scripted/rapid guess is throttled: after the free attempts a wait is imposed and the keypad is frozen - typing the CORRECT PIN during the wait did nothing. AC2 the first five wrong attempts imposed no wait at all, so an ordinary mistype is free. AC3 the count lives in DataStore: while locked I force-stopped and relaunched and it came back STILL LOCKED with the countdown resumed from the persisted state, and the stored count was confirmed in the auth_prefs file (a reboot preserves DataStore the same way). AC4 a correct unlock cleared the count to 0 (also unit-verified for biometric). AC5 the lock screen says plainly it is waiting and counts the seconds down, so it never looks broken. AC6 no permanent lockout - every wait elapses and entry re-enables. AC7 biometric is independent of the PIN counter and is not penalised (code-verified; no fingerprint enrolled on the emulator to demo live), and it clears the count on success. AC8 the Forgot-PIN link stayed present and tappable all through the lockout - a genuinely-forgotten warden is not made to wait out the penalty to escape; it also survives a detour into the forgot flow and back. AC9 SECURITY-REVIEW.md finding 3 is updated OPEN -> RESOLVED with what was done.\n\nDelay schedule matches the review's suggestion (free-for-5, then 30s doubling, 5-min cap) and is unit-tested including the overflow guard for an absurd failure count.\n\n500 tests pass, line coverage 96.92%, jacocoCoverageVerification green."
     }
   ]
 }

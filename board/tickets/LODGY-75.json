@@ -11,11 +11,12 @@
     "No Drive SDK, no OAuth and no INTERNET permission is added - the app stays network-free and keeps using the system picker",
     "Findings feed LODGY-68: record whether Drive grants a durable OpenDocumentTree permission suitable for unattended daily backups"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
+  "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:28:16+00:00",
-  "updatedAt": "2026-09-04T21:09:45+00:00",
+  "updatedAt": "2026-09-05T19:58:53Z",
   "history": [
     {
       "timestamp": "2026-09-04T13:28:16+00:00",
@@ -28,6 +29,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "DECIDED: build what can be built without a Google account on this machine - the Backup screen nudge telling the warden the file can go to Drive or anywhere else the phone offers, and the USER-MANUAL.md documentation for both directions. The PO will verify the round trip on a real device. The two verification criteria (export to Drive, import it back, and confirm the file is non-empty) stay open and must be signed off by the PO before this moves to Done - the whole risk here is a cloud provider returning a writable-looking stream that yields a zero-byte file, and that cannot be checked from an emulator."
+    },
+    {
+      "timestamp": "2026-09-05T19:57:50Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Building the buildable half per the PO decision: a Backup-screen nudge that the file can go to Google Drive or anywhere the phone offers, plus USER-MANUAL docs for the Drive round trip both directions. No Drive SDK/OAuth/INTERNET - it stays on the system picker (AC5). The two Drive round-trip checks (AC1/AC2) need a Google account on a real device and stay open for the PO to sign off, as they decided."
+    },
+    {
+      "timestamp": "2026-09-05T19:58:53Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Buildable scope complete. AC3: the Backup screen now names Google Drive explicitly in both the export and import descriptions - the file can go to Drive or anywhere the phone offers, and restore reads it back the same way. AC4: USER-MANUAL section 8 documents the Drive route for both export and import in plain language, plus the tip to point the LODGY-68 daily-backup folder at a Drive-synced folder. AC5: no Drive SDK, no OAuth, no INTERNET permission - it stays on CreateDocument/OpenDocument (the system picker), app remains network-free. DESIGN.md 4.8 records all this.\n\nSTAYS OPEN FOR THE PO, exactly as they decided (cannot be checked from an emulator with no Google account): AC1 export a backup to Drive then import that same file and confirm the data restores intact; AC2 the file in Drive is non-empty and openable; AC6 whether Drive grants a durable OpenDocumentTree permission fit for the unattended daily backup (feeds LODGY-68). These need a real device + Google account and the PO sign-off. Leaving in Testing on that basis rather than Done."
     }
   ]
 }

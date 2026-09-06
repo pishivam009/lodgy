@@ -23,8 +23,23 @@
 
     <string name="pin_lock_title">Enter your PIN</string>
     <string name="pin_lock_incorrect_error">Incorrect PIN — try again</string>
+    <string name="pin_lock_too_many_attempts">Too many wrong PINs. Please wait about %1$d seconds, then try again — or use Forgot PIN below.</string>
     <string name="pin_lock_biometric_title">Unlock Lodgy</string>
     <string name="pin_lock_use_pin">Use PIN instead</string>
+    <string name="forgot_pin_link">Forgot PIN?</string>
+    <string name="forgot_pin_title">Forgot your PIN?</string>
+    <string name="forgot_pin_biometric_hint">You have fingerprint unlock set up. Try that first — it\'s the quickest way back in.</string>
+    <string name="forgot_pin_use_biometric">Use fingerprint instead</string>
+    <string name="forgot_pin_explanation">Save a backup of your data first, then reset your PIN and set a new one. Choose somewhere safe to save the file — you\'ll need it if anything goes wrong.</string>
+    <string name="forgot_pin_save_backup">Save a backup</string>
+    <string name="forgot_pin_backup_saved">Backup saved. You can reset your PIN now.</string>
+    <string name="forgot_pin_backup_failed">Couldn\'t save the backup. Try again — nothing has changed.</string>
+    <string name="forgot_pin_reset">Reset PIN</string>
+    <string name="forgot_pin_back">Back</string>
+    <string name="forgot_pin_data_safe_note">Your hostels, tenants and payments stay on the phone. Only the PIN is cleared.</string>
+    <string name="forgot_pin_reset_confirm_title">Reset your PIN?</string>
+    <string name="forgot_pin_reset_confirm_body">This clears your PIN so you can set a new one on the next screen. Your data stays. Make sure you\'ve saved the backup first — this can\'t be undone.</string>
+    <string name="forgot_pin_reset_confirm_action">Reset PIN</string>
 
     <string name="hostel_list_title">Your properties</string>
     <string name="hostel_list_empty">No properties yet. Tap + to add your first one.</string>
@@ -49,8 +64,22 @@
     <string name="hostel_field_address">Address</string>
     <string name="hostel_field_phone">Contact phone</string>
     <string name="hostel_form_save">Save property</string>
+    <string name="hostel_delete">Delete property</string>
+    <string name="hostel_delete_body">This removes this property and its empty floors, rooms and beds. This cannot be undone.</string>
+    <string name="hostel_delete_blocked_title">Cannot delete this property</string>
+    <string name="hostel_delete_blocked_body">This property still has tenancies or expenses on record. Check tenants out and remove its expenses first, then delete it.</string>
 
     <string name="cancel">Cancel</string>
+
+    <!-- Confirming an update, not a delete (LODGY-65). See DESIGN.md 4.12: only when the
+         change is to money, occupancy or history the warden cannot see on this screen. -->
+    <string name="update_confirm_title">Confirm this change?</string>
+    <string name="update_confirm_save">Save change</string>
+    <string name="update_confirm_room_price">Price per bed goes from ₹%1$.0f to ₹%2$.0f. Invoices generated from now on bill every bed in this room at the new price; invoices already raised are unchanged.</string>
+    <string name="update_confirm_unit_rent">Monthly rent goes from ₹%1$.0f to ₹%2$.0f. Invoices generated from now on use the new rent; invoices already raised are unchanged.</string>
+    <string name="update_confirm_hostel_rename">Renaming this property to “%1$s”. You have reconciled %2$d month(s) against its old name, and PDFs you have already exported still carry it.</string>
+    <string name="update_confirm_tenancy_rent">Rent goes from ₹%1$.0f to ₹%2$.0f a month. Invoices generated from now on use the new rent; invoices already raised are unchanged.</string>
+
 
     <string name="floor_list_title">Floors</string>
     <string name="floor_list_empty">No floors yet. Tap + to add one.</string>
@@ -83,9 +112,7 @@
     <string name="room_delete_confirm_title">Delete this room?</string>
     <string name="room_delete_confirm_body">Room %1$s and its beds will be removed. This can\'t be undone.</string>
     <string name="room_delete_confirm">Delete</string>
-    <string name="room_type_change_confirm_title">Change room type?</string>
-    <string name="room_type_change_confirm_body">This room has a bed with an active tenant. Changing its type will leave the bed count out of step with the new type. Continue?</string>
-    <string name="room_type_change_confirm">Change type</string>
+    <string name="room_type_change_confirm_body">This room has a bed with an active tenant. Changing its type will leave the bed count out of step with the new type.</string>
     <string name="room_form_title_add">Add Room</string>
     <string name="room_form_title_edit">Edit Room</string>
     <string name="room_field_number">Room number</string>
@@ -111,6 +138,11 @@
     <string name="bed_sheet_occupied_by">Occupied by %1$s</string>
     <string name="bed_sheet_view_tenant">View tenant</string>
     <string name="bed_sheet_assign_tenant">Assign a tenant</string>
+    <string name="bed_sheet_mark_own_room">Mark as warden / caretaker room</string>
+    <string name="mark_own_room_title">Warden or caretaker room?</string>
+    <string name="mark_own_room_body">This room stays occupied but is never billed - no rent, no invoices, no overdue reminders. Whose room is it?</string>
+    <string name="mark_own_room_name">Name</string>
+    <string name="mark_own_room_confirm">Mark as ours</string>
     <string name="bed_status_occupied">OCCUPIED</string>
     <string name="bed_status_vacant">VACANT</string>
 
@@ -173,7 +205,10 @@
     <string name="notify_settings_dues">Payments and expenses</string>
     <string name="notify_settings_dues_sub">Overdue rent, and recurring expenses coming round again.</string>
     <string name="notify_settings_permission">Android is blocking notifications for Lodgy. Turn them on in system settings to receive these.</string>
-    <string name="notify_threshold_days">%1$d days</string>
+    <plurals name="notify_threshold_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
     <string name="packet_title">Printable records</string>
     <string name="packet_action">Printable records (PDF)</string>
     <string name="packet_description">A readable PDF of your tenants, agreements and payment history — something you can print or hand over, unlike the backup zip.</string>
@@ -208,6 +243,14 @@
     <string name="acknowledgement_no_payments">No payments recorded against this invoice yet.</string>
     <string name="acknowledgement_issued_on">Issued on</string>
     <string name="acknowledgement_not_found">This invoice no longer exists.</string>
+    <string name="delete">Delete</string>
+    <string name="acknowledgement_delete_invoice">Delete invoice</string>
+    <string name="acknowledgement_delete_invoice_body">This removes the invoice for good. This cannot be undone.</string>
+    <string name="acknowledgement_delete_invoice_blocked">This invoice has payments or credits recorded against it. Delete those below first, then delete the invoice.</string>
+    <string name="acknowledgement_delete_payment">Delete payment</string>
+    <string name="acknowledgement_delete_payment_body">This removes the payment and updates whether the invoice reads paid, part-paid or unpaid. This cannot be undone.</string>
+    <string name="acknowledgement_delete_credit">Delete credit</string>
+    <string name="acknowledgement_delete_credit_body">This removes the credit, which may make the invoice owe more again. This cannot be undone.</string>
     <string name="credit_form_title">Record a credit</string>
     <string name="credit_form_save">Save credit</string>
     <string name="credit_action">Record a credit</string>
@@ -280,11 +323,16 @@
     <string name="tenant_field_emergency_name">Name</string>
     <string name="tenant_field_emergency_phone">Phone</string>
     <string name="tenant_form_save">Save</string>
+    <string name="tenant_delete">Delete tenant</string>
+    <string name="tenant_delete_body">This removes this tenant. This cannot be undone.</string>
+    <string name="tenant_delete_blocked_title">Cannot delete this tenant</string>
+    <string name="tenant_delete_blocked_body">This tenant has a tenancy or a credit on record. Deleting them would break that history. Check them out and clear their records first.</string>
 
-    <string name="bed_picker_title">Pick a Vacant Bed</string>
-    <string name="bed_picker_no_hostel">Add a hostel first (Property tab) before onboarding a tenant.</string>
-    <string name="bed_picker_empty">No vacant beds in this hostel right now.</string>
+    <string name="bed_picker_title">Where are they moving in?</string>
+    <string name="bed_picker_no_hostel">Add a property first (Property tab) before onboarding a tenant.</string>
+    <string name="bed_picker_empty">Nothing is vacant in any of your properties right now.</string>
     <string name="bed_picker_option">Room %1$s · Bed %2$s</string>
+    <string name="bed_picker_whole_unit">The whole property</string>
 
     <string name="agreement_form_title">Agreement Terms</string>
     <string name="agreement_field_opening_balance">Dues carried forward (optional)</string>
@@ -381,14 +429,9 @@
     <string name="dashboard_no_hostel">Add a hostel first (Property tab) to see your dashboard.</string>
     <string name="dashboard_collections_today">Collected today</string>
     <string name="dashboard_overdue_invoices">Overdue invoices</string>
-    <string name="dashboard_vacant_beds">Vacant beds</string>
+    <string name="dashboard_vacant_beds">Vacant</string>
     <string name="dashboard_upcoming_move_outs">Upcoming move-outs</string>
 
-    <string name="vacant_view_title">Vacant Beds</string>
-    <string name="vacant_view_all_floors">All floors</string>
-    <string name="vacant_view_empty">No vacant beds right now.</string>
-    <string name="vacant_view_floor_count">%1$s · %2$d bed(s)</string>
-    <string name="vacant_view_room_bed">Room %1$s · Bed %2$s</string>
 
     <string name="more_title">More</string>
     <string name="more_expenses">Expenses</string>
@@ -401,12 +444,12 @@
 
     <string name="backup_title">Backup &amp; Restore</string>
     <string name="backup_export_title">Export data</string>
-    <string name="backup_export_description">Save a backup of all your hostels, tenants, invoices, and photos to a file you choose - Downloads, an SD card, or a synced folder.</string>
+    <string name="backup_export_description">Save a backup of all your hostels, tenants, invoices, and photos to a file you choose. In the picker you can pick Google Drive, or any other place the phone offers - Downloads, an SD card, a synced folder - so a backup in the cloud survives a lost phone.</string>
     <string name="backup_export_action">Export</string>
     <string name="backup_export_success">Backup saved</string>
     <string name="backup_export_failed">Couldn\'t save the backup. Try again.</string>
     <string name="backup_import_title">Restore from backup</string>
-    <string name="backup_import_description">Pick a previously exported backup file to restore your data - useful when moving to a new phone.</string>
+    <string name="backup_import_description">Pick a previously exported backup file to restore your data - from Google Drive, Downloads, or wherever you saved it. Useful when moving to a new phone.</string>
     <string name="backup_import_action">Import</string>
     <string name="backup_import_invalid">That file doesn\'t look like a Lodgy backup.</string>
     <string name="backup_import_failed">Couldn\'t read that file. Try again.</string>
@@ -417,9 +460,27 @@
     <string name="backup_restart_body">The app needs to restart to load your restored data.</string>
     <string name="backup_restart_action">Restart</string>
 
+    <string name="backup_auto_title">Automatic daily backup</string>
+    <string name="backup_auto_description">Pick a folder once and Lodgy backs up here every day on its own. Choose a folder that syncs to the cloud - like Google Drive - so a lost phone doesn\'t lose your data.</string>
+    <string name="backup_auto_folder_set">A folder is set. Daily backups are on.</string>
+    <string name="backup_auto_folder_none">No folder chosen yet. Daily backups are off.</string>
+    <string name="backup_auto_choose_folder">Choose backup folder</string>
+    <string name="backup_auto_change_folder">Change backup folder</string>
+
+    <string name="dashboard_backup_title">Automatic backup</string>
+    <string name="dashboard_backup_not_set_up">Not set up - tap to choose a folder</string>
+    <string name="dashboard_backup_never">Folder set, but no backup yet</string>
+    <string name="dashboard_backup_failed">Last backup failed - tap to choose the folder again</string>
+    <string name="dashboard_backup_last">Last backup %1$s</string>
+    <string name="dashboard_backup_now">Back up now</string>
+    <string name="dashboard_backup_set_up_action">Set up automatic backup</string>
+    <string name="dashboard_backup_repick">Choose the backup folder again</string>
+
     <string name="expense_list_title">Expenses</string>
     <string name="expense_list_empty">No expenses logged yet. Tap + to add one.</string>
     <string name="expense_add">Add expense</string>
+    <string name="expense_delete">Delete expense</string>
+    <string name="expense_delete_body">This removes this expense. This cannot be undone.</string>
     <string name="expense_recurring_badge">RECURRING</string>
     <string name="expense_form_title_add">Add Expense</string>
     <string name="expense_form_title_edit">Edit Expense</string>
@@ -436,6 +497,21 @@
     <string name="expense_category_maintenance">MAINTENANCE</string>
     <string name="expense_category_repair">REPAIR</string>
     <string name="expense_category_other">OTHER</string>
+
+    <!-- A warden or caretaker room's forgone rent, booked as an expense by choice (LODGY-84). -->
+    <string name="expense_category_accommodation">ACCOMMODATION</string>
+    <string name="expense_forgone_rent_note">Forgone rent %1$s</string>
+    <string name="forgone_rent_action">Forgone rent as an expense</string>
+    <string name="forgone_rent_title">Forgone rent</string>
+    <string name="forgone_rent_switch">Record this room\'s rent as a monthly expense</string>
+    <string name="forgone_rent_explainer">Off by default. If you live here yourself you have not spent anything, so leave it off. Turn it on when the room is part of what you pay a caretaker, and the rent you give up will be recorded as an expense each month.</string>
+    <string name="forgone_rent_amount">Monthly amount</string>
+    <string name="forgone_rent_amount_hint">Defaults to this room\'s price per bed - the rent you are giving up.</string>
+    <string name="forgone_rent_never_a_due">This is a cost, never a due. Nobody is billed for it and it will not appear in dues or overdue rent.</string>
+    <string name="forgone_rent_off_note">Entries already recorded are kept; only future months stop.</string>
+    <string name="forgone_rent_save">Save</string>
+    <string name="forgone_rent_no_tenancy">This tenant has no active tenancy.</string>
+
 
     <string name="monthly_report_title">Monthly Report</string>
     <string name="monthly_report_collected">Total collected</string>

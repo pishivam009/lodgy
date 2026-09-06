@@ -12,11 +12,12 @@
     "Interaction with LODGY-61's slide transitions is checked, particularly if the bottom navigation becomes visible on inner screens",
     "Re-tested with the wardens who raised it"
   ],
-  "status": "Todo",
+  "status": "Done",
   "priority": "High",
+  "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T21:09:45+00:00",
+  "updatedAt": "2026-09-05T17:56:47Z",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -29,6 +30,46 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "DECIDED: keep the bottom navigation visible on inner screens, rather than adding a labelled back button. Home becomes one tap from anywhere, and it costs no top-bar width - which matters because Hindi labels run longer than English and screen titles already fill the bar. BUILD NOTES, both of which need checking rather than assuming: (1) this interacts with LODGY-61's slide transitions, since inner screens will now sit above a persistent bar - verify the push/pop animation still reads correctly and the bar does not slide with the content. (2) The system back gesture and the existing chevrons must keep working; this adds a route home, it does not replace going back. Re-test with the wardens who raised it, since the whole point is that what reads as obvious to a developer was not obvious to them."
+    },
+    {
+      "timestamp": "2026-09-05T17:35:47Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Building the PO's decided option: keep the bottom navigation bar visible on inner screens so Home is one tap from anywhere, costing no top-bar width (matters for the longer Hindi labels). The bar lives on the Scaffold outside the NavHost, so it stays fixed while inner content slides - which should also smooth out LODGY-61's push/pop by removing the bar's appear/disappear. Chevrons and the system back gesture are untouched (adds a route home, not a replacement). Will verify the slide interaction and Home-from-deep on the emulator."
+    },
+    {
+      "timestamp": "2026-09-05T17:45:12Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built the PO's decided option and verified it on the emulator. The bottom navigation bar now renders on every screen, not just the five top-level tabs - one line in LodgyNavHost: the bar's `if (isTopLevelDestination)` gate is removed so the Scaffold always shows it.\n\nVERIFIED ON DEVICE (Hindi UI):\n- The five-tab bar (Home/Property/Tenants/Payments/More, each labelled) now shows on inner screens - confirmed on a tenant profile, a floor list, and an expense form (AC5 consistent).\n- AC2: tapped Home from deep inside a tenant profile -> landed straight on the dashboard in one tap.\n- AC4: the top-left chevron and the system back gesture both still work - system-back from a floor list returned to the property list with the bar still present. Adds a route home, doesn't replace back.\n- AC3: the Hindi labels sit in the bottom bar as before; no top-bar width is spent, so no screen title is truncated.\n- AC6/build-note-1: the bar lives on the Scaffold outside the NavHost, so it stays fixed while inner content slides - the LODGY-61 push/pop plays in the padded area above it and the bar does not animate. Confirmed inner screens render correctly with the bar; a form's bottom Save button (y~1565) sits well above the bar (y~2274), not occluded, and FABs sit above it too.\n\nAC1 NOTE (PO reframing, flagging for acceptance): AC1 as written asks that GOING BACK be labelled/unmistakable. The PO's decision was to keep the bottom nav visible RATHER THAN label the back chevron, judging that an always-present labelled Home + tabs solves the 'lost, can't get out' problem. So the chevron itself stays unlabelled by design; the discoverable, labelled way out is the bottom bar. Built to the decision; PO to ratify that AC1 is met this way.\n\nAC7 ('re-tested with the wardens who raised it') is UAT - it needs the warden/User pass after this reaches Done, not something dev or QA can close. Flagging so it isn't marked done prematurely.\n\n489 tests pass, line coverage 97.00% (gate 0.93), jacocoCoverageVerification green, assembleDebug OK. (No unit test added - the change is in ui/nav, which is excluded from coverage as UI wiring; verified on device instead.) Docs updated: DESIGN.md 4.11 + a decision-log row; USER-MANUAL.md 'Where things live'; and a 'Finding your way' figure in screenshots.html showing the bar on a deep screen."
+    },
+    {
+      "timestamp": "2026-09-05T17:50:06Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC2 ('Home is reachable from ANY screen without repeated back presses'). The always-visible bar is a real improvement and most of it holds - from a tenant profile, floor list or expense form, tapping Home lands on the dashboard, back and the chevron still work, Hindi labels fit, and the bar stays fixed during slides. But there is a class of screen where Home does NOT work:\n\nREPRO: Home tab -> dashboard -> tap the report icon (top-right) to open the Monthly report -> tap Home in the bottom bar. EXPECTED: the dashboard. ACTUAL: you stay on the Monthly report; Home is a no-op. Same for the Vacant-beds view opened from the dashboard tile - both are Home-SECTION inner screens.\n\nCAUSE: the tab onClick uses popUpTo(start){saveState=true} + restoreState=true. For a Home-section inner screen, that saves and then restores the Home tab's own sub-stack (the report), so re-selecting Home returns you to where you were - which IS the report. The escape only works when Home is a different tab from where you are; from inside the Home section it strands you, which is exactly the 'can't get home' problem this ticket exists to fix.\n\nFIX DIRECTION: make tapping a top-level tab land on that tab's ROOT, popping any inner screens of the current view (e.g. drop restoreState, or pop the tab's inner screens on re-select), so Home always shows the dashboard from anywhere - including the monthly report and the vacant-beds view. Predictable 'tap Home = the home screen' suits these users better than restoring a remembered sub-position anyway."
+    },
+    {
+      "timestamp": "2026-09-05T17:56:47Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "AC2 gap fixed and verified on the emulator. QA was right: from a Home-section inner screen (monthly report, vacant-beds view) tapping Home did nothing.\n\nFIX: the tab onClick now lands on the tab's ROOT - popUpTo(startDestination, inclusive=false) + launchSingleTop, and the multi-back-stack saveState/restoreState is dropped. So tapping a tab pops any inner screens in the way and shows that section's root, and Home always shows the dashboard from anywhere.\n\nVERIFIED: monthly report -> Home -> dashboard; vacant-beds view -> Home -> dashboard; and a two-level-deep Property screen (property > floor > room list) -> Property tab -> the property root list. The earlier-passing behaviours are unchanged (Home from a tenant profile, back button, chevron, bar fixed during slides).\n\n489 tests pass, line coverage 97.00%, jacocoCoverageVerification green, assembleDebug OK. Change is in ui/nav (excluded from coverage). DESIGN.md 4.11 updated to describe tab-to-root."
+    },
+    {
+      "timestamp": "2026-09-05T17:56:47Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS (buildable ACs). Re-verified the AC2 fix and re-confirmed the rest.\n\nAC2 now holds from EVERY screen: monthly report -> Home -> dashboard, vacant-beds view -> Home -> dashboard, and a two-level-deep Property screen -> Property tab -> property root. AC1 the bar is a labelled, unmistakable way out on every screen (PO reframed 'labelled back' as the persistent labelled bar - flagging for acceptance, chevron itself stays unlabelled by design). AC3 Hindi labels fit, no title truncation. AC4 chevron + system back still work, unchanged. AC5 the bar and its behaviour are consistent on every screen. AC6 the bar is a fixed Scaffold slot outside the NavHost, so it does not slide with the LODGY-61 push/pop; inner screens render correctly with it and bottom Save buttons/FABs sit above it.\n\nAC7 ('re-tested with the wardens who raised it') is UAT and cannot be closed by QA - it needs the warden/User pass. Moving to Done on the buildable criteria; AC7 remains for the User's acceptance.\n\n489 tests pass, line coverage 97.00%."
     }
   ]
 }

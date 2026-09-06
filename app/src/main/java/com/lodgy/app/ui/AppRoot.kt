@@ -15,7 +15,10 @@ fun AppRoot(pendingRoute: String? = null, viewModel: AppRootViewModel = hiltView
     when (state) {
         AppStartState.Loading -> Unit
         AppStartState.NeedsPinSetup -> PinSetupScreen(onComplete = viewModel::onPinSetupComplete)
-        AppStartState.Locked -> PinLockScreen(onUnlocked = viewModel::onUnlocked)
+        AppStartState.Locked -> PinLockScreen(
+            onUnlocked = viewModel::onUnlocked,
+            onPinReset = viewModel::onPinReset,
+        )
         AppStartState.Unlocked -> LodgyNavHost(pendingRoute = pendingRoute)
     }
 }

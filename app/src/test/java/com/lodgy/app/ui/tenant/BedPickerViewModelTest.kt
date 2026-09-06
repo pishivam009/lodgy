@@ -1,18 +1,11 @@
 package com.lodgy.app.ui.tenant
 
-import com.lodgy.app.data.entity.Bed
-import com.lodgy.app.data.entity.BedStatus
-import com.lodgy.app.data.entity.Floor
-import com.lodgy.app.data.entity.Room
-import com.lodgy.app.data.entity.RoomType
-import com.lodgy.app.data.prefs.HostelPreferences
+import com.lodgy.app.data.dao.VacantBedChoice
+import com.lodgy.app.data.entity.PropertyType
 import com.lodgy.app.data.repository.BedRepository
-import com.lodgy.app.data.repository.FloorRepository
-import com.lodgy.app.data.repository.RoomRepository
 import com.lodgy.app.testutil.MainDispatcherRule
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -24,43 +17,106 @@ class BedPickerViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val hostelPreferences: HostelPreferences = mockk()
-    private val floorRepository: FloorRepository = mockk()
-    private val roomRepository: RoomRepository = mockk()
     private val bedRepository: BedRepository = mockk()
 
-    private fun viewModel() = BedPickerViewModel(hostelPreferences, floorRepository, roomRepository, bedRepository)
+    private fun choice(
+        bedId: String,
+        bedLabel: String = "A",
+        roomNumber: String = "101",
+        floorLabel: String = "Ground",
+        hostelId: String = "h1",
+        hostelName: String = "Sunrise PG",
+        propertyType: PropertyType = PropertyType.HOSTEL,
+    ) = VacantBedChoice(bedId, bedLabel, roomNumber, floorLabel, hostelId, hostelName, propertyType)
 
+    private fun viewModel(choices: List<VacantBedChoice>, anyBed: Boolean = true): BedPickerViewModel {
+        coEvery { bedRepository.getVacantChoices() } returns choices
+        coEvery { bedRepository.hasAnyBed() } returns anyBed
+        return BedPickerViewModel(bedRepository)
+    }
+
+    /** LODGY-85. The picker used to follow the selected-hostel preference, so a warden had to switch
+     *  property before they could put a tenant in it. */
     @Test
-    fun `no active hostel reports hasActiveHostel false with no options`() {
-        every { hostelPreferences.selectedHostelId } returns flowOf(null)
-
-        val state = viewModel().uiState.value
+    fun `every property is offered, not just one`() {
+        val state = viewModel(
+            listOf(
+                choice("b1"),
+                choice("b2", hostelId = "h2", hostelName = "Moonlight", roomNumber = "501", floorLabel = "Fifth"),
+            ),
+        ).uiState.value
 
         assertFalse(state.loading)
-        assertFalse(state.hasActiveHostel)
-        assertTrue(state.options.isEmpty())
+        assertEquals(listOf("Sunrise PG", "Moonlight"), state.properties.map { it.hostelName })
+        assertEquals(listOf("b1", "b2"), state.properties.flatMap { p -> p.choices.map { it.bedId } })
     }
 
     @Test
-    fun `only vacant beds across every floor and room are offered, sorted by label`() {
-        val floor1 = Floor(id = "f1", hostelId = "h1", label = "Ground", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
-        val room1 = Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
-        val bedB = Bed(id = "b2", roomId = "r1", label = "B", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L)
-        val bedA = Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L)
+    fun `a hostel keeps its floors, grouped in the order the query returned`() {
+        val property = viewModel(
+            listOf(
+                choice("b1", floorLabel = "Ground", roomNumber = "101"),
+                choice("b2", floorLabel = "Ground", roomNumber = "102"),
+                choice("b3", floorLabel = "First", roomNumber = "201"),
+            ),
+        ).uiState.value.properties.single()
 
-        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
-        every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(floor1))
-        every { roomRepository.getByFloorId("f1") } returns flowOf(listOf(room1))
-        every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(bedB, bedA))
+        assertFalse(property.isSingleUnit)
+        assertEquals(listOf("Ground", "First"), property.floors.map { it.label })
+        assertEquals(listOf("b1", "b2"), property.floors.first().choices.map { it.bedId })
+    }
 
-        val state = viewModel().uiState.value
+    /** A shop's floor is the placeholder its hierarchy carries, never something the warden named,
+     *  so it must not be grouped under one (LODGY-79). */
+    @Test
+    fun `a single-unit property is one choice with no floor`() {
+        val property = viewModel(
+            listOf(
+                choice(
+                    "b9", bedLabel = "A", roomNumber = "Corner shop", floorLabel = "-",
+                    hostelId = "h9", hostelName = "Corner shop", propertyType = PropertyType.SHOP,
+                ),
+            ),
+        ).uiState.value.properties.single()
 
-        assertFalse(state.loading)
-        assertTrue(state.hasActiveHostel)
-        assertEquals(1, state.options.size)
-        assertEquals("B", state.options.single().bed.label)
-        assertEquals("101", state.options.single().roomNumber)
-        assertEquals("Ground", state.options.single().floorLabel)
+        assertTrue(property.isSingleUnit)
+        assertEquals(1, property.floors.size)
+        assertEquals("", property.floors.single().label)
+        assertEquals("b9", property.choices.single().bedId)
+    }
+
+    @Test
+    fun `a warden with both kinds of property gets both, each grouped its own way`() {
+        val state = viewModel(
+            listOf(
+                choice("b1", floorLabel = "Ground"),
+                choice(
+                    "b9", roomNumber = "Corner shop", floorLabel = "-",
+                    hostelId = "h9", hostelName = "Corner shop", propertyType = PropertyType.SHOP,
+                ),
+            ),
+        ).uiState.value
+
+        assertEquals(2, state.properties.size)
+        assertFalse(state.properties.first().isSingleUnit)
+        assertTrue(state.properties.last().isSingleUnit)
+    }
+
+    /** "You are full" and "you have not set up a property yet" are different problems and the
+     *  picker says which. */
+    @Test
+    fun `a full portfolio is empty but still has properties`() {
+        val state = viewModel(emptyList(), anyBed = true).uiState.value
+
+        assertTrue(state.properties.isEmpty())
+        assertTrue(state.hasAnyProperty)
+    }
+
+    @Test
+    fun `no property at all is reported separately`() {
+        val state = viewModel(emptyList(), anyBed = false).uiState.value
+
+        assertTrue(state.properties.isEmpty())
+        assertFalse(state.hasAnyProperty)
     }
 }

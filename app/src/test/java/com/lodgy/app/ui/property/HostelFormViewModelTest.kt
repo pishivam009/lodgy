@@ -3,19 +3,27 @@ package com.lodgy.app.ui.property
 import androidx.lifecycle.SavedStateHandle
 import com.lodgy.app.data.entity.Floor
 import com.lodgy.app.data.entity.PropertyType
+import com.lodgy.app.data.entity.ReconciliationMark
 import com.lodgy.app.data.entity.Room
 import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.RoomRepository
+import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.entity.Hostel
 import com.lodgy.app.data.entity.Warden
 import com.lodgy.app.data.repository.HostelRepository
+import com.lodgy.app.data.repository.ReconciliationRepository
 import com.lodgy.app.data.repository.WardenRepository
 import com.lodgy.app.testutil.MainDispatcherRule
+import com.lodgy.app.ui.common.UpdateChange
+import com.lodgy.app.data.entity.Expense
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -32,9 +40,15 @@ class HostelFormViewModelTest {
     private val floorRepository: FloorRepository = mockk()
     private val roomRepository: RoomRepository = mockk()
     private val bedRepository: BedRepository = mockk()
+    private val expenseRepository: ExpenseRepository = mockk()
+    private val tenancyAgreementRepository: TenancyAgreementRepository = mockk()
+    // No reconciled month unless a test says so, so a rename is free by default (LODGY-65).
+    private val reconciliationRepository: ReconciliationRepository =
+        mockk { every { getByHostelId(any()) } returns flowOf(emptyList()) }
 
     private fun viewModel(hostelId: String? = null) = HostelFormViewModel(
         hostelRepository, wardenRepository, floorRepository, roomRepository, bedRepository,
+        expenseRepository, tenancyAgreementRepository, reconciliationRepository,
         SavedStateHandle(mapOf<String, Any?>("hostelId" to hostelId).filterValues { it != null }),
     )
 
@@ -175,7 +189,130 @@ class HostelFormViewModelTest {
         viewModel.onNameChange("Main Street Shop")
         viewModel.onMonthlyRentChange("21000")
         viewModel.save()
+        viewModel.confirmChanges()
 
         coVerify { roomRepository.update(room, "Main Street Shop", RoomType.SINGLE, 21000.0, "") }
+    }
+
+    /** LODGY-65. A rename is free and stays unconfirmed - until the warden has attested a month
+     *  against the old name, which their paper register and their exported PDFs still carry. */
+    @Test
+    fun `renaming a property with no reconciled month saves without a prompt`() {
+        val hostel = Hostel(id = "h1", wardenId = "w1", name = "Old", address = "A", contactPhone = "1", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h1") } returns hostel
+        coEvery { hostelRepository.update(hostel, "New", "A", "1") } returns Unit
+
+        val viewModel = viewModel("h1")
+        viewModel.onNameChange("New")
+        viewModel.save()
+
+        assertTrue(viewModel.uiState.value.pendingChanges.isEmpty())
+        coVerify { hostelRepository.update(hostel, "New", "A", "1") }
+    }
+
+    @Test
+    fun `renaming a property with reconciled months asks first and counts them`() {
+        val hostel = Hostel(id = "h1", wardenId = "w1", name = "Old", address = "A", contactPhone = "1", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h1") } returns hostel
+        every { reconciliationRepository.getByHostelId("h1") } returns flowOf(
+            listOf(
+                ReconciliationMark(id = "m1", hostelId = "h1", periodMonth = 7, periodYear = 2026, note = null, createdAt = 0L, updatedAt = 0L),
+                ReconciliationMark(id = "m2", hostelId = "h1", periodMonth = 8, periodYear = 2026, note = null, createdAt = 0L, updatedAt = 0L),
+            ),
+        )
+
+        val viewModel = viewModel("h1")
+        viewModel.onNameChange("New")
+        viewModel.save()
+
+        assertEquals(listOf(UpdateChange.HostelRename("New", 2)), viewModel.uiState.value.pendingChanges)
+        coVerify(exactly = 0) { hostelRepository.update(any(), any(), any(), any()) }
+    }
+
+    /** Editing the address or the phone number changes nothing but itself, so it must stay
+     *  unconfirmed however many months are reconciled (LODGY-57 AC5, upheld under LODGY-65). */
+    @Test
+    fun `editing the address of a reconciled property saves without a prompt`() {
+        val hostel = Hostel(id = "h1", wardenId = "w1", name = "Old", address = "A", contactPhone = "1", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h1") } returns hostel
+        coEvery { hostelRepository.update(hostel, "Old", "B", "1") } returns Unit
+        every { reconciliationRepository.getByHostelId("h1") } returns flowOf(
+            listOf(ReconciliationMark(id = "m1", hostelId = "h1", periodMonth = 7, periodYear = 2026, note = null, createdAt = 0L, updatedAt = 0L)),
+        )
+
+        val viewModel = viewModel("h1")
+        viewModel.onAddressChange("B")
+        viewModel.save()
+
+        assertTrue(viewModel.uiState.value.pendingChanges.isEmpty())
+        coVerify { hostelRepository.update(hostel, "Old", "B", "1") }
+    }
+
+    @Test
+    fun `re-renting a single-unit property asks first and states both figures`() {
+        val hostel = Hostel(id = "h9", wardenId = "w1", name = "Corner Shop", address = "", contactPhone = "", propertyType = PropertyType.SHOP, createdAt = 0L, updatedAt = 0L)
+        val room = Room(id = "r9", floorId = "f9", roomNumber = "Corner Shop", type = RoomType.SINGLE, pricePerBed = 18000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h9") } returns hostel
+        coEvery { roomRepository.getFirstRoomIdByHostel("h9") } returns "r9"
+        coEvery { roomRepository.getById("r9") } returns room
+
+        val viewModel = viewModel("h9")
+        viewModel.onMonthlyRentChange("21000")
+        viewModel.save()
+
+        assertEquals(listOf(UpdateChange.UnitRent(18000.0, 21000.0)), viewModel.uiState.value.pendingChanges)
+        coVerify(exactly = 0) { roomRepository.update(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `dismissing abandons a single-unit rent change`() {
+        val hostel = Hostel(id = "h9", wardenId = "w1", name = "Corner Shop", address = "", contactPhone = "", propertyType = PropertyType.SHOP, createdAt = 0L, updatedAt = 0L)
+        val room = Room(id = "r9", floorId = "f9", roomNumber = "Corner Shop", type = RoomType.SINGLE, pricePerBed = 18000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h9") } returns hostel
+        coEvery { roomRepository.getFirstRoomIdByHostel("h9") } returns "r9"
+        coEvery { roomRepository.getById("r9") } returns room
+
+        val viewModel = viewModel("h9")
+        viewModel.onMonthlyRentChange("21000")
+        viewModel.save()
+        viewModel.dismissChanges()
+
+        assertTrue(viewModel.uiState.value.pendingChanges.isEmpty())
+        assertFalse(viewModel.uiState.value.saved)
+        coVerify(exactly = 0) { hostelRepository.update(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `an empty property deletes, cascading its floors and beds`() {
+        val hostel = Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h1") } returns hostel
+        every { floorRepository.getByHostelId("h1") } returns flowOf(emptyList())
+        every { expenseRepository.getByHostelId("h1") } returns flowOf(emptyList())
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
+        coEvery { hostelRepository.delete(hostel) } returns Unit
+
+        val viewModel = viewModel("h1")
+        viewModel.requestDelete()
+        assertTrue(viewModel.uiState.value.pendingDelete)
+
+        viewModel.confirmDelete()
+        assertTrue(viewModel.uiState.value.deleted)
+        coVerify { hostelRepository.delete(hostel) }
+    }
+
+    @Test
+    fun `a property with an expense is blocked from deletion`() {
+        val hostel = Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h1") } returns hostel
+        every { floorRepository.getByHostelId("h1") } returns flowOf(emptyList())
+        every { expenseRepository.getByHostelId("h1") } returns flowOf(listOf(mockk<Expense>()))
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
+
+        val viewModel = viewModel("h1")
+        viewModel.requestDelete()
+
+        assertTrue(viewModel.uiState.value.blockedDelete)
+        assertFalse(viewModel.uiState.value.pendingDelete)
+        coVerify(exactly = 0) { hostelRepository.delete(any()) }
     }
 }

@@ -5,6 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.entity.Tenant
+import com.lodgy.app.data.repository.CreditRepository
+import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
 import com.lodgy.app.media.PhotoStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,6 +14,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -27,6 +30,11 @@ data class TenantFormUiState(
     val emergencyContactPhone: String = "",
     val saved: Boolean = false,
     val savedTenantId: String? = null,
+    /** Delete a tenant added in error (LODGY-64); confirmed first (LODGY-57), and blocked while the
+     *  tenant has any tenancy or credit so their history is never broken (LODGY-63 pattern). */
+    val pendingDelete: Boolean = false,
+    val blockedDelete: Boolean = false,
+    val deleted: Boolean = false,
 ) {
     val canSave: Boolean get() = name.isNotBlank() && phone.isNotBlank()
 }
@@ -34,6 +42,8 @@ data class TenantFormUiState(
 @HiltViewModel
 class TenantFormViewModel @Inject constructor(
     private val tenantRepository: TenantRepository,
+    private val tenancyAgreementRepository: TenancyAgreementRepository,
+    private val creditRepository: CreditRepository,
     private val photoStorage: PhotoStorage,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -110,6 +120,27 @@ class TenantFormViewModel @Inject constructor(
                 ).id
             }
             _uiState.update { it.copy(saved = true, savedTenantId = savedId) }
+        }
+    }
+
+    fun requestDelete() {
+        val tenant = existingTenant ?: return
+        viewModelScope.launch {
+            val hasAgreements = tenancyAgreementRepository.observeByTenantId(tenant.id).first().isNotEmpty()
+            val hasCredits = creditRepository.getByTenantId(tenant.id).first().isNotEmpty()
+            _uiState.update {
+                if (hasAgreements || hasCredits) it.copy(blockedDelete = true) else it.copy(pendingDelete = true)
+            }
+        }
+    }
+
+    fun dismissDelete() = _uiState.update { it.copy(pendingDelete = false, blockedDelete = false) }
+
+    fun confirmDelete() {
+        val tenant = existingTenant ?: return
+        viewModelScope.launch {
+            tenantRepository.delete(tenant)
+            _uiState.update { it.copy(pendingDelete = false, deleted = true) }
         }
     }
 }

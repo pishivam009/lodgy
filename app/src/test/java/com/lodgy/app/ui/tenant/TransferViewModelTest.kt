@@ -14,6 +14,7 @@ import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantNoteRepository
 import com.lodgy.app.data.repository.TenantRepository
 import com.lodgy.app.testutil.MainDispatcherRule
+import com.lodgy.app.ui.common.UpdateChange
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -126,6 +127,52 @@ class TransferViewModelTest {
         viewModel.confirmTransfer("note")
 
         coVerify(exactly = 0) { bedRepository.setVacant(any()) }
+        coVerify(exactly = 0) { agreementRepository.transferBed(any(), any(), any()) }
+        assertFalse(viewModel.uiState.value.saved)
+    }
+
+    /** LODGY-65. Picking a bed re-prices the tenancy on its own, so a warden can change what
+     *  someone is billed every month without typing a number - the dialog is where they see it. */
+    @Test
+    fun `a move that re-prices the tenancy asks first and states both figures`() {
+        stubWrites()
+        val viewModel = viewModel()
+
+        viewModel.onBedSelected("new-bed")
+        viewModel.requestTransfer("note")
+
+        assertEquals(
+            listOf(UpdateChange.TenancyRent(4000.0, 5500.0)),
+            viewModel.uiState.value.pendingChanges,
+        )
+        coVerify(exactly = 0) { agreementRepository.transferBed(any(), any(), any()) }
+        assertFalse(viewModel.uiState.value.saved)
+    }
+
+    @Test
+    fun `a move at the same rent goes through without a prompt`() {
+        stubWrites()
+        val viewModel = viewModel()
+
+        viewModel.onBedSelected("new-bed")
+        viewModel.onRentChange("4000")
+        viewModel.requestTransfer("note")
+
+        assertTrue(viewModel.uiState.value.pendingChanges.isEmpty())
+        coVerify { agreementRepository.transferBed(agreement, "new-bed", 4000.0) }
+        assertTrue(viewModel.uiState.value.saved)
+    }
+
+    @Test
+    fun `dismissing abandons the re-priced move`() {
+        stubWrites()
+        val viewModel = viewModel()
+
+        viewModel.onBedSelected("new-bed")
+        viewModel.requestTransfer("note")
+        viewModel.dismissChanges()
+
+        assertTrue(viewModel.uiState.value.pendingChanges.isEmpty())
         coVerify(exactly = 0) { agreementRepository.transferBed(any(), any(), any()) }
         assertFalse(viewModel.uiState.value.saved)
     }

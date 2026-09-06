@@ -30,7 +30,10 @@ class AppRootViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _state.value = if (wardenRepository.getWarden() == null) {
+            // A warden whose hash was blanked by a forgotten-PIN reset (LODGY-76) still has a row -
+            // hostels reference it - but no usable PIN, so it needs setup just like a fresh install.
+            val warden = wardenRepository.getWarden()
+            _state.value = if (warden == null || warden.pinHash.isEmpty()) {
                 AppStartState.NeedsPinSetup
             } else {
                 AppStartState.Locked
@@ -59,5 +62,11 @@ class AppRootViewModel @Inject constructor(
 
     fun onUnlocked() {
         _state.value = AppStartState.Unlocked
+    }
+
+    /** The warden reset a forgotten PIN from the lock screen (LODGY-76). The stored PIN is gone, so
+     *  the app returns to first-launch setup for them to choose a new one; their data is intact. */
+    fun onPinReset() {
+        _state.value = AppStartState.NeedsPinSetup
     }
 }

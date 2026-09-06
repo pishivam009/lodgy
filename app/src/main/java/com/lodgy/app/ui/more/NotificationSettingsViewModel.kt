@@ -20,7 +20,7 @@ data class NotificationSettingsUiState(
     /** False when Android itself is blocking notifications, whatever these switches say. */
     val systemPermissionGranted: Boolean = true,
 ) {
-    val thresholdOptions: List<Int> get() = listOf(3, 7, 14, 30)
+    val thresholdOptions: List<Int> get() = listOf(1, 2, 3)
 }
 
 @HiltViewModel

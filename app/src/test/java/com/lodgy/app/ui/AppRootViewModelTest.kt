@@ -73,6 +73,26 @@ class AppRootViewModelTest {
     }
 
     @Test
+    fun `a warden whose hash was blanked by a reset needs setup, not the lock screen`() {
+        coEvery { wardenRepository.getWarden() } returns Warden(id = "w1", pinHash = "", name = "Warden", createdAt = 0L, updatedAt = 0L)
+
+        val viewModel = AppRootViewModel(wardenRepository)
+
+        assertEquals(AppStartState.NeedsPinSetup, viewModel.state.value)
+    }
+
+    @Test
+    fun `a forgotten-PIN reset sends the app back to setup`() {
+        coEvery { wardenRepository.getWarden() } returns Warden(id = "w1", pinHash = "x", name = "Warden", createdAt = 0L, updatedAt = 0L)
+        val viewModel = AppRootViewModel(wardenRepository)
+        assertEquals(AppStartState.Locked, viewModel.state.value)
+
+        viewModel.onPinReset()
+
+        assertEquals(AppStartState.NeedsPinSetup, viewModel.state.value)
+    }
+
+    @Test
     fun `onStop re-locks the app only if it was unlocked`() {
         coEvery { wardenRepository.getWarden() } returns null
         val viewModel = AppRootViewModel(wardenRepository)

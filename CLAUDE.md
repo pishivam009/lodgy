@@ -27,6 +27,14 @@ done. Do not report a build as green without having read the actual results.
 data is on the phone, so a schema change ships a real migration or it does not
 ship. See the emulator notes below for how to test one properly.
 
+**Every ticket carries the release it ships in.** `docs/RELEASES.md` is the
+list, and each `board/tickets/LODGY-N.json` has a `version` field naming one of
+its releases. A new ticket gets the currently open version when it is created;
+when a release closes, bump `versionCode`/`versionName` in
+`app/build.gradle.kts` to match and open the next section in RELEASES.md. The
+app shows its version on the More screen for support, so a warden's build has
+to be traceable back to the tickets in it.
+
 **A feature that has been tested is not finished until the docs match.**
 Architecture and schema go in `docs/DESIGN.md` and `docs/DATA-MODEL.md`,
 warden-facing behaviour in `docs/USER-MANUAL.md`, and a settled choice gets a row

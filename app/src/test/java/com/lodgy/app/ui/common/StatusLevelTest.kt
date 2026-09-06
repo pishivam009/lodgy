@@ -36,8 +36,8 @@ class StatusLevelTest {
 
     @Test
     fun `each state carries its own icon, so the symbol alone distinguishes them`() {
-        assertEquals(StatusIcons.BedVacant, BedStatus.VACANT.icon)
-        assertEquals(StatusIcons.BedOccupied, BedStatus.OCCUPIED.icon)
+        assertEquals(StatusIcons.BedVacant, BedStatus.VACANT.icon())
+        assertEquals(StatusIcons.BedOccupied, BedStatus.OCCUPIED.icon())
         assertEquals(3, InvoiceStatus.entries.map { it.icon }.distinct().size)
         assertNotEquals(TenantStatus.ACTIVE.icon, TenantStatus.VACATED.icon)
     }

@@ -36,8 +36,14 @@ val TenantStatus.level: StatusLevel
         TenantStatus.VACATED -> StatusLevel.NEUTRAL
     }
 
-val BedStatus.icon: ImageVector
-    get() = if (this == BedStatus.OCCUPIED) StatusIcons.BedOccupied else StatusIcons.BedVacant
+/** The icon follows the thing it labels: a bed in a hostel, a door for a property that is let
+ *  whole. A warehouse marked with a bed pictogram was the complaint (LODGY-86). */
+fun BedStatus.icon(singleUnit: Boolean = false): ImageVector = when {
+    singleUnit && this == BedStatus.OCCUPIED -> StatusIcons.UnitOccupied
+    singleUnit -> StatusIcons.UnitVacant
+    this == BedStatus.OCCUPIED -> StatusIcons.BedOccupied
+    else -> StatusIcons.BedVacant
+}
 
 val InvoiceStatus.icon: ImageVector
     get() = when (this) {
@@ -68,9 +74,18 @@ val RoomFill.level: StatusLevel
         RoomFill.FULL -> StatusLevel.BAD
     }
 
-val RoomFill.icon: ImageVector
+fun RoomFill.icon(singleUnit: Boolean = false): ImageVector = when (this) {
+    RoomFill.EMPTY -> if (singleUnit) StatusIcons.UnitVacant else StatusIcons.BedVacant
+    RoomFill.PARTIAL -> StatusIcons.Half
+    RoomFill.FULL -> if (singleUnit) StatusIcons.UnitOccupied else StatusIcons.BedOccupied
+}
+
+/** For a count that spans properties. It is rooms being counted, not beds, and one of them may
+ *  be a shop - so it always uses the neutral space icon rather than flipping with whatever the
+ *  warden happens to own (LODGY-86). */
+val RoomFill.spaceIcon: ImageVector
     get() = when (this) {
-        RoomFill.EMPTY -> StatusIcons.BedVacant
+        RoomFill.EMPTY -> StatusIcons.UnitVacant
         RoomFill.PARTIAL -> StatusIcons.Half
-        RoomFill.FULL -> StatusIcons.BedOccupied
+        RoomFill.FULL -> StatusIcons.UnitOccupied
     }

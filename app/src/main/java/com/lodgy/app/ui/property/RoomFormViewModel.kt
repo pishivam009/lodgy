@@ -7,6 +7,7 @@ import com.lodgy.app.data.entity.Room
 import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.RoomRepository
+import com.lodgy.app.ui.common.UpdateChange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,9 @@ data class RoomFormUiState(
     val pricePerBed: String = "",
     val amenities: String = "",
     val saved: Boolean = false,
-    val showTypeChangeConfirm: Boolean = false,
+    /** What Save is about to change that the warden cannot see the consequence of on this
+     *  screen; empty means save straight through (LODGY-65). */
+    val pendingChanges: List<UpdateChange> = emptyList(),
 ) {
     val canSave: Boolean get() = roomNumber.isNotBlank() && pricePerBed.toDoubleOrNull() != null
 }
@@ -68,22 +71,36 @@ class RoomFormViewModel @Inject constructor(
         val state = _uiState.value
         if (!state.canSave) return
         viewModelScope.launch {
-            val existing = existingRoom
-            if (existing != null && state.type != existing.type && bedRepository.hasOccupiedBed(existing.id)) {
-                _uiState.update { it.copy(showTypeChangeConfirm = true) }
-            } else {
-                persist()
+            val changes = changesNeedingConfirmation(state)
+            if (changes.isEmpty()) persist() else _uiState.update { it.copy(pendingChanges = changes) }
+        }
+    }
+
+    /**
+     * Price per bed is here because it is invisible money: it re-rates every bed in the room for
+     * every invoice generated from now on, and nothing on this form says so. The room number and
+     * the amenities are not - they change nothing but themselves (DESIGN.md 4.12).
+     */
+    private suspend fun changesNeedingConfirmation(state: RoomFormUiState): List<UpdateChange> {
+        val existing = existingRoom ?: return emptyList()
+        val price = state.pricePerBed.toDoubleOrNull() ?: return emptyList()
+        return buildList {
+            if (state.type != existing.type && bedRepository.hasOccupiedBed(existing.id)) {
+                add(UpdateChange.RoomTypeWithOccupiedBed)
+            }
+            if (price != existing.pricePerBed) {
+                add(UpdateChange.RoomPrice(existing.pricePerBed, price))
             }
         }
     }
 
-    fun confirmTypeChange() {
-        _uiState.update { it.copy(showTypeChangeConfirm = false) }
+    fun confirmChanges() {
+        _uiState.update { it.copy(pendingChanges = emptyList()) }
         viewModelScope.launch { persist() }
     }
 
-    fun dismissTypeChangeConfirm() {
-        _uiState.update { it.copy(showTypeChangeConfirm = false) }
+    fun dismissChanges() {
+        _uiState.update { it.copy(pendingChanges = emptyList()) }
     }
 
     private suspend fun persist() {

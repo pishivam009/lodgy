@@ -54,8 +54,11 @@ class NotificationPreferences @Inject constructor(@ApplicationContext private va
     }
 
     companion object {
-        const val DEFAULT_VACANCY_THRESHOLD_DAYS = 7
+        // A room empty for a week is already a week of lost rent, so a longer wait is not a
+        // setting worth offering. Reads are coerced into range, so a warden who had 7 or 30
+        // saved lands on 3 by itself - no migration, and nothing to lose (LODGY-88).
+        const val DEFAULT_VACANCY_THRESHOLD_DAYS = 3
         const val MIN_THRESHOLD_DAYS = 1
-        const val MAX_THRESHOLD_DAYS = 90
+        const val MAX_THRESHOLD_DAYS = 3
     }
 }

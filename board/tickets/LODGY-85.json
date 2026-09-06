@@ -1,0 +1,46 @@
+{
+  "id": "LODGY-85",
+  "epic": "Tenant Onboarding",
+  "title": "Onboarding a tenant only offers beds in the selected property, and calls every space a bed",
+  "description": "User-reported, two problems on the same screen. FIRST: tapping + on the Tenants tab opens the bed picker, which shows vacant beds in the SELECTED property only. Confirmed in code - BedPickerViewModel reads hostelPreferences.selectedHostelId and walks that hostel's floors alone, so a warden with three properties has to go to the Property tab, switch property, and come back before they can onboard someone into it. Nothing on the picker says it is narrowed, so an empty list reads as 'no space anywhere' when there is space next door. This is the same scoping LODGY-70 removed from the room view and LODGY-81 removed from Home; the picker was missed. SECOND: the picker speaks only in beds. A shop, warehouse or flat IS the unit being let (LODGY-79), and its implicit floor is the placeholder '-', so the picker offers 'Room Corner shop . Bed A' under a floor heading of '-'. BedGridScreen and AllRoomsScreen already handle this - they name the property directly and show the property type where a floor would go - so the vocabulary exists and this screen does not use it. NOTE, NOT IN SCOPE: the transfer screen (TransferViewModel) is hostel-scoped in the same way and has the same bed-only wording. Moving a tenant to a different PROPERTY is a different decision from onboarding, so it is left alone deliberately rather than swept in; the PO should say whether they want it.",
+  "acceptanceCriteria": [
+    "The picker offers every vacant space across all properties, not only the selected one",
+    "Each choice says which property it is in, since two properties can both have a Room 101",
+    "A shop, warehouse or flat is offered as the whole unit, with no floor, no room number and no bed label",
+    "A hostel is unchanged: floor, room and bed, grouped the way it is today",
+    "The wording works for a warden who has both kinds of property in one list",
+    "The empty and no-properties states say something true now that the list spans everything",
+    "Consistent with how BedGridScreen and AllRoomsScreen already name single-unit properties, not a third style",
+    "Correct in Hindi as well as English"
+  ],
+  "status": "Testing",
+  "priority": "High",
+  "version": "0.4.0",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-06T09:10:00Z",
+  "updatedAt": "2026-09-06T09:45:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-06T09:10:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from direct user feedback: 'when I click + on tenant screen, I only see beds for the property I had selected. I want to see all beds. Also the term beds does not make sense for flat, warehouse, shop.' Checked against the code before filing; findings recorded in the description."
+    },
+    {
+      "timestamp": "2026-09-06T09:15:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Reusing the vocabulary BedGridScreen and AllRoomsScreen already established for single-unit properties rather than inventing a third style, per AC7."
+    },
+    {
+      "timestamp": "2026-09-06T09:45:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built. BedPickerViewModel no longer touches hostelPreferences at all - it takes one BedRepository and calls a new DAO query, getVacantChoices(), which returns every vacant bed across every property with its hostel id, hostel name and property type, ordered by property name, floor sortOrder, room number, bed label. Grouping in the ViewModel therefore preserves the SQL order rather than re-sorting. It also replaces the old per-floor, per-room fan-out of flows - the picker used to run one query per floor and one per room, which grew with the property; it is now one query. SHAPE OF THE LIST: property header, then floor headers, then choices. A single-unit property is collapsed to one unlabelled floor in the ViewModel, so the screen never has to decide whether a floor is real - it reads 'The whole property' with the type ('Shop') beneath, and no floor, room number or bed label anywhere on it (AC3). A hostel is unchanged (AC4). This follows the wording BedGridScreen and AllRoomsScreen already use rather than inventing a third style (AC7). EMPTY STATES: 'nothing is vacant in any of your properties' and 'add a property first' are now distinguished by a new hasAnyBed() check, because they need different actions from the warden (AC6). The title changed from 'Pick a Vacant Bed' to 'Where are they moving in?' - it has to be true of a shop and a bed alike, and it reads as a question an older warden can answer (AC5). VERIFIED ON DEVICE with a deliberately mixed portfolio - I freed one space in Corner shop and one in Moonlight so all three properties appeared at once. The list read: 'Corner shop / The whole property / Shop', then 'Moonlight / Ground / Room 501 . Bed A', then 'Sunrise PG' with its floors and 46 beds. Before this change the same screen showed Sunrise PG only. Correct in Hindi: 'वे कहाँ रह रहे हैं?', 'पूरी प्रॉपर्टी', 'दुकान', 'कमरा 501 · बेड A'. The fixture's occupancy has been restored to what it was. NOT DONE, and flagged rather than swept in: the transfer screen is hostel-scoped in the same way and has the same bed-only wording, as recorded in the description. Moving a tenant to a different property is a different decision from onboarding, so it needs the PO rather than me. TESTS: 6 new covering all-properties, hostel floor grouping, single-unit collapsing, a mixed portfolio, and the two empty states. Full suite 541 pass, 0 failures, coverage 95.91% line against the 0.93 gate. Not schema-affecting - the new query and hasAnyBed() read existing columns."
+    }
+  ]
+}

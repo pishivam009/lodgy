@@ -17,7 +17,9 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -125,7 +127,8 @@ class TenantProfileViewModelTest {
         assertNull(viewModel.plannedMoveOut.value)
     }
 
-    private fun activeAgreement(moveOutDate: Long? = null) = TenancyAgreement(
+    private fun activeAgreement(moveOutDate: Long? = null, nonRevenue: Boolean = false) = TenancyAgreement(
+        nonRevenue = nonRevenue,
         tenantId = "t1",
         bedId = "b1",
         agreedRent = 0.0,
@@ -138,4 +141,19 @@ class TenantProfileViewModelTest {
         createdAt = 0L,
         updatedAt = 0L,
     )
+
+    /** LODGY-84 gates the forgone-rent action on this: a paying tenancy has no rent to forgo. */
+    @Test
+    fun `a warden or caretaker room is flagged non-revenue, a paying tenancy is not`() {
+        every { tenantRepository.observeById("t1") } returns flowOf(tenant)
+        coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
+
+        every { agreementRepository.observeByTenantId("t1") } returns
+            flowOf(listOf(activeAgreement(nonRevenue = true)))
+        assertTrue(viewModel().nonRevenue.value)
+
+        every { agreementRepository.observeByTenantId("t1") } returns
+            flowOf(listOf(activeAgreement()))
+        assertFalse(viewModel().nonRevenue.value)
+    }
 }

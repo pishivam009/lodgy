@@ -28,6 +28,7 @@ import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
 import com.lodgy.app.testutil.MainDispatcherRule
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -123,5 +124,69 @@ class AcknowledgementViewModelTest {
 
         assertFalse(state.loading)
         assertFalse(state.found)
+    }
+
+    @Test
+    fun `deleting a payment removes it and recomputes the invoice status`() {
+        val p = payment("p1", 5000.0, 100L)
+        val viewModel = viewModel(payments = listOf(p))
+
+        viewModel.requestDeletePayment(p)
+        assertEquals(p, viewModel.uiState.value.pendingDeletePayment)
+
+        // The money is now gone, so the recompute sees nothing paid.
+        coEvery { paymentRepository.delete(p) } returns Unit
+        coEvery { paymentRepository.getTotalPaid("inv-1") } returns 0.0
+        coEvery { invoiceRepository.updateStatus(any(), any()) } returns Unit
+        every { paymentRepository.getByInvoiceId("inv-1") } returns flowOf(emptyList())
+
+        viewModel.confirmDeletePayment()
+
+        coVerify { paymentRepository.delete(p) }
+        // Nothing paid against a 5000 due -> the invoice must fall back to UNPAID, not stay PAID.
+        coVerify { invoiceRepository.updateStatus(invoice, InvoiceStatus.UNPAID) }
+    }
+
+    @Test
+    fun `deleting a credit recomputes the invoice status too`() {
+        val credit = Credit(id = "c1", tenantId = "t1", invoiceId = "inv-1", amount = 5000.0, reason = "Repairs", createdAt = 0L, updatedAt = 0L)
+        val viewModel = viewModel(credits = listOf(credit))
+
+        viewModel.requestDeleteCredit(credit)
+        assertEquals(credit, viewModel.uiState.value.pendingDeleteCredit)
+
+        coEvery { creditRepository.delete(credit) } returns Unit
+        coEvery { paymentRepository.getTotalPaid("inv-1") } returns 0.0
+        coEvery { invoiceRepository.updateStatus(any(), any()) } returns Unit
+        coEvery { creditRepository.getByInvoiceId("inv-1") } returns emptyList()
+
+        viewModel.confirmDeleteCredit()
+
+        coVerify { creditRepository.delete(credit) }
+        coVerify { invoiceRepository.updateStatus(invoice, InvoiceStatus.UNPAID) }
+    }
+
+    @Test
+    fun `an invoice with payments or credits is blocked from deletion`() {
+        val viewModel = viewModel(payments = listOf(payment("p1", 1000.0, 100L)))
+
+        viewModel.requestDeleteInvoice()
+
+        assertTrue(viewModel.uiState.value.blockedDeleteInvoice)
+        assertFalse(viewModel.uiState.value.pendingDeleteInvoice)
+    }
+
+    @Test
+    fun `an invoice with nothing attached deletes after confirmation`() {
+        val viewModel = viewModel()
+
+        viewModel.requestDeleteInvoice()
+        assertTrue(viewModel.uiState.value.pendingDeleteInvoice)
+
+        coEvery { invoiceRepository.delete(invoice) } returns Unit
+        viewModel.confirmDeleteInvoice()
+
+        assertTrue(viewModel.uiState.value.invoiceDeleted)
+        coVerify { invoiceRepository.delete(invoice) }
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -57,6 +58,9 @@ fun ExpenseFormScreen(
     LaunchedEffect(uiState.saved) {
         if (uiState.saved) onDone()
     }
+    LaunchedEffect(uiState.deleted) {
+        if (uiState.deleted) onDone()
+    }
 
     Scaffold(
         topBar = {
@@ -64,6 +68,13 @@ fun ExpenseFormScreen(
                 title = { Text(stringResource(if (uiState.isEditing) R.string.expense_form_title_edit else R.string.expense_form_title_add)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(CommonIcons.Back, contentDescription = null) }
+                },
+                actions = {
+                    if (uiState.isEditing) {
+                        IconButton(onClick = viewModel::requestDelete) {
+                            Icon(CommonIcons.Trash, contentDescription = stringResource(R.string.expense_delete))
+                        }
+                    }
                 },
             )
         },
@@ -148,5 +159,15 @@ fun ExpenseFormScreen(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (uiState.pendingDelete) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissDelete,
+            title = { Text(stringResource(R.string.expense_delete)) },
+            text = { Text(stringResource(R.string.expense_delete_body)) },
+            confirmButton = { TextButton(onClick = viewModel::confirmDelete) { Text(stringResource(R.string.delete)) } },
+            dismissButton = { TextButton(onClick = viewModel::dismissDelete) { Text(stringResource(R.string.cancel)) } },
+        )
     }
 }

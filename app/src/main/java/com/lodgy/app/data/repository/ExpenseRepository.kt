@@ -14,6 +14,12 @@ class ExpenseRepository @Inject constructor(private val expenseDao: ExpenseDao) 
 
     suspend fun getById(id: String): Expense? = expenseDao.getById(id)
 
+    /** Expenses have nothing hanging off them, so a duplicate or wrong row deletes freely (LODGY-64). */
+    suspend fun delete(expense: Expense) = expenseDao.delete(expense)
+
+    suspend fun existsForTenancyInPeriod(tenancyAgreementId: String, periodStart: Long, periodEnd: Long): Boolean =
+        expenseDao.existsForTenancyInPeriod(tenancyAgreementId, periodStart, periodEnd)
+
     suspend fun create(
         hostelId: String,
         category: ExpenseCategory,
@@ -21,10 +27,12 @@ class ExpenseRepository @Inject constructor(private val expenseDao: ExpenseDao) 
         isRecurring: Boolean,
         incurredOn: Long,
         note: String?,
+        tenancyAgreementId: String? = null,
     ): Expense {
         val now = System.currentTimeMillis()
         val expense = Expense(
             hostelId = hostelId,
+            tenancyAgreementId = tenancyAgreementId,
             category = category,
             amount = amount,
             isRecurring = isRecurring,

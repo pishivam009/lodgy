@@ -14,6 +14,10 @@ class HostelRepository @Inject constructor(private val hostelDao: HostelDao) {
 
     suspend fun getById(id: String): Hostel? = hostelDao.getById(id)
 
+    /** Only ever called once the caller has checked the hostel is empty - it holds no floors
+     *  and no expenses - so this cannot orphan a floor/room/bed or a financial record (LODGY-64). */
+    suspend fun delete(hostel: Hostel) = hostelDao.delete(hostel)
+
     suspend fun create(
         wardenId: String,
         name: String,

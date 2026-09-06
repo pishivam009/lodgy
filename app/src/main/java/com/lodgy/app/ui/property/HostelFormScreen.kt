@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -15,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -29,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.PropertyType
 import com.lodgy.app.ui.common.FilterChipRow
+import com.lodgy.app.ui.common.UpdateConfirmDialog
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 
@@ -44,6 +47,9 @@ fun HostelFormScreen(
     LaunchedEffect(uiState.saved) {
         if (uiState.saved) onDone()
     }
+    LaunchedEffect(uiState.deleted) {
+        if (uiState.deleted) onBack()
+    }
 
     Scaffold(
         topBar = {
@@ -56,6 +62,13 @@ fun HostelFormScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(CommonIcons.Back, contentDescription = null)
+                    }
+                },
+                actions = {
+                    if (uiState.isEditing) {
+                        IconButton(onClick = viewModel::requestDelete) {
+                            Icon(CommonIcons.Trash, contentDescription = stringResource(R.string.hostel_delete))
+                        }
                     }
                 },
             )
@@ -139,4 +152,27 @@ fun HostelFormScreen(
             }
         }
     }
+
+    if (uiState.pendingDelete) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissDelete,
+            title = { Text(stringResource(R.string.hostel_delete)) },
+            text = { Text(stringResource(R.string.hostel_delete_body)) },
+            confirmButton = { TextButton(onClick = viewModel::confirmDelete) { Text(stringResource(R.string.delete)) } },
+            dismissButton = { TextButton(onClick = viewModel::dismissDelete) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+    if (uiState.blockedDelete) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissDelete,
+            title = { Text(stringResource(R.string.hostel_delete_blocked_title)) },
+            text = { Text(stringResource(R.string.hostel_delete_blocked_body)) },
+            confirmButton = { TextButton(onClick = viewModel::dismissDelete) { Text(stringResource(R.string.ok)) } },
+        )
+    }
+    UpdateConfirmDialog(
+        changes = uiState.pendingChanges,
+        onConfirm = viewModel::confirmChanges,
+        onDismiss = viewModel::dismissChanges,
+    )
 }

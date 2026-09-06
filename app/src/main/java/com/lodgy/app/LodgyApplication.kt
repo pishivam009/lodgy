@@ -6,6 +6,7 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.lodgy.app.media.OrphanPhotoCleaner
 import com.lodgy.app.notify.LodgyNotifications
+import com.lodgy.app.work.scheduleAutoBackup
 import com.lodgy.app.work.scheduleDuesReminder
 import com.lodgy.app.work.scheduleInvoiceGeneration
 import com.lodgy.app.work.scheduleVacancyCheck
@@ -40,6 +41,7 @@ class LodgyApplication : Application(), Configuration.Provider {
             scheduleInvoiceGeneration()
             scheduleVacancyCheck()
             scheduleDuesReminder()
+            scheduleAutoBackup()
         }
         // Fire-and-forget on IO: startup must not wait on a directory listing, and a sweep that
         // loses a race with a fresh pick simply finds the file referenced on the next launch.

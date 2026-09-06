@@ -17,6 +17,22 @@ object StatusIcons {
         "M3,15 H21",
         "M7,9 A2,2 0 1,0 7,5 A2,2 0 1,0 7,9 Z",
     )
+    /** A shop, warehouse or flat is a space that is let, not slept in, so it gets a door
+     *  rather than a bed - and the same door stands for "a space" wherever a count covers
+     *  both kinds of property (LODGY-86). */
+    val UnitVacant: ImageVector = strokeIcon(
+        "StatusUnitVacant",
+        "M5,21 V4 H15 V21",
+        "M3,21 H21",
+        "M15,4 L19,7 V21",
+    )
+    val UnitOccupied: ImageVector = strokeIcon(
+        "StatusUnitOccupied",
+        "M5,21 V4 H15 V21",
+        "M3,21 H21",
+        "M15,4 L19,7 V21",
+        "M11,13 V15",
+    )
     val Check: ImageVector = strokeIcon("StatusCheck", "M5,13 L10,18 L19,6")
     val Half: ImageVector = strokeIcon(
         "StatusHalf",

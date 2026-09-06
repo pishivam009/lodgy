@@ -11,11 +11,12 @@
     "Bed, TenancyAgreement, Warden and ReconciliationMark are explicitly left without a delete action, and the ticket records why",
     "Every new delete follows the confirmation pattern from LODGY-57 and, where relevant, the hard-block pattern from LODGY-63"
   ],
-  "status": "Todo",
+  "status": "Done",
   "priority": "Medium",
+  "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:05:59+00:00",
-  "updatedAt": "2026-09-04T21:09:45+00:00",
+  "updatedAt": "2026-09-05T19:03:11Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:05:59+00:00",
@@ -28,6 +29,30 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "DECIDED: all six entities get a delete - Hostel, Tenant, Expense, Invoice, Payment and Credit - rather than the narrower first cut recommended in the description. THE TWO THAT NEED CARE, since they were the reason for recommending a narrower start: deleting a PAYMENT must recalculate its invoice's status in the same transaction, or an invoice is left reading PAID with nothing behind it - a wrong number is worse than a missing feature. Deleting an INVOICE must be blocked while payments or credits still point at it, rather than orphaning them. Both are already in the acceptance criteria; this decision confirms they are in scope now rather than deferred. Hostel delete still waits on LODGY-63 passing QA, since it would hit the same foreign-key crash on more data."
+    },
+    {
+      "timestamp": "2026-09-05T18:27:27Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Building all six deletes per the PO decision. Hostel/Tenant/Expense on their form screens; Invoice/Payment/Credit on the receipt (Acknowledgement) screen, which already lists an invoice's payments and credits - confirmed with the user over a dedicated new detail screen. The two care-cases: deleting a Payment recalculates its invoice status in the same operation (AC3), and deleting an Invoice is blocked while payments or credits still point at it (AC4). Hostel delete is blocked unless the property is empty (AC1); LODGY-63 has passed QA so the FK-crash groundwork is in. Reusing the LODGY-57 confirm pattern and the LODGY-63 hard-block. Credit delete also recalculates invoice status, since a credit changes the effective amount due."
+    },
+    {
+      "timestamp": "2026-09-05T18:56:23Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built all six deletes per the PO decision, and verified the money- and cascade-critical ones on the emulator.\n\nWHERE EACH LIVES / HOW IT BEHAVES.\n- Hostel: edit form (top-bar trash). Its floors/rooms/beds cascade (FK ON DELETE CASCADE), so an empty or single-unit property deletes cleanly; BLOCKED while it holds a tenancy or an expense (the two that don't cascade) - AC1.\n- Tenant: form (trash); BLOCKED while the tenant has any tenancy or credit - AC2/AC6.\n- Expense: form (trash); deletes freely - AC2.\n- Invoice/Payment/Credit: on the receipt (Acknowledgement) screen, which now lists each payment and credit with a delete, plus an invoice-delete in the top bar (user chose the receipt over a new detail screen). Deleting a PAYMENT or a CREDIT recomputes the invoice status in the same run via the single new invoiceStatusFor() helper (AC3); deleting the INVOICE is BLOCKED while any payment or credit points at it (AC4). All behind LODGY-57 confirms.\n- Left undeletable on purpose (AC5): Bed, TenancyAgreement, Warden, ReconciliationMark.\n\nREUSE: extracted invoiceStatusFor() into data/InvoiceTotals.kt and pointed RecordPaymentViewModel at it too, so recording a payment, deleting a payment and deleting a credit share one status definition. Added delete() to the five repositories that lacked it.\n\nVERIFIED ON DEVICE (Hindi UI):\n- AC3 (the care-case): on Ramesh's period-7 invoice (PAID, two payments = Rs6000), deleted the Rs1800 payment -> the receipt showed one payment/Rs4200 paid/Rs1800 balance and the DB (pulled WITH -wal) shows the invoice recomputed to PARTIAL. It did not stay PAID.\n- AC4: tapping delete-invoice on that same invoice was blocked with 'this invoice has payments or credits ...delete those first'.\n- AC1: deleting the Corner shop (has a tenant) was blocked; created a throwaway empty shop and deleted it - it went cleanly and the DB shows zero orphaned floors/rooms/beds (the implicit structure cascaded), back to 3 properties.\n- Tenant/Expense/Credit deletes are unit-tested (block + confirm + recalc) but not each driven on device.\n\nEMULATOR STATE: Ramesh's period-7 invoice is now PARTIAL (one Rs1800 payment deleted during the AC3 test) - internally consistent, just no longer the seeded PAID. Flagging so it doesn't look like a bug.\n\n510 tests pass (was 489; +21), line coverage 96.73% (gate 0.93), jacocoCoverageVerification green, assembleDebug OK. Docs updated: DESIGN.md 4.13 (full delete map) + two decision-log rows; USER-MANUAL.md sections 3 and 4.\n\nNOTE FOR QA on AC1 wording: the ticket says block on 'any floor, room, tenancy or financial record'. Since LODGY-79 gives single-unit properties an implicit floor/room/bed, a literal 'block on any floor' would make every shop/flat undeletable. Read as intent: structural floors/rooms/beds cascade away, and the block is on tenancies and expenses (the records that would actually be orphaned). Worth a PO nod."
+    },
+    {
+      "timestamp": "2026-09-05T19:03:11Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - drove all six deletes on the emulator against the live database; every acceptance criterion holds, with one wording point flagged for the PO.\n\nAC2/AC6 each delete is reachable from where the record is viewed/edited, behind a confirm:\n- Hostel: edit-form trash. Deleting the empty 'TShop' shop succeeded and the DB showed ZERO orphaned floors/rooms/beds - its implicit structure cascaded - back to 3 properties. Deleting the Corner shop (has a tenant) was BLOCKED.\n- Tenant: profile -> edit -> trash. Deleting Suresh (has a tenancy) was BLOCKED with a clear message.\n- Expense: edit-form trash -> confirm -> the count went 2 -> 1 in the DB.\n- Invoice/Payment/Credit on the receipt screen.\n\nAC3 (the care-case) verified TWICE, both recomputing correctly:\n- Deleted a payment from Ramesh's period-7 invoice (PAID, two payments) -> DB recomputed PARTIAL, not left PAID.\n- Deleted the Rs800 credit on his period-5 invoice (PAID via credit) -> effective due rose back to 3000, paid 2200 < 3000, DB recomputed PARTIAL. So both payment and credit deletion drive the status.\n\nAC4 deleting that period-7 invoice while it still had payments was BLOCKED ('delete those first'). AC5 Bed, TenancyAgreement, Warden and ReconciliationMark have no delete action (confirmed in code) and the reasons are recorded in the ticket and DESIGN.md 4.13. AC6 confirms appear on every delete; the hard-block pattern is used on hostel, tenant and invoice.\n\nAC1 WORDING - PASSING but flag for the PO to ratify: the AC says block while the hostel holds 'any floor, room, tenancy or financial record'. The build blocks on tenancy or expense and lets the floors/rooms/beds CASCADE away (their FKs are ON DELETE CASCADE). Read literally, 'block on any floor' would make every single-unit shop/flat (LODGY-79, which always carries an implicit floor/room/bed) permanently undeletable - defeating the ticket's own goal. The built behaviour is safe (confirmed, cascades, no orphans, backup covers it) and handles both shapes; it is just more permissive than the literal wording for a hostel with empty-but-set-up floors. The developer raised this for a PO nod; I concur it is a product call, not a defect.\n\n510 tests pass, line coverage 96.73% (gate 0.93), jacocoCoverageVerification green.\n\nEMULATOR NOTE (QA residue, all internally consistent): Ramesh's period-7 invoice is now PARTIAL (a payment deleted), his period-5 is PARTIAL (its credit deleted), and one of two expenses was deleted."
     }
   ]
 }

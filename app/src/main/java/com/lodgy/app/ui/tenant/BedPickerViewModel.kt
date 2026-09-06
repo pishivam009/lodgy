@@ -2,34 +2,43 @@ package com.lodgy.app.ui.tenant
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lodgy.app.data.entity.Bed
-import com.lodgy.app.data.entity.BedStatus
-import com.lodgy.app.data.prefs.HostelPreferences
+import com.lodgy.app.data.dao.VacantBedChoice
 import com.lodgy.app.data.repository.BedRepository
-import com.lodgy.app.data.repository.FloorRepository
-import com.lodgy.app.data.repository.RoomRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class VacantBedOption(val bed: Bed, val roomNumber: String, val floorLabel: String)
+/** One property's vacant spaces, ready to render. Floors are already dropped for a single-unit
+ *  property, so the screen never has to decide whether a floor is real (LODGY-79, LODGY-85). */
+data class VacantProperty(
+    val hostelId: String,
+    val hostelName: String,
+    val isSingleUnit: Boolean,
+    val floors: List<VacantFloor>,
+) {
+    val choices: List<VacantBedChoice> get() = floors.flatMap { it.choices }
+}
+
+data class VacantFloor(val label: String, val choices: List<VacantBedChoice>)
 
 data class BedPickerUiState(
     val loading: Boolean = true,
-    val hasActiveHostel: Boolean = true,
-    val options: List<VacantBedOption> = emptyList(),
+    val hasAnyProperty: Boolean = true,
+    val properties: List<VacantProperty> = emptyList(),
 )
 
+/**
+ * Onboarding spans every property (LODGY-85). It used to follow the selected-hostel preference,
+ * which meant a warden had to go to the Property tab and switch property before they could put a
+ * tenant in it — and an empty list read as "no space anywhere" when there was space next door.
+ * That is the same scoping LODGY-70 took off the room view and LODGY-81 off Home.
+ */
 @HiltViewModel
 class BedPickerViewModel @Inject constructor(
-    private val hostelPreferences: HostelPreferences,
-    private val floorRepository: FloorRepository,
-    private val roomRepository: RoomRepository,
     private val bedRepository: BedRepository,
 ) : ViewModel() {
 
@@ -38,24 +47,33 @@ class BedPickerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val hostelId = hostelPreferences.selectedHostelId.first()
-            if (hostelId == null) {
-                _uiState.update { it.copy(loading = false, hasActiveHostel = false) }
-                return@launch
-            }
-
-            val options = mutableListOf<VacantBedOption>()
-            val floors = floorRepository.getByHostelId(hostelId).first().sortedBy { it.sortOrder }
-            for (floor in floors) {
-                val rooms = roomRepository.getByFloorId(floor.id).first()
-                for (room in rooms) {
-                    val beds = bedRepository.getByRoomId(room.id).first()
-                        .filter { it.status == BedStatus.VACANT }
-                        .sortedBy { it.label }
-                    beds.forEach { bed -> options.add(VacantBedOption(bed, room.roomNumber, floor.label)) }
+            // Ordered by property, floor, room and bed in SQL, so grouping here preserves it.
+            val properties = bedRepository.getVacantChoices()
+                .groupBy { it.hostelId }
+                .map { (hostelId, choices) ->
+                    val singleUnit = choices.first().propertyType.isSingleUnit
+                    VacantProperty(
+                        hostelId = hostelId,
+                        hostelName = choices.first().hostelName,
+                        isSingleUnit = singleUnit,
+                        floors = if (singleUnit) {
+                            listOf(VacantFloor(label = "", choices = choices))
+                        } else {
+                            choices.groupBy { it.floorLabel }.map { (label, byFloor) ->
+                                VacantFloor(label, byFloor)
+                            }
+                        },
+                    )
                 }
+            _uiState.update {
+                it.copy(
+                    loading = false,
+                    // Nothing vacant and nothing to be vacant are different problems: one is "you
+                    // are full", the other is "you have not set up a property yet".
+                    hasAnyProperty = bedRepository.hasAnyBed(),
+                    properties = properties,
+                )
             }
-            _uiState.update { it.copy(loading = false, options = options) }
         }
     }
 }

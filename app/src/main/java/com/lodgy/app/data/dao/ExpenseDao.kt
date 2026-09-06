@@ -28,4 +28,17 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM expenses")
     suspend fun getAll(): List<Expense>
+
+    /** The idempotency check behind the monthly forgone-rent entry (LODGY-84): the period is
+     *  read off incurredOn rather than stored twice, so a re-run on the same day cannot
+     *  double-count. Times are local, which is what the warden's month means. */
+    @Query(
+        "SELECT COUNT(*) > 0 FROM expenses WHERE tenancyAgreementId = :tenancyAgreementId " +
+            "AND incurredOn >= :periodStart AND incurredOn < :periodEnd",
+    )
+    suspend fun existsForTenancyInPeriod(
+        tenancyAgreementId: String,
+        periodStart: Long,
+        periodEnd: Long,
+    ): Boolean
 }

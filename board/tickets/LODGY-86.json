@@ -1,0 +1,46 @@
+{
+  "id": "LODGY-86",
+  "epic": "Usability",
+  "title": "'Bed' language and bed icons are used for shops, warehouses and flats that have no beds",
+  "description": "User-reported, and broader than LODGY-85 which fixes one screen. LODGY-79 let wardens keep shops, warehouses and flats, where the property itself is the rentable unit and its floor/room/bed rows exist only to keep the queries working. The UI still says 'bed' in places that now cover those properties, and draws a literal bed pictogram for them. CONFIRMED IN CODE. Home: the dashboard tile is R.string.dashboard_vacant_beds, 'Vacant beds' - the user asked for plain 'Vacant', which is both generic and shorter, and the count already spans every property since LODGY-81. The screen it opens is titled 'Vacant Beds' (vacant_view_title) and its rows read 'Room %1$s . Bed %2$s' (vacant_view_room_bed) with a '%2$d bed(s)' count per floor. Icons: StatusTokens maps both bed status and room fill onto StatusIcons.BedVacant / BedOccupied, which are drawn as a bed - so a shop tile in All rooms and a warehouse in the bed grid are labelled with a bed. Other strings in the same family: room_bed_summary, floor_bed_summary, bed_filter_vacant, bed_status_vacant. WHAT NOT TO DO: renaming everything to 'unit' would be worse. A hostel warden thinks in beds and that word is correct for them; the fix is generic wording where a figure spans both kinds, and property-appropriate wording where the screen knows which kind it is showing - the split BedGridScreen and AllRoomsScreen already make.",
+  "acceptanceCriteria": [
+    "The Home tile reads 'Vacant' rather than 'Vacant beds', in both languages",
+    "A grid or tile for a shop, warehouse or flat does not show a bed icon",
+    "A screen that knows it is showing a single-unit property does not use the word bed anywhere on it",
+    "A hostel keeps bed wording and the bed icon, because that word is right for it",
+    "A figure that spans both kinds of property is worded so it is true of both",
+    "The vacant list reached from the Home tile is covered too, not just the tile",
+    "Correct in Hindi as well as English",
+    "No string is left saying 'bed' in a place a warehouse can appear"
+  ],
+  "status": "Testing",
+  "priority": "Medium",
+  "version": "0.4.0",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-06T09:10:00Z",
+  "updatedAt": "2026-09-06T10:55:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-06T09:10:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from direct user feedback: 'the home screen shows vacant beds - change the label to Vacant to make it generic. Also in the grid - change the icons accordingly, and don't mention bed in non-bed cases.' Raised alongside LODGY-85, which covers the tenant onboarding picker; this one is the same vocabulary problem everywhere else."
+    },
+    {
+      "timestamp": "2026-09-06T10:15:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Working from the split BedGridScreen and AllRoomsScreen already make - generic where a figure spans both kinds of property, property-appropriate where the screen knows which kind it is showing."
+    },
+    {
+      "timestamp": "2026-09-06T10:55:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built to the rule in the description - generic where a figure spans both kinds, property-appropriate where the screen knows which kind it is showing - rather than renaming everything to 'unit'. HOME: dashboard_vacant_beds is now 'Vacant' / 'खाली' (AC1). ICONS: two new StatusIcons, UnitVacant and UnitOccupied, drawn as a door rather than a bed. BedStatus.icon and RoomFill.icon became functions taking singleUnit, so a tile picks its own symbol: the Corner shop tile in All rooms and the shop's grid now carry a door, hostel rooms and beds still carry a bed (AC2, AC4). Added RoomFill.spaceIcon for the All-rooms summary row, which counts ROOMS across every property and so always uses the neutral door - deliberately not flipping with whatever the warden happens to own, since an icon that changes meaning based on portfolio composition is worse than one that is simply generic (AC5). WORDING: BedStatus.label now takes singleUnit too, which turned up a real gap - unit_status_vacant and unit_status_occupied ('Vacant' / 'Let') were DEFINED BUT NEVER USED, so a shop's tile and its action sheet were showing the bed wording 'VACANT' / 'OCCUPIED'. They are now used (AC3). FINDING THAT CHANGES AC6, please check this rather than take my word: there is no separate vacant list any more. The Home tile has routed to All rooms filtered to hasSpace since LODGY-72, and VACANT_VIEW_ROUTE - kept only so older notifications still land somewhere - renders AllRoomsScreen too. So all five vacant_view_* strings ('Vacant Beds', 'Room %1$s . Bed %2$s', '%2$d bed(s)' and two more) were dead resources. I deleted them rather than translating strings nothing renders; that is what covers AC6 and AC8. The user manual described that screen as though it still existed, and has been corrected. LEFT ALONE ON PURPOSE: room_bed_summary ('%1$d vacant / %2$d beds') and floor_bed_summary are on RoomListScreen and the floor cards, which a single-unit property can never reach - it goes straight to its own grid - so 'bed' is correct there and generic wording would be worse for the hostel warden who does see them (AC4). VERIFIED ON DEVICE: Home reads 'Vacant 46'. All rooms shows a door on Corner shop and beds on 501 and 101, with door icons in the 16 Empty / 1 Part full / 3 Full summary. The shop's grid reads 'This property / Let / ₹18000 per month' with no 'bed' anywhere, and its sheet 'Corner shop / Let / Occupied by Shop tenant'. Room 501 is unchanged: 'Bed A / OCCUPIED / ₹4000 per bed'. Hindi correct throughout - 'खाली', 'यह प्रॉपर्टी', 'किराये पर', '₹18000 / महीना' (AC7). TESTS: 3 new covering the per-property icon split and the neutral spanning icon, plus two existing assertions updated for the new signatures. Full suite 544 pass, 0 failures, coverage 95.93% line against the 0.93 gate. Not schema-affecting."
+    }
+  ]
+}

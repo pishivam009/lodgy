@@ -95,6 +95,8 @@ erDiagram
         long   moveOutDate "notice if ACTIVE, departure if CLOSED"
         double depositRefundAmount "nullable"
         bool   nonRevenue "warden/caretaker room - bills nobody"
+        bool   forgoneRentExpense "opt-in: book the forgone rent as a cost"
+        double forgoneRentAmount "nullable - NOT rent, never billed"
         enum   status "ACTIVE CLOSED"
     }
     INVOICE {
@@ -133,7 +135,8 @@ erDiagram
     EXPENSE {
         string id PK
         string hostelId FK
-        enum   category "WIFI WATER ELECTRICITY TAX MAINTENANCE REPAIR OTHER"
+        string tenancyAgreementId "nullable, soft link - forgone rent only"
+        enum   category "WIFI WATER ELECTRICITY TAX MAINTENANCE REPAIR ACCOMMODATION OTHER"
         double amount
         bool   isRecurring
         long   incurredOn
@@ -196,6 +199,20 @@ the single choke point that keeps all of them clean, rather than each having to
 know about the flag. Added in **migration 4 → 5** as a plain `ADD COLUMN ...
 NOT NULL DEFAULT 0`, so every pre-existing agreement keeps billing exactly as
 before.
+
+`forgoneRentExpense` and `forgoneRentAmount` are the discretionary second half
+of that. A non-revenue tenancy has no rent by definition, so the amount cannot
+live in `agreedRent` — that column is what a tenancy bills, and putting a real
+number there would place it in front of every generator that reads it. Its own
+column keeps the no-invoice guarantee intact: nothing on the billing path looks
+at it. Invoice generation reads it on the tenancy's billing day and writes an
+`ACCOMMODATION` expense carrying `tenancyAgreementId`, which is what makes the
+monthly entry idempotent — the check is "does this tenancy already have an
+expense dated in this month", so a re-run cannot double-count. That link is
+deliberately **not** a foreign key: the expense is recorded history the warden
+may already have reported on, and a cascade would erase it. Added in
+**migration 6 → 7** as three plain `ADD COLUMN`s plus the index, so no existing
+tenancy starts recording a cost it was never asked to.
 
 Because that seam exists, a tenant's hostel is not stored anywhere. It is derived:
 `agreement → bed → room → floor → hostel`. Anything that needs to group tenants,

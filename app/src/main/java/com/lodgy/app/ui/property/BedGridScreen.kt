@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -109,9 +111,40 @@ fun BedGridScreen(
                 uiState = uiState,
                 onDismiss = viewModel::onBedSheetDismissed,
                 onAssignTenant = onAssignTenant,
+                onMarkOwnRoom = viewModel::onMarkOwnRoomRequested,
                 onViewTenant = onViewTenant,
             )
         }
+    }
+
+    uiState.markingOwnRoom?.let { name ->
+        AlertDialog(
+            onDismissRequest = viewModel::onMarkOwnRoomDismissed,
+            title = { Text(stringResource(R.string.mark_own_room_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(R.string.mark_own_room_body))
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = viewModel::onMarkOwnRoomNameChange,
+                        label = { Text(stringResource(R.string.mark_own_room_name)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = viewModel::onMarkOwnRoomConfirmed,
+                    enabled = name.isNotBlank(),
+                ) { Text(stringResource(R.string.mark_own_room_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::onMarkOwnRoomDismissed) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
     }
 }
 
@@ -126,6 +159,7 @@ private fun BedActionSheet(
     onDismiss: () -> Unit,
     onAssignTenant: (String) -> Unit,
     onViewTenant: (String) -> Unit,
+    onMarkOwnRoom: () -> Unit,
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
@@ -138,7 +172,7 @@ private fun BedActionSheet(
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                selected.bed.status.label(),
+                selected.bed.status.label(uiState.isSingleUnit),
                 style = MaterialTheme.typography.bodySmall,
                 color = LodgyStatus.colors[selected.bed.status.level].accent,
                 modifier = Modifier.padding(bottom = 12.dp),
@@ -188,6 +222,12 @@ private fun BedActionSheet(
                 TextButton(onClick = { onDismiss(); onAssignTenant(selected.bed.id) }) {
                     Text(stringResource(R.string.bed_sheet_assign_tenant))
                 }
+                // The same tenancy the long way round would mean typing yourself in as a
+                // tenant, with a phone number, before you could say the room is yours
+                // (LODGY-87).
+                TextButton(onClick = onMarkOwnRoom) {
+                    Text(stringResource(R.string.bed_sheet_mark_own_room))
+                }
             }
         }
     }
@@ -233,8 +273,13 @@ private fun BedTile(bed: Bed, singleUnit: Boolean, onClick: () -> Unit) {
                 color = palette.onContainer,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                val label = bed.status.label()
-                Icon(bed.status.icon, contentDescription = label, tint = palette.onContainer, modifier = Modifier.size(16.dp))
+                val label = bed.status.label(singleUnit)
+                Icon(
+                    bed.status.icon(singleUnit),
+                    contentDescription = label,
+                    tint = palette.onContainer,
+                    modifier = Modifier.size(16.dp),
+                )
                 Text(label, style = MaterialTheme.typography.labelSmall, color = palette.onContainer)
             }
         }

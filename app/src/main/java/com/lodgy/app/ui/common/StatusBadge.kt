@@ -22,9 +22,17 @@ import com.lodgy.app.data.entity.TenantStatus
 import com.lodgy.app.ui.theme.LodgyStatus
 import com.lodgy.app.ui.theme.StatusLevel
 
+/** A property let whole is "Vacant" or "Let"; a bed in a hostel is VACANT or OCCUPIED. Same
+ *  state, different word, because nobody occupies a warehouse (LODGY-86). */
 @Composable
-fun BedStatus.label(): String =
-    stringResource(if (this == BedStatus.OCCUPIED) R.string.bed_status_occupied else R.string.bed_status_vacant)
+fun BedStatus.label(singleUnit: Boolean = false): String = stringResource(
+    when {
+        singleUnit && this == BedStatus.OCCUPIED -> R.string.unit_status_occupied
+        singleUnit -> R.string.unit_status_vacant
+        this == BedStatus.OCCUPIED -> R.string.bed_status_occupied
+        else -> R.string.bed_status_vacant
+    },
+)
 
 @Composable
 fun InvoiceStatus.label(): String = stringResource(

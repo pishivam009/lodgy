@@ -42,8 +42,13 @@ class NotificationPreferencesTest {
         prefs.setVacancyEnabled(false)
         assertFalse(prefs.vacancyEnabled.first())
 
-        prefs.setVacancyThresholdDays(14)
-        assertEquals(14, prefs.vacancyThresholdDays.first())
+        prefs.setVacancyThresholdDays(2)
+        assertEquals(2, prefs.vacancyThresholdDays.first())
+
+        // A warden who saved 7 or 30 before LODGY-88 narrowed the range keeps their settings and
+        // lands on the new maximum, which is why that change needed no migration.
+        prefs.setVacancyThresholdDays(30)
+        assertEquals(NotificationPreferences.MAX_THRESHOLD_DAYS, prefs.vacancyThresholdDays.first())
 
         // Clamped, so a stray value can neither disable nor spam the check.
         prefs.setVacancyThresholdDays(0)

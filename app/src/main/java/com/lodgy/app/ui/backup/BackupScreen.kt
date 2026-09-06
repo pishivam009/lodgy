@@ -52,6 +52,10 @@ fun BackupScreen(
         ActivityResultContracts.OpenDocument(),
     ) { uri -> uri?.let(viewModel::onImportFilePicked) }
 
+    val autoBackupFolderLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree(),
+    ) { uri -> uri?.let(viewModel::onAutoBackupFolderPicked) }
+
     fun restartApp() {
         val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
         launchIntent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -100,6 +104,43 @@ fun BackupScreen(
                             stringResource(messageRes),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(stringResource(R.string.backup_auto_title), style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        stringResource(R.string.backup_auto_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        if (uiState.autoBackupFolderUri != null) {
+                            stringResource(R.string.backup_auto_folder_set)
+                        } else {
+                            stringResource(R.string.backup_auto_folder_none)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Button(
+                        onClick = {
+                            TrustedActivityLaunch.expectOne()
+                            autoBackupFolderLauncher.launch(null)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            stringResource(
+                                if (uiState.autoBackupFolderUri != null) {
+                                    R.string.backup_auto_change_folder
+                                } else {
+                                    R.string.backup_auto_choose_folder
+                                },
+                            ),
                         )
                     }
                 }

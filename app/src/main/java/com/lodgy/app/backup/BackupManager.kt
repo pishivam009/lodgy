@@ -5,6 +5,7 @@ import android.net.Uri
 import com.lodgy.app.data.LodgyDatabase
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
+import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -57,6 +58,33 @@ class BackupManager @Inject constructor(
             }
             true
         }.getOrDefault(false)
+    }
+
+    /**
+     * A content fingerprint of everything a backup would capture, so the daily job can skip a day
+     * on which nothing changed rather than writing an identical zip (LODGY-68, AC5). The WAL is
+     * checkpointed first so pending writes are folded into the db file being hashed - otherwise a
+     * day whose changes still sat in the WAL would look unchanged and be skipped. Identical data
+     * yields an identical fingerprint; any write since the last backup changes it.
+     */
+    suspend fun currentFingerprint(): String = withContext(Dispatchers.IO) {
+        database.query("PRAGMA wal_checkpoint(FULL)", null).close()
+        val digest = MessageDigest.getInstance("SHA-256")
+        dbFile.inputStream().use { db ->
+            val buffer = ByteArray(64 * 1024)
+            while (true) {
+                val read = db.read(buffer)
+                if (read < 0) break
+                digest.update(buffer, 0, read)
+            }
+        }
+        // Photos ride along in the zip, so a photo added or removed must count as a change even when
+        // the db is byte-identical. Name and size are enough; the bytes of a picked photo never
+        // change in place. Sorted so ordering from the filesystem cannot perturb the hash.
+        photosDir.listFiles().orEmpty().sortedBy { it.name }.forEach { photo ->
+            digest.update("${photo.name}:${photo.length()}".toByteArray())
+        }
+        digest.digest().joinToString("") { "%02x".format(it) }
     }
 
     /**

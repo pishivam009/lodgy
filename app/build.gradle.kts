@@ -18,8 +18,10 @@ android {
         applicationId = "com.lodgy.app"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1"
+        // Release waves, not dates. docs/RELEASES.md says what is in each one, and every
+        // ticket carries the version it shipped in.
+        versionCode = 4
+        versionName = "0.4.0"
     }
 
     buildTypes {
@@ -78,6 +80,7 @@ dependencies {
 
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.documentfile)
     implementation(libs.jbcrypt)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.lifecycle.process)
@@ -113,7 +116,7 @@ val jacocoExclusions = listOf(
     // the logic they call was pulled out precisely so it could be tested here (PdfLayout,
     // VacancyNudge, DuesNudge, HistoryCsv).
     "**/LodgyPdfRenderer*.*", "**/LodgyNotifications*.*", "**/HistoryCsvReader*.*",
-    "**/PhotoStorage*.*",
+    "**/PhotoStorage*.*", "**/SafBackupStore*.*",
 )
 
 tasks.register<JacocoReport>("jacocoTestReport") {

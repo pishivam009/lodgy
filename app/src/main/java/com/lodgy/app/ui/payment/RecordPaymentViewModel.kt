@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.dao.BedLocation
 import com.lodgy.app.data.effectiveAmountDue
+import com.lodgy.app.data.invoiceStatusFor
 import com.lodgy.app.data.entity.Invoice
 import com.lodgy.app.data.entity.InvoiceStatus
 import com.lodgy.app.data.entity.PaymentMode
@@ -93,12 +94,7 @@ class RecordPaymentViewModel @Inject constructor(
             paymentRepository.create(invoiceId, amount, state.mode, state.paidOnMillis, state.note.ifBlank { null })
             val totalPaid = paymentRepository.getTotalPaid(invoiceId)
             val due = effectiveAmountDue(current.amountDue, creditRepository.getByInvoiceId(invoiceId).sumOf { it.amount })
-            val newStatus = when {
-                totalPaid >= due -> InvoiceStatus.PAID
-                totalPaid > 0 -> InvoiceStatus.PARTIAL
-                else -> InvoiceStatus.UNPAID
-            }
-            invoiceRepository.updateStatus(current, newStatus)
+            invoiceRepository.updateStatus(current, invoiceStatusFor(due, totalPaid))
             _uiState.update { it.copy(saved = true) }
         }
     }

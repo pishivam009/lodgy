@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.ui.common.RoomFill
 import com.lodgy.app.ui.common.icon
+import com.lodgy.app.ui.common.spaceIcon
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.common.level
 import com.lodgy.app.ui.icons.CommonIcons
@@ -118,7 +119,7 @@ private fun OccupancySummary(uiState: AllRoomsUiState) {
 private fun SummaryPart(occupancy: RoomFill, count: Int) {
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(
-            occupancy.icon,
+            occupancy.spaceIcon,
             contentDescription = null,
             modifier = Modifier.size(15.dp),
             tint = LodgyStatus.colors[occupancy.level].accent,
@@ -156,7 +157,7 @@ private fun RoomTile(item: AllRoomsItem, showHostel: Boolean, onClick: () -> Uni
                     modifier = Modifier.weight(1f, fill = false),
                 )
                 Icon(
-                    item.occupancy.icon,
+                    item.occupancy.icon(item.room.propertyType.isSingleUnit),
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = palette.accent,

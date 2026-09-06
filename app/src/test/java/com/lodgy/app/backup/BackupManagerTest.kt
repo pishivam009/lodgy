@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -206,5 +207,33 @@ class BackupManagerTest {
         every { contentResolver.openOutputStream(destinationUri) } returns destinationFile.outputStream()
 
         assertTrue(backupManager.export(destinationUri))
+    }
+
+    @Test
+    fun `currentFingerprint is stable for identical data and changes on any edit`() = runTest {
+        File(photosDir, "a.jpg").writeBytes(byteArrayOf(10, 20))
+
+        val first = backupManager.currentFingerprint()
+        // Same bytes, same photos -> same fingerprint, so an unchanged day is skipped.
+        assertEquals(first, backupManager.currentFingerprint())
+
+        // A db change moves it.
+        dbFile.writeBytes(byteArrayOf(1, 2, 3, 4, 5))
+        val afterDbChange = backupManager.currentFingerprint()
+        assertNotEquals(first, afterDbChange)
+
+        // A new photo moves it too, since photos ride along in the zip.
+        File(photosDir, "b.jpg").writeBytes(byteArrayOf(30))
+        assertNotEquals(afterDbChange, backupManager.currentFingerprint())
+    }
+
+    @Test
+    fun `currentFingerprint works with no photos directory`() = runTest {
+        photosDir.deleteRecursively()
+
+        // Just the db, no photos - must still produce a stable, non-empty fingerprint.
+        val fingerprint = backupManager.currentFingerprint()
+        assertTrue(fingerprint.isNotEmpty())
+        assertEquals(fingerprint, backupManager.currentFingerprint())
     }
 }

@@ -108,4 +108,19 @@ class ExpenseFormViewModelTest {
 
         coVerify(exactly = 0) { expenseRepository.create(any(), any(), any(), any(), any(), any()) }
     }
+
+    @Test
+    fun `deleting an expense removes it after confirmation`() {
+        val expense = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WATER, amount = 250.0, isRecurring = false, incurredOn = 555L, note = null, createdAt = 0L, updatedAt = 0L)
+        coEvery { expenseRepository.getById("e1") } returns expense
+        coEvery { expenseRepository.delete(expense) } returns Unit
+
+        val viewModel = viewModel("e1")
+        viewModel.requestDelete()
+        assertTrue(viewModel.uiState.value.pendingDelete)
+
+        viewModel.confirmDelete()
+        assertTrue(viewModel.uiState.value.deleted)
+        coVerify { expenseRepository.delete(expense) }
+    }
 }

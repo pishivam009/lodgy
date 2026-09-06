@@ -12,11 +12,12 @@
     "Optionally, and separately decided, the warden can record the forgone rent as an expense",
     "Existing data is unaffected and no migration is required beyond whatever the flag itself needs"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
+  "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-05T08:10:20Z",
+  "updatedAt": "2026-09-05T11:19:34Z",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -61,6 +62,14 @@
       "note": "AC1 fixed, plus the minor QA raised.\n\nThe rent and deposit fields are now hidden when the warden/caretaker switch is on, exactly as the opening balance already was, so the field QA typed 7777 into no longer exists in that state. Hiding alone would still leave the ViewModel able to disagree with itself, so save() also forces the rent to 0.0 whenever nonRevenue is set - the flag and the figure now cannot diverge whatever order the fields were touched in, or whatever a future caller does.\n\nThe minor is fixed too: turning the switch on now clears the deposit to 0 alongside the rent, so canSave is satisfied immediately and Save no longer sits silently disabled on a field a caretaker room has no reason to carry.\n\nTwo regression tests: one turns the switch on, then types 7777 into the rent, saves, and asserts the agreement is created with 0.0 and never with 7777.0 - i.e. it reproduces QA's exact sequence; the other asserts the switch clears both figures and leaves the form saveable as-is.\n\nNo schema change - nonRevenue and migration 4->5 are untouched, so nothing here affects existing data.",
       "from": "In Progress",
       "to": "Testing"
+    },
+    {
+      "timestamp": "2026-09-05T11:19:34Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS on stage one - all stage-one ACs verified on the emulator against a real populated database.\n\nAC1 FIXED and verified: turning on the 'Warden / caretaker room' switch on the agreement form removes the rent, deposit AND opening-balance fields entirely (not merely clears them), and saving created the tenancy with agreedRent=0, advanceDeposit=0, nonRevenue=1 - the field QA had typed a stray rent into no longer exists in that state.\nAC2 no invoices: all three non-revenue agreements (the two seeded + the caretaker I created) have zero invoices, and InvoiceGenerationWorker filters !nonRevenue so none will ever be generated.\nAC3 with no invoices there is nothing to go overdue - the dashboard overdue count stayed at 2 (the genuine dues) and excludes these rooms.\nAC4 counts as occupied: room 101 (both caretaker beds) reads '0 vacant / 2 beds' and room 103 became '1 partial' once the caretaker moved in; the long-vacant nudge and vacant-bed queries key off beds.status='VACANT', so an OCCUPIED non-revenue bed is never nagged and never counted vacant.\nAC5 the monthly report and PDF packet are built from invoices, of which these rooms have none - no phantom dues.\nAC7 migration 4->5 is a plain ADD COLUMN DEFAULT 0, existing data unaffected, no destructive migration.\n\nAC6 (record the forgone rent as an expense) is the discretionary, separable half the PO explicitly deferred to stage two and filed as LODGY-84 - correctly out of scope for this stage-one delivery.\n\n453 unit tests pass, line coverage 96.82% (gate 0.93), jacocoCoverageVerification green."
     }
   ]
 }

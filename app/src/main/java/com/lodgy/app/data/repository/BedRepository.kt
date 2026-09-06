@@ -4,6 +4,7 @@ import com.lodgy.app.data.dao.BedDao
 import com.lodgy.app.data.dao.BedLocation
 import com.lodgy.app.data.dao.FloorOccupancy
 import com.lodgy.app.data.dao.RoomOccupancy
+import com.lodgy.app.data.dao.VacantBedChoice
 import com.lodgy.app.data.dao.VacantBedDetail
 import com.lodgy.app.data.dao.VacantBedRow
 import com.lodgy.app.data.entity.Bed
@@ -20,6 +21,8 @@ class BedRepository @Inject constructor(private val bedDao: BedDao) {
     suspend fun getLocation(bedId: String): BedLocation? = bedDao.getLocation(bedId)
 
     suspend fun getHostelId(bedId: String): String? = bedDao.getHostelId(bedId)
+
+    suspend fun getRoomPrice(bedId: String): Double? = bedDao.getRoomPrice(bedId)
 
     fun observeOccupancyByFloor(floorId: String): Flow<List<RoomOccupancy>> =
         bedDao.observeOccupancyByFloor(floorId)
@@ -39,6 +42,11 @@ class BedRepository @Inject constructor(private val bedDao: BedDao) {
         bedDao.getLongVacantBeds(vacantSinceBefore)
 
     suspend fun getVacantBedIds(): List<String> = bedDao.getVacantBedIds()
+
+    suspend fun getVacantChoices(): List<VacantBedChoice> = bedDao.getVacantChoices()
+
+    /** Distinguishes "you are full" from "you have no property yet" on the onboarding picker. */
+    suspend fun hasAnyBed(): Boolean = bedDao.hasAnyBed()
 
     suspend fun hasOccupiedBed(roomId: String): Boolean =
         bedDao.getByRoomId(roomId).first().any { it.status == BedStatus.OCCUPIED }

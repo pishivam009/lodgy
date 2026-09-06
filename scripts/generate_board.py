@@ -119,6 +119,7 @@ h1 { margin: 0; font-size: 1.4rem; }
 .badge.priority-High { color: #c0392b; border-color: #c0392b55; }
 .badge.priority-Medium { color: #b8860b; border-color: #b8860b55; }
 .badge.priority-Low { color: var(--muted); }
+.badge.version { color: #2d7d5a; border-color: #2d7d5a55; }
 
 .overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none;
@@ -240,6 +241,7 @@ function renderBoard() {
         <div class="title">${t.title}</div>
         <div class="meta">
           <span class="badge priority-${t.priority}">${t.priority}</span>
+          ${t.version ? `<span class="badge version">v${t.version}</span>` : ''}
           ${t.assigneeRole ? `<span class="badge">${t.assigneeRole}</span>` : ''}
         </div>`;
       card.addEventListener('click', () => openModal(t.id));
@@ -255,7 +257,7 @@ function openModal(id) {
   const modal = document.getElementById('modal');
   modal.innerHTML = `
     <button class="close-btn" id="closeBtn">✕</button>
-    <div class="modal-id">${t.id} · ${t.epic} · ${t.status}</div>
+    <div class="modal-id">${t.id} · ${t.epic} · ${t.status}${t.version ? ` · v${t.version}` : ''}</div>
     <h2>${t.title}</h2>
     <div class="section"><h3>Description</h3><div>${t.description}</div></div>
     <div class="section"><h3>Acceptance Criteria</h3>

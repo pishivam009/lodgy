@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.ui.common.UpdateConfirmDialog
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 
@@ -145,7 +146,7 @@ fun TransferScreen(
             )
 
             Button(
-                onClick = { viewModel.confirmTransfer(noteText) },
+                onClick = { viewModel.requestTransfer(noteText) },
                 enabled = uiState.canSave,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
@@ -153,4 +154,10 @@ fun TransferScreen(
             }
         }
     }
+
+    UpdateConfirmDialog(
+        changes = uiState.pendingChanges,
+        onConfirm = { viewModel.confirmTransfer(noteText) },
+        onDismiss = viewModel::dismissChanges,
+    )
 }

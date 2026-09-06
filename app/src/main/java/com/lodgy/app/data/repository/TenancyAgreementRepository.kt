@@ -36,6 +36,21 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
         dao.update(agreement.copy(moveOutDate = moveOutDate, updatedAt = System.currentTimeMillis()))
     }
 
+    /**
+     * Records the warden's discretionary choice to book a non-revenue room's forgone rent as an
+     * expense (LODGY-84). Writing the amount to its own column rather than to [agreedRent] is
+     * what keeps the tenancy unbillable: nothing that generates an invoice reads it.
+     */
+    suspend fun setForgoneRentExpense(agreement: TenancyAgreement, enabled: Boolean, amount: Double?) {
+        dao.update(
+            agreement.copy(
+                forgoneRentExpense = enabled,
+                forgoneRentAmount = amount,
+                updatedAt = System.currentTimeMillis(),
+            ),
+        )
+    }
+
     /** Moves the tenancy to another bed on the SAME agreement row - no close, no new agreement -
      *  so invoices and payments keyed to this agreement stay one continuous tenancy. */
     suspend fun transferBed(agreement: TenancyAgreement, newBedId: String, agreedRent: Double) {

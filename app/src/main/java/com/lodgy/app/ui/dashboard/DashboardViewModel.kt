@@ -2,9 +2,13 @@ package com.lodgy.app.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lodgy.app.backup.AutoBackup
+import com.lodgy.app.backup.BackupHealth
+import com.lodgy.app.backup.backupHealth
 import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.BedStatus
 import com.lodgy.app.data.entity.InvoiceStatus
+import com.lodgy.app.data.prefs.BackupPreferences
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.FloorRepository
@@ -47,9 +51,17 @@ data class DashboardUiState(
     val overdueInvoiceCount: Int = 0,
     val vacantBedCount: Int = 0,
     val upcomingMoveOuts: List<UpcomingMoveOut> = emptyList(),
+    /** Automatic-backup status for the home tile (LODGY-68). Scoped to nothing - a backup covers the
+     *  whole app, so it does not follow the hostel filter. */
+    val backupHealth: BackupHealth = BackupHealth.NOT_CONFIGURED,
+    val lastBackupTime: Long? = null,
+    val backupRunning: Boolean = false,
 ) {
     val filterHostelName: String?
         get() = filterHostelId?.let { id -> hostels.firstOrNull { it.id == id }?.name }
+
+    /** A configured folder is what turns the one-tap icon into "back up now" rather than "set up". */
+    val backupConfigured: Boolean get() = backupHealth != BackupHealth.NOT_CONFIGURED
 }
 
 @HiltViewModel
@@ -63,6 +75,8 @@ class DashboardViewModel @Inject constructor(
     private val invoiceRepository: InvoiceRepository,
     private val paymentRepository: PaymentRepository,
     private val tenantRepository: TenantRepository,
+    private val backupPreferences: BackupPreferences,
+    private val autoBackup: AutoBackup,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -70,6 +84,7 @@ class DashboardViewModel @Inject constructor(
 
     init {
         viewModelScope.launch { loadMetrics(_uiState.value.filterHostelId) }
+        viewModelScope.launch { loadBackupHealth() }
     }
 
     /** Narrow to one hostel, or pass null for every hostel. The selected-hostel preference is left
@@ -84,6 +99,36 @@ class DashboardViewModel @Inject constructor(
      *  without the selected hostel itself changing. Call this when the screen re-enters view. */
     fun refresh() {
         viewModelScope.launch { loadMetrics(_uiState.value.filterHostelId) }
+        viewModelScope.launch { loadBackupHealth() }
+    }
+
+    /** The dashboard's one-tap backup. Forces a run even if nothing has changed - a warden pressing
+     *  it wants a file now - then refreshes the tile from what the run recorded. */
+    fun backupNow() {
+        if (_uiState.value.backupRunning) return
+        _uiState.update { it.copy(backupRunning = true) }
+        viewModelScope.launch {
+            autoBackup.run(force = true)
+            loadBackupHealth()
+            _uiState.update { it.copy(backupRunning = false) }
+        }
+    }
+
+    private suspend fun loadBackupHealth() {
+        val folder = backupPreferences.folderUri.first()
+        val lastSuccess = backupPreferences.lastSuccessTime.first()
+        val failed = backupPreferences.lastAttemptFailed.first()
+        _uiState.update {
+            it.copy(
+                backupHealth = backupHealth(
+                    folderConfigured = folder != null,
+                    lastSuccessTime = lastSuccess,
+                    lastAttemptFailed = failed,
+                    now = System.currentTimeMillis(),
+                ),
+                lastBackupTime = lastSuccess,
+            )
+        }
     }
 
     /** [hostelId] null means every hostel, which is the default a multi-property warden wants. */

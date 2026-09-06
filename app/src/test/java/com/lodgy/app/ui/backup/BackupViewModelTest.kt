@@ -4,10 +4,15 @@ import android.net.Uri
 import com.lodgy.app.R
 import com.lodgy.app.backup.BackupManager
 import com.lodgy.app.backup.ImportResult
+import com.lodgy.app.backup.SafBackupStore
+import com.lodgy.app.data.prefs.BackupPreferences
 import com.lodgy.app.testutil.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -22,7 +27,16 @@ class BackupViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val backupManager: BackupManager = mockk()
-    private val viewModel = BackupViewModel(backupManager)
+    private val backupPreferences: BackupPreferences = mockk(relaxed = true)
+    private val safBackupStore: SafBackupStore = mockk(relaxed = true)
+
+    init {
+        every { backupPreferences.folderUri } returns flowOf(null)
+    }
+
+    // Lazy so the VM (whose init launches a coroutine on Dispatchers.Main) is built on first use
+    // inside a test, after MainDispatcherRule has set Main - not at field-init time before it.
+    private val viewModel by lazy { BackupViewModel(backupManager, backupPreferences, safBackupStore) }
 
     @Test
     fun `export success reports the success message`() {
@@ -114,5 +128,18 @@ class BackupViewModelTest {
         viewModel.confirmImport()
 
         coVerify(exactly = 0) { backupManager.applyStaged(any()) }
+    }
+
+    @Test
+    fun `picking an auto-backup folder persists the grant and stores it`() {
+        val tree: Uri = mockk()
+        every { tree.toString() } returns "content://tree/chosen"
+
+        viewModel.onAutoBackupFolderPicked(tree)
+
+        // The persistable grant must be taken so the daily job can write here unattended.
+        verify { safBackupStore.persistPermission(tree) }
+        coVerify { backupPreferences.setFolderUri("content://tree/chosen") }
+        assertEquals("content://tree/chosen", viewModel.uiState.value.autoBackupFolderUri)
     }
 }

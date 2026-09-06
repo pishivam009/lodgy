@@ -7,7 +7,10 @@ import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.InvoiceStatus
 import com.lodgy.app.data.entity.Invoice
 import com.lodgy.app.data.entity.TenancyAgreement
+import com.lodgy.app.data.entity.ExpenseCategory
+import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.CreditRepository
+import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.InvoiceRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.prefs.NotificationPreferences
@@ -35,6 +38,8 @@ class InvoiceGenerationWorkerTest {
     private val agreementRepository: TenancyAgreementRepository = mockk()
     private val invoiceRepository: InvoiceRepository = mockk()
     private val creditRepository: CreditRepository = mockk()
+    private val expenseRepository: ExpenseRepository = mockk()
+    private val bedRepository: BedRepository = mockk()
     private val notificationPreferences: NotificationPreferences = mockk()
     private val notifications: LodgyNotifications = mockk(relaxed = true)
 
@@ -42,7 +47,14 @@ class InvoiceGenerationWorkerTest {
     private val thisMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
     private val thisYear = Calendar.getInstance().get(Calendar.YEAR)
 
-    private fun agreement(id: String, billingDay: Int, tenantId: String = "t1", nonRevenue: Boolean = false) = TenancyAgreement(
+    private fun agreement(
+        id: String,
+        billingDay: Int,
+        tenantId: String = "t1",
+        nonRevenue: Boolean = false,
+        forgoneRentExpense: Boolean = false,
+        forgoneRentAmount: Double? = null,
+    ) = TenancyAgreement(
         id = id,
         tenantId = tenantId,
         bedId = "b1",
@@ -50,6 +62,8 @@ class InvoiceGenerationWorkerTest {
         advanceDeposit = 0.0,
         billingCycleDay = billingDay,
         nonRevenue = nonRevenue,
+        forgoneRentExpense = forgoneRentExpense,
+        forgoneRentAmount = forgoneRentAmount,
         moveInDate = 0L,
         moveOutDate = null,
         depositRefundAmount = null,
@@ -75,7 +89,7 @@ class InvoiceGenerationWorkerTest {
         every { notificationPreferences.duesEnabled } returns flowOf(duesEnabled)
         return InvoiceGenerationWorker(
             context, params, agreementRepository, invoiceRepository, creditRepository,
-            notificationPreferences, notifications,
+            expenseRepository, bedRepository, notificationPreferences, notifications,
         )
     }
 
@@ -204,5 +218,110 @@ class InvoiceGenerationWorkerTest {
         worker().doWork()
 
         coVerify(exactly = 1) { invoiceRepository.create(any(), any(), any(), any(), any()) }
+    }
+
+    /**
+     * LODGY-84 - the discretionary half of a warden or caretaker room. The default is what makes
+     * these tests meaningful: nothing is recorded unless the warden asked for it.
+     */
+    private fun stubForgoneRent(exists: Boolean = false) {
+        coEvery { bedRepository.getRoomPrice("b1") } returns 6000.0
+        coEvery { bedRepository.getHostelId("b1") } returns "h1"
+        coEvery { bedRepository.getLocation("b1") } returns com.lodgy.app.data.dao.BedLocation("101", "A")
+        coEvery { expenseRepository.existsForTenancyInPeriod(any(), any(), any()) } returns exists
+        coEvery { expenseRepository.create(any(), any(), any(), any(), any(), any(), any()) } returns mockk(relaxed = true)
+    }
+
+    @Test
+    fun `a non-revenue tenancy with the switch off records no expense at all`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", today, nonRevenue = true),
+        )
+        stubForgoneRent()
+
+        worker().doWork()
+
+        coVerify(exactly = 0) { expenseRepository.create(any(), any(), any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { invoiceRepository.create(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `a non-revenue tenancy opted in records its forgone rent as an expense, not a due`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", today, nonRevenue = true, forgoneRentExpense = true, forgoneRentAmount = 4500.0),
+        )
+        stubForgoneRent()
+
+        worker().doWork()
+
+        coVerify {
+            expenseRepository.create(
+                hostelId = "h1",
+                category = ExpenseCategory.ACCOMMODATION,
+                amount = 4500.0,
+                isRecurring = false,
+                incurredOn = any(),
+                note = any(),
+                tenancyAgreementId = "a1",
+            )
+        }
+        coVerify(exactly = 0) { invoiceRepository.create(any(), any(), any(), any(), any()) }
+    }
+
+    /** The amount defaults to the room's own rate - the market rent the warden is giving up -
+     *  when they have not set one of their own. */
+    @Test
+    fun `with no amount set the room's price per bed is used`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", today, nonRevenue = true, forgoneRentExpense = true),
+        )
+        stubForgoneRent()
+
+        worker().doWork()
+
+        coVerify { expenseRepository.create(any(), any(), 6000.0, any(), any(), any(), "a1") }
+    }
+
+    @Test
+    fun `this month's forgone rent is recorded once, not on every run`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", today, nonRevenue = true, forgoneRentExpense = true, forgoneRentAmount = 4500.0),
+        )
+        stubForgoneRent(exists = true)
+
+        worker().doWork()
+
+        coVerify(exactly = 0) { expenseRepository.create(any(), any(), any(), any(), any(), any(), any()) }
+    }
+
+    /** An opted-in room whose billing day is not today waits its turn, exactly as a billable
+     *  tenancy does - the expense rides on the same monthly beat. */
+    @Test
+    fun `an opted-in room billing on another day records nothing today`() = runTest {
+        val otherDay = if (today == 1) 2 else 1
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", otherDay, nonRevenue = true, forgoneRentExpense = true),
+        )
+        stubForgoneRent()
+
+        worker().doWork()
+
+        coVerify(exactly = 0) { expenseRepository.create(any(), any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `a paying tenancy never records a forgone-rent expense however the flag is set`() = runTest {
+        coEvery { agreementRepository.getAllActive() } returns listOf(
+            agreement("a1", today, forgoneRentExpense = true, forgoneRentAmount = 4500.0),
+        )
+        coEvery { invoiceRepository.existsForPeriod("a1", thisMonth, thisYear) } returns false
+        coEvery { invoiceRepository.create(any(), any(), any(), any(), any()) } answers { invoice("a1") }
+        coEvery { creditRepository.applyPendingTo(any(), any()) } returns Unit
+        stubForgoneRent()
+
+        worker().doWork()
+
+        coVerify(exactly = 0) { expenseRepository.create(any(), any(), any(), any(), any(), any(), any()) }
+        coVerify { invoiceRepository.create("a1", thisMonth, thisYear, 5000.0, any()) }
     }
 }

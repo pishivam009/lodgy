@@ -67,9 +67,11 @@ class NotificationSettingsViewModelTest {
         coEvery { preferences.setVacancyThresholdDays(any()) } returns Unit
 
         val viewModel = viewModel()
-        assertEquals(listOf(3, 7, 14, 30), viewModel.uiState.value.thresholdOptions)
+        // 1, 2 or 3 and nothing longer: a room empty for a week is already a week of lost rent,
+        // so a month-long wait is not a setting worth offering (LODGY-88).
+        assertEquals(listOf(1, 2, 3), viewModel.uiState.value.thresholdOptions)
 
-        viewModel.onThresholdChange(30)
-        coVerify { preferences.setVacancyThresholdDays(30) }
+        viewModel.onThresholdChange(2)
+        coVerify { preferences.setVacancyThresholdDays(2) }
     }
 }

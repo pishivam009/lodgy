@@ -7,15 +7,20 @@ import com.lodgy.app.data.entity.Hostel
 import com.lodgy.app.data.entity.PropertyType
 import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.RoomRepository
 import com.lodgy.app.data.repository.HostelRepository
+import com.lodgy.app.data.repository.ReconciliationRepository
+import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.WardenRepository
+import com.lodgy.app.ui.common.UpdateChange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -29,6 +34,14 @@ data class HostelFormUiState(
      *  on this form rather than behind floors and rooms the warden will never see (LODGY-79). */
     val monthlyRent: String = "",
     val saved: Boolean = false,
+    /** Delete a property added in error (LODGY-64). Confirmed first (LODGY-57), and blocked while it
+     *  still has a tenancy or an expense - the two things that don't cascade away with it. */
+    val pendingDelete: Boolean = false,
+    val blockedDelete: Boolean = false,
+    val deleted: Boolean = false,
+    /** What Save is about to change that this form does not show the consequence of
+     *  (LODGY-65); empty means save straight through. */
+    val pendingChanges: List<UpdateChange> = emptyList(),
 ) {
     val isSingleUnit: Boolean get() = propertyType.isSingleUnit
 
@@ -45,6 +58,9 @@ class HostelFormViewModel @Inject constructor(
     private val floorRepository: FloorRepository,
     private val roomRepository: RoomRepository,
     private val bedRepository: BedRepository,
+    private val expenseRepository: ExpenseRepository,
+    private val tenancyAgreementRepository: TenancyAgreementRepository,
+    private val reconciliationRepository: ReconciliationRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -91,19 +107,61 @@ class HostelFormViewModel @Inject constructor(
         val state = _uiState.value
         if (!state.canSave) return
         viewModelScope.launch {
-            val existing = existingHostel
-            if (existing != null) {
-                hostelRepository.update(existing, state.name, state.address, state.contactPhone)
-                if (existing.propertyType.isSingleUnit) syncSingleUnit(existing.id, state)
-            } else {
-                val warden = wardenRepository.getWarden() ?: return@launch
-                val hostel = hostelRepository.create(
-                    warden.id, state.name, state.address, state.contactPhone, state.propertyType,
-                )
-                if (state.propertyType.isSingleUnit) createSingleUnit(hostel.id, state)
-            }
-            _uiState.update { it.copy(saved = true) }
+            val changes = changesNeedingConfirmation(state)
+            if (changes.isEmpty()) persist() else _uiState.update { it.copy(pendingChanges = changes) }
         }
+    }
+
+    /**
+     * A rename is normally free and stays unconfirmed (LODGY-57 AC5) - but once the warden has
+     * attested a month against this property, that paper trail and every PDF they exported still
+     * carry the old name, and nothing on this form says so. The rent of a single-unit property is
+     * the same invisible money as a room's price per bed: it re-rates every future invoice. The
+     * address and the phone number confirm nothing (DESIGN.md 4.12).
+     */
+    private suspend fun changesNeedingConfirmation(state: HostelFormUiState): List<UpdateChange> {
+        val existing = existingHostel ?: return emptyList()
+        return buildList {
+            if (state.name != existing.name) {
+                val reconciled = reconciliationRepository.getByHostelId(existing.id).first().size
+                if (reconciled > 0) add(UpdateChange.HostelRename(state.name, reconciled))
+            }
+            if (existing.propertyType.isSingleUnit) {
+                val rent = state.monthlyRent.toDoubleOrNull()
+                val current = currentUnitRent(existing.id)
+                if (rent != null && current != null && rent != current) {
+                    add(UpdateChange.UnitRent(current, rent))
+                }
+            }
+        }
+    }
+
+    private suspend fun currentUnitRent(hostelId: String): Double? =
+        roomRepository.getFirstRoomIdByHostel(hostelId)?.let { roomRepository.getById(it)?.pricePerBed }
+
+    fun confirmChanges() {
+        _uiState.update { it.copy(pendingChanges = emptyList()) }
+        viewModelScope.launch { persist() }
+    }
+
+    fun dismissChanges() {
+        _uiState.update { it.copy(pendingChanges = emptyList()) }
+    }
+
+    private suspend fun persist() {
+        val state = _uiState.value
+        val existing = existingHostel
+        if (existing != null) {
+            hostelRepository.update(existing, state.name, state.address, state.contactPhone)
+            if (existing.propertyType.isSingleUnit) syncSingleUnit(existing.id, state)
+        } else {
+            val warden = wardenRepository.getWarden() ?: return
+            val hostel = hostelRepository.create(
+                warden.id, state.name, state.address, state.contactPhone, state.propertyType,
+            )
+            if (state.propertyType.isSingleUnit) createSingleUnit(hostel.id, state)
+        }
+        _uiState.update { it.copy(saved = true) }
     }
 
     /**
@@ -124,6 +182,37 @@ class HostelFormViewModel @Inject constructor(
             amenities = "",
         )
         bedRepository.generateForRoom(room.id, 1)
+    }
+
+    /** Blocked while the property still has a tenancy or an expense - the two records that don't
+     *  cascade away with the hostel and would fail the delete on a foreign key. Its floors, rooms and
+     *  beds DO cascade (their foreign keys are ON DELETE CASCADE), so a mistakenly-added property -
+     *  including a single-unit shop with its implicit floor/room/bed - deletes cleanly once it holds
+     *  no tenancy or money (LODGY-64, AC1). */
+    fun requestDelete() {
+        val hostel = existingHostel ?: return
+        viewModelScope.launch {
+            val hasExpenses = expenseRepository.getByHostelId(hostel.id).first().isNotEmpty()
+            val bedIds = floorRepository.getByHostelId(hostel.id).first()
+                .flatMap { floor -> roomRepository.getByFloorId(floor.id).first() }
+                .flatMap { room -> bedRepository.getByRoomId(room.id).first() }
+                .map { it.id }
+                .toSet()
+            val hasTenancies = tenancyAgreementRepository.getAll().any { it.bedId in bedIds }
+            _uiState.update {
+                if (hasExpenses || hasTenancies) it.copy(blockedDelete = true) else it.copy(pendingDelete = true)
+            }
+        }
+    }
+
+    fun dismissDelete() = _uiState.update { it.copy(pendingDelete = false, blockedDelete = false) }
+
+    fun confirmDelete() {
+        val hostel = existingHostel ?: return
+        viewModelScope.launch {
+            hostelRepository.delete(hostel)
+            _uiState.update { it.copy(pendingDelete = false, deleted = true) }
+        }
     }
 
     /** Keeps the implicit room in step with the property, since the warden edits it here and can

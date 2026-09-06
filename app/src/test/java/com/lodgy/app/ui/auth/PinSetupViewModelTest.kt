@@ -84,7 +84,7 @@ class PinSetupViewModelTest {
     fun `a six-digit pin is accepted and its length is persisted`() {
         val viewModel = viewModel(biometricAvailable = false)
         val pinHashSlot = slot<String>()
-        coEvery { wardenRepository.createWarden(capture(pinHashSlot)) } returns Unit
+        coEvery { wardenRepository.setPin(capture(pinHashSlot)) } returns Unit
 
         viewModel.onLengthChange(6)
         enter(viewModel, "123456")
@@ -114,7 +114,7 @@ class PinSetupViewModelTest {
     fun `matching confirmation without biometric hardware persists the warden and finishes`() {
         val viewModel = viewModel(biometricAvailable = false)
         val pinHashSlot = slot<String>()
-        coEvery { wardenRepository.createWarden(capture(pinHashSlot)) } returns Unit
+        coEvery { wardenRepository.setPin(capture(pinHashSlot)) } returns Unit
 
         enter(viewModel, "1234")
         enter(viewModel, "1234")
@@ -138,7 +138,7 @@ class PinSetupViewModelTest {
         assertEquals("", state.enteredDigits)
         assertNull(state.firstPin)
         assertEquals(com.lodgy.app.R.string.pin_setup_mismatch_error, state.error)
-        coVerify(exactly = 0) { wardenRepository.createWarden(any()) }
+        coVerify(exactly = 0) { wardenRepository.setPin(any()) }
     }
 
     @Test
@@ -149,14 +149,14 @@ class PinSetupViewModelTest {
         enter(viewModel, "1234")
 
         assertEquals(PinSetupStep.BIOMETRIC, viewModel.uiState.value.step)
-        coVerify(exactly = 0) { wardenRepository.createWarden(any()) }
+        coVerify(exactly = 0) { wardenRepository.setPin(any()) }
     }
 
     @Test
     fun `finishing the biometric step persists the chosen toggle and the original pin`() {
         val viewModel = viewModel(biometricAvailable = true)
         val pinHashSlot = slot<String>()
-        coEvery { wardenRepository.createWarden(capture(pinHashSlot)) } returns Unit
+        coEvery { wardenRepository.setPin(capture(pinHashSlot)) } returns Unit
 
         enter(viewModel, "1234")
         enter(viewModel, "1234")

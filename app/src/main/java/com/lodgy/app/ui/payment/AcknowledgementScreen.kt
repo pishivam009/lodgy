@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,10 +18,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -110,12 +114,23 @@ fun AcknowledgementScreen(onBack: () -> Unit, viewModel: AcknowledgementViewMode
         }
     }
 
+    LaunchedEffect(uiState.invoiceDeleted) {
+        if (uiState.invoiceDeleted) onBack()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.acknowledgement_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(CommonIcons.Back, contentDescription = null) }
+                },
+                actions = {
+                    if (uiState.found) {
+                        IconButton(onClick = viewModel::requestDeleteInvoice) {
+                            Icon(CommonIcons.Trash, contentDescription = stringResource(R.string.acknowledgement_delete_invoice))
+                        }
+                    }
                 },
             )
         },
@@ -150,6 +165,40 @@ fun AcknowledgementScreen(onBack: () -> Unit, viewModel: AcknowledgementViewMode
                 }
             }
 
+            // Payments and credits are listed here, each removable, because a payment recorded
+            // against the wrong invoice or a mistaken credit could not be undone before (LODGY-64).
+            if (uiState.payments.isNotEmpty()) {
+                Text(labels.paymentsHeading, style = MaterialTheme.typography.titleSmall)
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                        uiState.payments.forEach { payment ->
+                            DeletableRow(
+                                primary = stringResource(R.string.currency_amount, payment.amount),
+                                secondary = "${dateFormat.format(Date(payment.paidOn))} · ${payment.paymentMode.label()}",
+                                onDelete = { viewModel.requestDeletePayment(payment) },
+                                deleteDescription = stringResource(R.string.acknowledgement_delete_payment),
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (uiState.credits.isNotEmpty()) {
+                Text(stringResource(R.string.acknowledgement_credit), style = MaterialTheme.typography.titleSmall)
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                        uiState.credits.forEach { credit ->
+                            DeletableRow(
+                                primary = stringResource(R.string.currency_amount, credit.amount),
+                                secondary = credit.reason,
+                                onDelete = { viewModel.requestDeleteCredit(credit) },
+                                deleteDescription = stringResource(R.string.acknowledgement_delete_credit),
+                            )
+                        }
+                    }
+                }
+            }
+
             Button(
                 onClick = {
                     exportLauncher.launch("lodgy-receipt-${uiState.periodMonth}-${uiState.periodYear}.pdf")
@@ -160,6 +209,71 @@ fun AcknowledgementScreen(onBack: () -> Unit, viewModel: AcknowledgementViewMode
             }
         }
     }
+
+    uiState.pendingDeletePayment?.let {
+        ConfirmDeleteDialog(
+            title = stringResource(R.string.acknowledgement_delete_payment),
+            body = stringResource(R.string.acknowledgement_delete_payment_body),
+            onConfirm = viewModel::confirmDeletePayment,
+            onDismiss = viewModel::dismissDeletePayment,
+        )
+    }
+    uiState.pendingDeleteCredit?.let {
+        ConfirmDeleteDialog(
+            title = stringResource(R.string.acknowledgement_delete_credit),
+            body = stringResource(R.string.acknowledgement_delete_credit_body),
+            onConfirm = viewModel::confirmDeleteCredit,
+            onDismiss = viewModel::dismissDeleteCredit,
+        )
+    }
+    if (uiState.pendingDeleteInvoice) {
+        ConfirmDeleteDialog(
+            title = stringResource(R.string.acknowledgement_delete_invoice),
+            body = stringResource(R.string.acknowledgement_delete_invoice_body),
+            onConfirm = viewModel::confirmDeleteInvoice,
+            onDismiss = viewModel::dismissDeleteInvoice,
+        )
+    }
+    if (uiState.blockedDeleteInvoice) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissDeleteInvoice,
+            title = { Text(stringResource(R.string.acknowledgement_delete_invoice)) },
+            text = { Text(stringResource(R.string.acknowledgement_delete_invoice_blocked)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::dismissDeleteInvoice) { Text(stringResource(R.string.ok)) }
+            },
+        )
+    }
+}
+
+@Composable
+private fun DeletableRow(primary: String, secondary: String, onDelete: () -> Unit, deleteDescription: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(primary, style = MaterialTheme.typography.bodyMedium)
+            if (secondary.isNotBlank()) {
+                Text(secondary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        IconButton(onClick = onDelete) {
+            Icon(CommonIcons.Trash, contentDescription = deleteDescription, tint = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+
+@Composable
+private fun ConfirmDeleteDialog(title: String, body: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = { Text(body) },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(R.string.delete)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 @Composable

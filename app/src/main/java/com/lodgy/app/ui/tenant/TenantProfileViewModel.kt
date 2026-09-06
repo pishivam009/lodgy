@@ -36,6 +36,10 @@ class TenantProfileViewModel @Inject constructor(
     private val _plannedMoveOut = MutableStateFlow<Long?>(null)
     val plannedMoveOut: StateFlow<Long?> = _plannedMoveOut.asStateFlow()
 
+    /** Gates the forgone-rent action, which is meaningless on a paying tenancy (LODGY-84). */
+    private val _nonRevenue = MutableStateFlow(false)
+    val nonRevenue: StateFlow<Boolean> = _nonRevenue.asStateFlow()
+
     init {
         viewModelScope.launch {
             tenantRepository.observeById(tenantId).collect { _tenant.value = it }
@@ -47,9 +51,9 @@ class TenantProfileViewModel @Inject constructor(
             tenancyAgreementRepository.observeByTenantId(tenantId).collect { agreements ->
                 val agreement = agreements.latest()
                 _location.value = agreement?.let { bedRepository.getLocation(it.bedId) }
-                _plannedMoveOut.value = agreement
-                    ?.takeIf { it.status == AgreementStatus.ACTIVE }
-                    ?.moveOutDate
+                val active = agreement?.takeIf { it.status == AgreementStatus.ACTIVE }
+                _plannedMoveOut.value = active?.moveOutDate
+                _nonRevenue.value = active?.nonRevenue == true
             }
         }
     }

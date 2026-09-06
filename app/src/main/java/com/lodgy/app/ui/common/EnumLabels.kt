@@ -38,6 +38,7 @@ val ExpenseCategory.labelRes: Int
         ExpenseCategory.TAX -> R.string.expense_category_tax
         ExpenseCategory.MAINTENANCE -> R.string.expense_category_maintenance
         ExpenseCategory.REPAIR -> R.string.expense_category_repair
+        ExpenseCategory.ACCOMMODATION -> R.string.expense_category_accommodation
         ExpenseCategory.OTHER -> R.string.expense_category_other
     }
 

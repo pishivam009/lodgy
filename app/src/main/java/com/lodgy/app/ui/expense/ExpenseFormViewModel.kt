@@ -24,6 +24,9 @@ data class ExpenseFormUiState(
     val isRecurring: Boolean = false,
     val note: String = "",
     val saved: Boolean = false,
+    /** Delete a duplicate or wrong expense row (LODGY-64); confirmed first (LODGY-57). */
+    val pendingDelete: Boolean = false,
+    val deleted: Boolean = false,
 ) {
     val canSave: Boolean get() = amount.toDoubleOrNull() != null
 }
@@ -78,6 +81,17 @@ class ExpenseFormViewModel @Inject constructor(
                 expenseRepository.create(hostelId, state.category, amount, state.isRecurring, state.incurredOnMillis, state.note.ifBlank { null })
             }
             _uiState.update { it.copy(saved = true) }
+        }
+    }
+
+    fun requestDelete() = _uiState.update { it.copy(pendingDelete = true) }
+    fun dismissDelete() = _uiState.update { it.copy(pendingDelete = false) }
+
+    fun confirmDelete() {
+        val existing = existingExpense ?: return
+        viewModelScope.launch {
+            expenseRepository.delete(existing)
+            _uiState.update { it.copy(pendingDelete = false, deleted = true) }
         }
     }
 }

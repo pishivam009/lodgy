@@ -49,5 +49,19 @@ class AuthPreferencesTest {
         assertEquals(AuthPreferences.MIN_PIN_LENGTH, prefs.pinLength.first())
         prefs.setPinLength(99)
         assertEquals(AuthPreferences.MAX_PIN_LENGTH, prefs.pinLength.first())
+
+        // Failed-attempt count starts clean, increments and persists (so a restart can't dodge the
+        // backoff), and a reset clears both the count and the timestamp (LODGY-77).
+        assertEquals(0, prefs.failedPinAttempts.first())
+        assertEquals(0L, prefs.lastFailedPinAt.first())
+
+        assertEquals(1, prefs.recordFailedPinAttempt(1_000L))
+        assertEquals(2, prefs.recordFailedPinAttempt(2_000L))
+        assertEquals(2, prefs.failedPinAttempts.first())
+        assertEquals(2_000L, prefs.lastFailedPinAt.first())
+
+        prefs.resetFailedPinAttempts()
+        assertEquals(0, prefs.failedPinAttempts.first())
+        assertEquals(0L, prefs.lastFailedPinAt.first())
     }
 }

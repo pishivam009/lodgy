@@ -9,9 +9,10 @@
   ],
   "status": "Done",
   "priority": "Low",
+  "version": "0.2.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-04T07:46:28+00:00",
+  "updatedAt": "2026-09-06T08:35:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -42,6 +43,12 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS. AC1: the More tab shows 'Lodgy v0.1 (build 1)' as a footer line under the menu, visible without scrolling. AC2: not hardcoded - MoreScreen.kt:128 reads BuildConfig.VERSION_NAME and BuildConfig.VERSION_CODE, which match app/build.gradle.kts versionName '0.1' / versionCode 1, so it tracks the build automatically. Also localises correctly - renders as 'Lodgy v0.1 (build 1)' with a translated 'build' word in Hindi."
+    },
+    {
+      "timestamp": "2026-09-06T08:35:00Z",
+      "actor": "Developer",
+      "action": "comment",
+      "note": "Releases are now numbered and every ticket carries the one it shipped in, recorded here because this is the ticket that put the version in front of the warden. docs/RELEASES.md is the list: 0.1.0 the first working app (LODGY-1..30), 0.2.0 the first feedback wave (31..45), 0.3.0 hardening (46..62), 0.4.0 post-launch feedback and fixes (63..84, current). app/build.gradle.kts moved from versionCode 1 / versionName '0.1' to 4 / '0.4.0', which is the point of this ticket: the More screen was truthfully reporting a number that had stopped matching what the warden actually had after three waves of work. The board shows each ticket's version, and CLAUDE.md now tells every session to stamp new tickets and to bump the app version when a release closes."
     }
   ]
 }

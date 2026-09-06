@@ -61,6 +61,7 @@ fun TenantProfileScreen(
     onEdit: (String) -> Unit,
     onCheckout: (String) -> Unit,
     onTransfer: (String) -> Unit,
+    onForgoneRent: (String) -> Unit,
     onRecordCredit: (String) -> Unit,
     onPaySeveralMonths: (String) -> Unit,
     onOpenNotes: (String) -> Unit,
@@ -69,6 +70,7 @@ fun TenantProfileScreen(
     val tenant by viewModel.tenant.collectAsStateWithLifecycle()
     val location by viewModel.location.collectAsStateWithLifecycle()
     val plannedMoveOut by viewModel.plannedMoveOut.collectAsStateWithLifecycle()
+    val nonRevenue by viewModel.nonRevenue.collectAsStateWithLifecycle()
     var showNoticePicker by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -208,6 +210,28 @@ fun TenantProfileScreen(
                     ) {
                         Text(stringResource(R.string.credit_action), style = MaterialTheme.typography.titleMedium)
                         Icon(CommonIcons.ChevronRight, contentDescription = null)
+                    }
+                }
+
+                // Only a warden's or caretaker's room has a rent to forgo, so a paying tenant is
+                // never offered this (LODGY-84).
+                if (nonRevenue) {
+                    Card(
+                        onClick = { onForgoneRent(current.id) },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        shape = RoundedCornerShape(14.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                stringResource(R.string.forgone_rent_action),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                            Icon(CommonIcons.ChevronRight, contentDescription = null)
+                        }
                     }
                 }
 

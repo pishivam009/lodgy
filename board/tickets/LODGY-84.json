@@ -12,17 +12,40 @@
     "A non-revenue tenancy with this turned off behaves exactly as it does after LODGY-82, with no expense at all",
     "The forgone amount is stored somewhere that cannot be mistaken for billable rent, so LODGY-82's no-invoice guarantee still holds"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
+  "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-05T07:42:49Z",
-  "updatedAt": "2026-09-05T07:42:49Z",
+  "updatedAt": "2026-09-06T08:40:00Z",
   "history": [
     {
       "timestamp": "2026-09-05T07:42:49Z",
       "actor": "Tester",
       "action": "created",
       "note": "Filed during QA of LODGY-82. The PO explicitly decided to ship LODGY-82 in two stages and the Developer's handoff note said the discretionary expense recording 'stays for a follow-up', but no follow-up ticket was ever created - so LODGY-82's AC6 had no home and would have disappeared when that ticket closed. This ticket holds it. Not a defect in the stage-one build."
+    },
+    {
+      "timestamp": "2026-09-06T00:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting stage two of LODGY-82: the discretionary forgone-rent expense for a warden or caretaker room. Off by default, per tenancy, stored somewhere that cannot be mistaken for billable rent."
+    },
+    {
+      "timestamp": "2026-09-06T08:30:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built. Stage two of LODGY-82, opt-in per tenancy and off by default. SCHEMA, migration 6 -> 7: tenancy_agreements gains forgoneRentExpense (NOT NULL DEFAULT 0) and forgoneRentAmount (nullable REAL); expenses gains tenancyAgreementId (nullable TEXT) plus its index. The amount is deliberately NOT agreedRent: that column is what a tenancy bills, and a non-revenue tenancy bills nothing, so reusing it would put a real number in front of every generator that reads it and undo LODGY-82's guarantee (AC7). MIGRATION TESTED THE WAY CLAUDE.md ASKS - against the live populated v6 database pulled off the emulator, not a synthetic one: after the upgrade user_version is 7, all 3 hostels / 6 tenants / 6 agreements / 7 invoices / 6 payments / 1 expense intact, both existing non-revenue tenancies defaulted to forgoneRentExpense=0 and forgoneRentAmount NULL, and the pre-existing expense has a NULL tenancy link (AC6). UI: a 'Forgone rent as an expense' card on the tenant profile, shown ONLY when the active tenancy is non-revenue (TenantProfileViewModel.nonRevenue gates it). The screen holds the switch, an explainer saying leave it off if you live there yourself, and - once on - the amount, pre-filled from the room's price per bed, editable (AC2), with a line stating it is a cost and never a due. GENERATION rides on InvoiceGenerationWorker's existing monthly pass: one walk over the day's tenancies, billable ones get an invoice, opted-in non-revenue ones get an ACCOMMODATION expense linked to the agreement. Idempotent on 'does this tenancy already have an expense dated in this month', so a re-run cannot double-count. getAllActive() means it stops when the tenancy closes (AC3). NOT marked isRecurring, on purpose: that flag exists to nudge the warden to log an expense they pay by hand, and this one logs itself - marking it would nag monthly about an entry the app already made. AC5: switching off just stops the next run; nothing recorded is deleted, and the amount is kept so switching back on offers the figure the warden chose. AC4 - PLEASE CHECK THIS ONE: it appears in the monthly report (verified on device: 'Total expenses this period: Rs 6000', income-minus-expense -6000, total dues Rs 0) and in that report's CSV export, and in the expense list with the new ACCOMMODATION filter chip. It does NOT appear in the printable data packet - but the packet has never carried expenses at all (buildDataPacket is hostel/floor/tenant/invoice only), so there was nothing to add rather than something skipped. If the PO wants expenses in the packet that is a separate ticket. VERIFIED ON DEVICE end to end: switched it on for the caretaker in Room 101, saved, and the real worker wrote ACCOMMODATION 5000.0, note 'Forgone rent Room 101 . Bed B', linked to agreement aef5fccb, dated today. Zero invoices for either non-revenue tenancy, and the second non-revenue tenancy - left switched off - recorded nothing at all. Strings in English and Hindi. TESTS: 14 new (6 worker, 8 ViewModel) plus a TenantProfile gating test. Full suite 537 pass, 0 failures, coverage 95.96% line against the 0.93 gate."
+    },
+    {
+      "timestamp": "2026-09-06T08:40:00Z",
+      "actor": "Developer",
+      "action": "comment",
+      "note": "QA NOTE - state of the emulator I left behind. The app data was cleared once during testing (needed to get WorkManager to re-run the daily job, which has no other trigger without root), then the real fixture was pushed back, so the DB content is the same three properties and six tenants as before. Two things did change: the PIN is now 1111 (four digits) rather than the previous six-digit one, because pm clear resets the PIN-length preference and the hash has to match it; and the fixture now carries my verification artefacts - Sunrise PG's phone has a trailing 1, Room 101's amenities have a trailing X and its price is 5500 rather than 5000, the caretaker's forgone-rent switch is ON at 5000, and there is one ACCOMMODATION expense dated 6 Sep 2026. Left in place deliberately: they are the evidence. Reset them if they get in the way of your own run."
     }
   ]
 }

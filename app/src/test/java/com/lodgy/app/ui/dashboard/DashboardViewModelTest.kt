@@ -14,6 +14,10 @@ import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.entity.Tenant
 import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.entity.TenantStatus
+import com.lodgy.app.backup.AutoBackup
+import com.lodgy.app.backup.AutoBackupOutcome
+import com.lodgy.app.backup.BackupHealth
+import com.lodgy.app.data.prefs.BackupPreferences
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.FloorRepository
@@ -31,6 +35,9 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.TimeUnit
@@ -49,10 +56,21 @@ class DashboardViewModelTest {
     private val invoiceRepository: InvoiceRepository = mockk()
     private val paymentRepository: PaymentRepository = mockk()
     private val tenantRepository: TenantRepository = mockk()
+    private val backupPreferences: BackupPreferences = mockk(relaxed = true)
+    private val autoBackup: AutoBackup = mockk()
+
+    @Before
+    fun setUpBackupDefaults() {
+        // The default a fresh install shows: no folder, nothing backed up, no failure.
+        every { backupPreferences.folderUri } returns flowOf(null)
+        every { backupPreferences.lastSuccessTime } returns flowOf(null)
+        every { backupPreferences.lastAttemptFailed } returns flowOf(false)
+    }
 
     private fun viewModel() = DashboardViewModel(
         hostelPreferences, hostelRepository, floorRepository, roomRepository, bedRepository,
         tenancyAgreementRepository, invoiceRepository, paymentRepository, tenantRepository,
+        backupPreferences, autoBackup,
     )
 
     @Test
@@ -189,5 +207,62 @@ class DashboardViewModelTest {
         viewModel.onHostelFilterChange(null)
         assertEquals(2, viewModel.uiState.value.vacantBedCount)
         assertEquals(null, viewModel.uiState.value.filterHostelName)
+    }
+
+    @Test
+    fun `no backup folder shows the not-configured tile`() {
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
+
+        val state = viewModel().uiState.value
+
+        assertEquals(BackupHealth.NOT_CONFIGURED, state.backupHealth)
+        assertFalse(state.backupConfigured)
+        assertNull(state.lastBackupTime)
+    }
+
+    @Test
+    fun `a recent successful backup shows a recent tile with its time`() {
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
+        every { backupPreferences.folderUri } returns flowOf("content://tree/x")
+        val recent = System.currentTimeMillis()
+        every { backupPreferences.lastSuccessTime } returns flowOf(recent)
+
+        val state = viewModel().uiState.value
+
+        assertEquals(BackupHealth.RECENT, state.backupHealth)
+        assertTrue(state.backupConfigured)
+        assertEquals(recent, state.lastBackupTime)
+    }
+
+    @Test
+    fun `a failed last attempt shows the failed tile`() {
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
+        every { backupPreferences.folderUri } returns flowOf("content://tree/x")
+        every { backupPreferences.lastAttemptFailed } returns flowOf(true)
+
+        assertEquals(BackupHealth.FAILED, viewModel().uiState.value.backupHealth)
+    }
+
+    @Test
+    fun `backup now forces a run then refreshes the tile from what it recorded`() {
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
+        // Before: configured but never backed up. The forced run then records a success, which the
+        // refresh after it must pick up.
+        every { backupPreferences.folderUri } returns flowOf("content://tree/x")
+        val successTime = System.currentTimeMillis()
+        coEvery { autoBackup.run(force = true) } coAnswers {
+            every { backupPreferences.lastSuccessTime } returns flowOf(successTime)
+            AutoBackupOutcome.SUCCESS
+        }
+        every { backupPreferences.lastSuccessTime } returns flowOf(null)
+
+        val viewModel = viewModel()
+        assertEquals(BackupHealth.NEVER, viewModel.uiState.value.backupHealth)
+
+        viewModel.backupNow()
+
+        coVerify(exactly = 1) { autoBackup.run(force = true) }
+        assertEquals(BackupHealth.RECENT, viewModel.uiState.value.backupHealth)
+        assertFalse(viewModel.uiState.value.backupRunning)
     }
 }

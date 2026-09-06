@@ -2,6 +2,7 @@
   "id": "LODGY-67",
   "epic": "Property Setup",
   "priority": "Medium",
+  "version": "0.4.0",
   "title": "All rooms as RAG-coloured tiles instead of a list",
   "description": "Product Owner request: the All rooms view should drop the one-per-row list in favour of tiles, colour-coded by how full each room is, so a whole property reads at a glance rather than by scrolling. Colours follow the existing RAG token set (LODGY-36) rather than inventing a new language: green for a room with every bed free, amber for a partly filled room, red for a room with no beds left. NOTE ON THE REQUEST WORDING: the ask read 'empty rooms should look green, partially filled as amber, and vacant as red'. Empty and vacant are the same thing, so that cannot be literal. Built to the only self-consistent reading, which is also the one that matches the app's existing bed-level convention where vacant is green and occupied is red: green = wholly empty, amber = partly filled, red = full. Flagged here so the PO can correct it if the intent was different. No schema change: AllRoomsViewModel already exposes totalBeds and occupiedBeds per room, so this is presentation only and needs no migration.",
   "acceptanceCriteria": [

@@ -4,12 +4,15 @@ import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import com.lodgy.app.data.entity.Tenant
 import com.lodgy.app.data.entity.TenantStatus
+import com.lodgy.app.data.repository.CreditRepository
+import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
 import com.lodgy.app.media.PhotoStorage
 import com.lodgy.app.testutil.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import kotlinx.coroutines.flow.flowOf
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -25,8 +28,11 @@ class TenantFormViewModelTest {
     private val tenantRepository: TenantRepository = mockk()
     private val photoStorage: PhotoStorage = mockk()
 
+    private val tenancyAgreementRepository: TenancyAgreementRepository = mockk()
+    private val creditRepository: CreditRepository = mockk()
+
     private fun viewModel(tenantId: String? = null) = TenantFormViewModel(
-        tenantRepository, photoStorage,
+        tenantRepository, tenancyAgreementRepository, creditRepository, photoStorage,
         SavedStateHandle(mapOf<String, Any?>("tenantId" to tenantId).filterValues { it != null }),
     )
 
@@ -110,5 +116,35 @@ class TenantFormViewModelTest {
         viewModel.save()
 
         coVerify(exactly = 0) { tenantRepository.create(any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `a tenant with no tenancy or credit deletes after confirmation`() {
+        coEvery { tenantRepository.getById("t1") } returns tenant()
+        every { tenancyAgreementRepository.observeByTenantId("t1") } returns flowOf(emptyList())
+        every { creditRepository.getByTenantId("t1") } returns flowOf(emptyList())
+        coEvery { tenantRepository.delete(any()) } returns Unit
+
+        val viewModel = viewModel("t1")
+        viewModel.requestDelete()
+        assertTrue(viewModel.uiState.value.pendingDelete)
+
+        viewModel.confirmDelete()
+        assertTrue(viewModel.uiState.value.deleted)
+        coVerify { tenantRepository.delete(any()) }
+    }
+
+    @Test
+    fun `a tenant with a tenancy on record is blocked from deletion`() {
+        coEvery { tenantRepository.getById("t1") } returns tenant()
+        every { tenancyAgreementRepository.observeByTenantId("t1") } returns flowOf(listOf(mockk()))
+        every { creditRepository.getByTenantId("t1") } returns flowOf(emptyList())
+
+        val viewModel = viewModel("t1")
+        viewModel.requestDelete()
+
+        assertTrue(viewModel.uiState.value.blockedDelete)
+        assertFalse(viewModel.uiState.value.pendingDelete)
+        coVerify(exactly = 0) { tenantRepository.delete(any()) }
     }
 }

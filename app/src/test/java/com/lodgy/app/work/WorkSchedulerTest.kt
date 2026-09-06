@@ -31,33 +31,49 @@ class WorkSchedulerTest {
     }
 
     @Test
-    fun `schedules a unique daily vacancy check that keeps any existing one`() {
+    fun `schedules a unique hourly vacancy check, replacing the daily one already on the phone`() {
         val workManager: WorkManager = mockk()
         val requestSlot = slot<PeriodicWorkRequest>()
         every {
-            workManager.enqueueUniquePeriodicWork("vacancy-check", ExistingPeriodicWorkPolicy.KEEP, capture(requestSlot))
+            workManager.enqueueUniquePeriodicWork("vacancy-check", ExistingPeriodicWorkPolicy.UPDATE, capture(requestSlot))
         } returns mockk(relaxed = true)
 
         workManager.scheduleVacancyCheck()
 
         verify {
-            workManager.enqueueUniquePeriodicWork("vacancy-check", ExistingPeriodicWorkPolicy.KEEP, any<PeriodicWorkRequest>())
+            workManager.enqueueUniquePeriodicWork("vacancy-check", ExistingPeriodicWorkPolicy.UPDATE, any<PeriodicWorkRequest>())
         }
-        assertEquals(TimeUnit.DAYS.toMillis(1), requestSlot.captured.workSpec.intervalDuration)
+        assertEquals(TimeUnit.HOURS.toMillis(1), requestSlot.captured.workSpec.intervalDuration)
     }
 
     @Test
-    fun `schedules a unique daily dues reminder that keeps any existing one`() {
+    fun `schedules a unique hourly dues reminder, replacing the daily one already on the phone`() {
         val workManager: WorkManager = mockk()
         val requestSlot = slot<PeriodicWorkRequest>()
         every {
-            workManager.enqueueUniquePeriodicWork("dues-reminder", ExistingPeriodicWorkPolicy.KEEP, capture(requestSlot))
+            workManager.enqueueUniquePeriodicWork("dues-reminder", ExistingPeriodicWorkPolicy.UPDATE, capture(requestSlot))
         } returns mockk(relaxed = true)
 
         workManager.scheduleDuesReminder()
 
         verify {
-            workManager.enqueueUniquePeriodicWork("dues-reminder", ExistingPeriodicWorkPolicy.KEEP, any<PeriodicWorkRequest>())
+            workManager.enqueueUniquePeriodicWork("dues-reminder", ExistingPeriodicWorkPolicy.UPDATE, any<PeriodicWorkRequest>())
+        }
+        assertEquals(TimeUnit.HOURS.toMillis(1), requestSlot.captured.workSpec.intervalDuration)
+    }
+
+    @Test
+    fun `schedules a unique daily auto-backup that keeps any existing one`() {
+        val workManager: WorkManager = mockk()
+        val requestSlot = slot<PeriodicWorkRequest>()
+        every {
+            workManager.enqueueUniquePeriodicWork("auto-backup", ExistingPeriodicWorkPolicy.KEEP, capture(requestSlot))
+        } returns mockk(relaxed = true)
+
+        workManager.scheduleAutoBackup()
+
+        verify {
+            workManager.enqueueUniquePeriodicWork("auto-backup", ExistingPeriodicWorkPolicy.KEEP, any<PeriodicWorkRequest>())
         }
         assertEquals(TimeUnit.DAYS.toMillis(1), requestSlot.captured.workSpec.intervalDuration)
     }

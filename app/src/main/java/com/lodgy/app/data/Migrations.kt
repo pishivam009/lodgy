@@ -60,3 +60,22 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
         db.execSQL("ALTER TABLE `hostels` ADD COLUMN `propertyType` TEXT NOT NULL DEFAULT 'HOSTEL'")
     }
 }
+
+/**
+ * Adds the discretionary forgone-rent bookkeeping for a warden or caretaker room (LODGY-84).
+ * Three plain ADD COLUMNs: the switch defaults to 0 so no existing tenancy starts recording an
+ * expense it was never asked to, the amount stays NULL until the warden sets one, and the link
+ * from an expense back to its tenancy is NULL on every expense recorded so far. Nothing existing
+ * changes behaviour - the warden's only copy of their data is on the phone.
+ */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tenancy_agreements` ADD COLUMN `forgoneRentExpense` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `tenancy_agreements` ADD COLUMN `forgoneRentAmount` REAL")
+        db.execSQL("ALTER TABLE `expenses` ADD COLUMN `tenancyAgreementId` TEXT")
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_expenses_tenancyAgreementId` " +
+                "ON `expenses` (`tenancyAgreementId`)",
+        )
+    }
+}

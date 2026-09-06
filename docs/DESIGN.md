@@ -29,7 +29,7 @@ Built for Android-only, native Kotlin.
 | Async | Kotlin Coroutines + Flow |
 | Navigation | Navigation Compose |
 | DI | Hilt |
-| Background work | WorkManager — three daily periodic workers: invoice generation, vacancy check, dues/expense nudge |
+| Background work | WorkManager — invoice generation and auto-backup daily; vacancy check and dues/expense nudge hourly (LODGY-88) |
 | Notifications | Local only, `NotificationCompat` on two channels (vacant rooms; payments and expenses), fired by the workers above. No push, no backend |
 | PDF | Native `android.graphics.pdf.PdfDocument` behind one shared renderer (`pdf/LodgyPdfRenderer`), used by both PDF consumers |
 | Preferences | DataStore for auth (PIN length), selected hostel, theme mode, notification switches |
@@ -83,10 +83,14 @@ Tenant
 TenancyAgreement (links tenant to a bed; one active per tenant)
   id, tenantId, bedId, agreedRent, advanceDeposit, billingCycleDay (1–28),
   moveInDate, moveOutDate (nullable), depositRefundAmount (nullable),
-  nonRevenue (bool, default false), status (ACTIVE | CLOSED),
+  nonRevenue (bool, default false), forgoneRentExpense (bool, default false),
+  forgoneRentAmount (nullable), status (ACTIVE | CLOSED),
   createdAt, updatedAt
   — nonRevenue marks a room the warden or a caretaker lives in: real
     occupancy that bills nobody. See 4.3.
+  — forgoneRentExpense/forgoneRentAmount are the opt-in bookkeeping for such
+    a room. The amount is a separate column from agreedRent on purpose: rent
+    is what a tenancy bills, and this one bills nothing. See 4.3.
   — moveOutDate on an ACTIVE agreement means notice given, not departure;
     on a CLOSED one it is the actual move-out. See 4.3.
   — a bed transfer rewrites bedId on the same row rather than closing and
@@ -133,10 +137,15 @@ Notes:
 - A reconciliation mark asserts nothing about the data — it never alters,
   hides or gates a record, and nothing is diffed automatically. It only
   records that a person looked.
-- Schema is at **version 4**, with migrations 1→2 (credits), 2→3
-  (reconciliation_marks) and 3→4 (`payments.multiPeriodGroupId`). Migrations
-  are written by hand and tested; destructive fallback is never enabled,
-  because the only copy of a warden's data is on their phone.
+- Schema is at **version 7**, with migrations 1→2 (credits), 2→3
+  (reconciliation_marks), 3→4 (`payments.multiPeriodGroupId`), 4→5
+  (`tenancy_agreements.nonRevenue`), 5→6 (`hostels.propertyType`) and 6→7
+  (`tenancy_agreements.forgoneRentExpense`/`forgoneRentAmount` and
+  `expenses.tenancyAgreementId`). Every one is a plain ADD COLUMN with a
+  default that leaves existing rows behaving exactly as before. Migrations
+  are written by hand and tested against a populated database pulled off the
+  previous version rather than a synthetic one; destructive fallback is never
+  enabled, because the only copy of a warden's data is on their phone.
 
 ## 4. Feature modules
 
@@ -151,6 +160,32 @@ Notes:
   exist on cheaper devices, so it's always an addition to the PIN, never a
   replacement for it.
 - No account/server involved — this just gates the app on the device.
+- **Backoff on repeated wrong PINs (LODGY-77).** The first five attempts are
+  free; the sixth and beyond impose an increasing wait — 30s, then doubling,
+  capped at five minutes — held in `AuthPreferences` (DataStore) so a
+  force-stop or reboot cannot reset it, computed by the pure `PinBackoff`. A
+  successful unlock, by PIN or biometric, clears the count at once; the lock
+  screen counts the wait down in words so it never looks broken; and it is a
+  delay, never a permanent lockout — there is always an eventual retry, and
+  the Forgot-PIN route below stays reachable throughout, so a warden who has
+  truly forgotten is slowed, not trapped. This was held until LODGY-76 shipped
+  the escape hatch, since a delay without recovery only makes a forgotten PIN
+  fail harder. Resolves security-review finding 3.
+- **Forgotten PIN (LODGY-76).** Being accountless and offline, there is no
+  email or server reset, so a `Forgot PIN?` link on the lock screen does the
+  safe thing instead: it exports a full backup via SAF *without unlocking*
+  (reusing the LODGY-28 export), and only once a file has been saved does it
+  offer to reset. The reset **blanks the warden's `pinHash`** rather than
+  deleting the row — hostels foreign-key to `warden.id`, so deleting it fails
+  the constraint; a blank hash is treated as "needs setup", and setup updates
+  the same row, keeping the id and every FK. The warden's data survives the
+  reset untouched (the PIN gates the UI, not the data), so the export is a
+  safety net rather than a strict requirement. If biometric is enrolled the
+  flow points the warden at it first. *Known interaction, left for the PO:* a
+  backup taken at forgot-time captures the old (forgotten) `pinHash`, and PIN
+  **length** lives in DataStore, outside the backup — so restoring that
+  specific zip later re-imposes the old PIN; it is recoverable via the same
+  `Forgot PIN?` route, but is worth a deliberate product call.
 
 ### 4.2 Property setup (static data, filled once, editable later)
 - Multi-property support: property switcher on dashboard.
@@ -214,9 +249,33 @@ Notes:
   to its rooms and beds, so it says so in the prompt (LODGY-57).
 
 ### 4.3 Tenant onboarding
-- Pick a vacant bed → capture tenant profile (name, phone, photo, ID proof
+- Pick a vacant space → capture tenant profile (name, phone, photo, ID proof
   photo, emergency contact) → capture agreement terms (agreed rent, advance,
   billing cycle day, move-in date).
+- **The picker spans every property**, grouped property → floor → bed, and is
+  not tied to the selected hostel. It used to follow
+  `hostelPreferences.selectedHostelId`, so a warden had to go to the Property
+  tab and switch property before they could put a tenant in it, and an empty
+  list read as "no space anywhere" when there was space next door — the same
+  scoping LODGY-70 took off the room view and LODGY-81 off Home. A single-unit
+  property is offered as *the whole property* with its type beneath: no floor,
+  no room number, no bed label, because its floor is the placeholder the
+  hierarchy carries and the property itself is what is being let (LODGY-79,
+  LODGY-85). "Nothing is vacant" and "you have no property yet" are
+  distinguished, since they need different actions from the warden.
+- **A room the warden or a caretaker lives in can be marked from the bed**,
+  without onboarding anyone (LODGY-87). The non-revenue switch lives on the
+  agreement form, which is the LAST screen of the chain, so reaching it meant
+  typing yourself in as a tenant with a phone number first. The bed sheet now
+  offers *Mark as warden / caretaker room* beside *Assign a tenant*, and it asks
+  one thing: a name, pre-filled with the warden's own. It then writes exactly
+  what the long route writes — a real tenant, and a real tenancy carrying
+  `nonRevenue` with zero rent and deposit and billing day 1 — so nothing
+  downstream knows the shortcut exists. A tenant row PER MARKED ROOM rather than
+  one shared self record: reuse would give one tenant several active agreements,
+  and `getActiveByTenantId` returns the first ACTIVE one it finds, which transfer,
+  checkout, manual invoicing and the forgone-rent expense all rely on. Undoing it
+  is checkout, which already does the right thing.
 - **Onboarding can start from the bed itself.** Tapping any bed in the bed
   grid opens a sheet rather than acting immediately, so nothing navigates on a
   stray touch of a dense grid. The sheet shows the room's description — type,
@@ -264,8 +323,21 @@ Notes:
   nudge. Before this there was no third option: the bed had to be left vacant,
   which corrupted occupancy and invited the vacancy nudge, or set up as a real
   tenancy, which billed forever and polluted the money figures (LODGY-82).
-  Recording the forgone rent as an expense is a separate, discretionary
-  choice, deliberately deferred (LODGY-84).
+- **Forgone rent as an expense.** Stage two of the same idea, and off unless
+  the warden asks for it. A warden living in their own building has spent
+  nothing, so booking a cost for them would be wrong; a warden who pays a
+  caretaker partly in accommodation may want the rent they give up to show
+  against the month, so the P&L reflects what staffing actually costs. So it
+  is per tenancy, opt-in, never automatic and never on by default: a switch
+  on the tenant profile of a non-revenue tenancy, with an amount defaulting
+  to the room's own price per bed — the market rate being forgone — and
+  editable. Invoice generation records it on the tenancy's billing day, as an
+  ACCOMMODATION expense linked back to the agreement; the link is what makes
+  the monthly entry idempotent and is a soft reference rather than a foreign
+  key, so recorded history survives whatever happens to the tenancy. It is a
+  cost and never a receivable: nothing about it reaches invoices, dues or
+  collections. Turning it off stops the next month and deletes nothing
+  (LODGY-84).
 - **Notice** is separate from checkout: setting a planned move-out date on an
   ACTIVE agreement records intent and nothing else — the bed stays occupied,
   the agreement stays active, and checkout remains an explicit action on the
@@ -281,7 +353,9 @@ Notes:
 
 ### 4.4 Rent & payments
 - Invoice generation skips agreements flagged `nonRevenue` (4.3), so a warden's
-  or caretaker's room never produces a due (LODGY-82).
+  or caretaker's room never produces a due (LODGY-82). The same run records the
+  forgone-rent expense for the non-revenue agreements that opted in, on the same
+  billing day — one pass over the day's tenancies, two outcomes (LODGY-84).
 - WorkManager job generates the month's invoice for every ACTIVE agreement
   on its billing cycle day.
 - Record a payment against an invoice — full or partial; invoice status
@@ -366,6 +440,39 @@ Notes:
   the explicit "warden switches phones" recovery path the user asked for —
   no server round-trip, just a file the warden manages themselves (they can
   put it in Google Drive/WhatsApp-to-self/USB manually).
+- **Google Drive (LODGY-75)**: nothing Drive-specific is built and nothing
+  needs to be. Export uses `CreateDocument` and import uses `OpenDocument`, both
+  of which open the system picker where Drive appears as an ordinary provider —
+  so a warden saves to and restores from Drive with no Drive SDK, no OAuth and
+  no INTERNET permission, keeping the app network-free. The Backup screen and
+  USER-MANUAL now say so, since the capability was there but undiscoverable.
+  *Open, needs a real device with a Google account (PO to verify):* that Drive
+  actually returns a writable stream yielding a non-empty zip, and — feeding
+  LODGY-68 — whether Drive grants a durable `OpenDocumentTree` permission fit for
+  the unattended daily backup. Neither is checkable from an emulator.
+- **Daily automatic backup** (LODGY-68): the warden picks a folder once via
+  `OpenDocumentTree`, and the app takes a *persistable* SAF grant so a daily
+  `WorkManager` job can write there unattended across reboots and updates —
+  the one-shot `CreateDocument` Uri the manual export uses can't be reused
+  that way. The job reuses `BackupManager.export()` and writes a timestamped
+  `lodgy-backup-YYYY-MM-DD-HHmmss.zip`. It **skips** a day whose content
+  fingerprint (a hash of the checkpointed DB plus the photo list) matches the
+  last successful backup, so identical zips aren't churned, and it prunes to
+  the newest `KEEP_BACKUPS` (7) so the folder can't grow without bound. State
+  lives in `BackupPreferences` (a new DataStore, no schema change). The
+  **dashboard tile** is the feature, not decoration: it shows the last-backup
+  time in relative language with a one-tap "back up now" icon, and colours
+  itself with the LODGY-36 RAG tokens — green when recent, amber when getting
+  stale or not yet set up, red when it has never succeeded or the last run
+  failed. A folder gone unwritable (card pulled, folder deleted, permission
+  revoked) is recorded and surfaced there rather than retried quietly, and
+  the worker still reports success so WorkManager doesn't back off silently.
+  In that failed state the tile's own action stops retrying against the
+  missing folder and instead sends the warden to re-pick one, right from the
+  dashboard where the problem shows; choosing a folder clears the failure so
+  the tile recovers at once. An install that never picks a folder keeps
+  working exactly as before — the job is a no-op — so nothing is blocked and
+  no migration is needed.
 - Because IDs are UUIDs, a restored DB never collides with a fresh install's
   IDs — this also happens to be what makes a future real sync feasible.
 - **Printable records (PDF)**: a human-readable packet of hostels, tenants,
@@ -416,8 +523,21 @@ Local notifications only — no push, no backend, same WorkManager pattern the
 invoice generator already established. Two channels, each with its own switch
 in More → Notifications, and both workers scheduled unconditionally so
 turning a category off just makes its next run a no-op.
+- **Both nudges run hourly**, not daily (LODGY-88). An empty room and unpaid
+  rent each cost money for as long as nobody acts on them, so the warden hears
+  the hour it happens rather than the next morning. Volume is unaffected: each
+  run still posts one summary at a fixed notification id, so an hourly run
+  REPLACES the previous notification rather than stacking another (LODGY-74,
+  LODGY-83). It does re-alert, which is the deliberate trade the PO chose over
+  only re-alerting when the figure changes. Scheduled with
+  `ExistingPeriodicWorkPolicy.UPDATE` rather than `KEEP`: these two were already
+  enqueued daily on every phone running Lodgy, and KEEP would have applied the
+  new interval to fresh installs only.
 - **Long-vacant beds** (LODGY-59): a nudge to advertise a bed empty past a
-  warden-set threshold (default 7 days, 1–90). Each bed is nudged once and
+  warden-set threshold (1, 2 or 3 days, default 3 — a room empty for a week is
+  already a week of lost rent, so longer waits are not offered at all
+  (LODGY-88); a saved value outside that range is coerced on read, so narrowing
+  it needed no migration). Each bed is nudged once and
   remembered, so a month-empty room produces one notification rather than
   thirty; the memory is pruned to beds that are still vacant, so a bed that
   fills and later empties again counts as new — which is exactly when the
@@ -441,6 +561,25 @@ turning a category off just makes its next run a no-op.
   Hindi and English and shrinks what has to fit in both.
 - **Slide transitions** (LODGY-61): forward slides in from the right, back
   reverses, so navigation reads as a stack rather than a cut.
+- **Bottom navigation stays on every screen** (LODGY-80): the five-tab bar is
+  visible on inner screens too, not just the top-level tabs, so Home is always
+  one tap away and the app's one persistent landmark never vanishes when a
+  warden is deep and lost. Real older wardens couldn't find the bare back
+  chevron or a route home; keeping the labelled bar everywhere was chosen over
+  labelling the chevron because it spends no top-bar width — which matters
+  since Hindi labels run longer and titles already fill the bar. The bar lives
+  on the Scaffold outside the NavHost, so it stays fixed while inner content
+  slides (it does not animate with the LODGY-61 transitions), and the chevron
+  and system-back gesture are untouched — this adds a way home, it does not
+  replace going back. No tab is highlighted on an inner screen: the bar is a
+  way out, not a claim about where you are. Tapping a tab lands on that tab's
+  **root**, popping any inner screens in the way — so Home always shows the
+  dashboard, even from a Home-section inner screen like the monthly report or
+  the vacant-beds view. The multi-back-stack `saveState`/`restoreState` was
+  dropped deliberately: it restored the current section's remembered
+  sub-position, which stranded a warden on the very inner screen they were
+  trying to leave. "Tap Home = the home screen" is what these users expect,
+  and reaching the section root matters more than remembering a scroll spot.
 - **Version and build number** on the More screen, for support questions
   (LODGY-38).
 
@@ -462,6 +601,14 @@ and each is invisible on the screen that introduces it.
   tenant profile clipped Record a credit, Move to another bed and Checkout on
   an ordinary phone, which read as three separate missing features
   (LODGY-34, LODGY-35, and a regression against LODGY-14).
+- **The word and the icon follow the property, not the schema.** Every property
+  has beds underneath, but a shop, warehouse or flat is let whole, so a screen
+  that knows which kind it is showing says *This property* / *Let* and draws a
+  door; a hostel says *Bed A* / *OCCUPIED* and draws a bed. A count that spans
+  properties is counting spaces rather than beds, so it uses neutral wording and
+  the door — it does not flip with whatever the warden happens to own. Renaming
+  everything to "unit" would be the wrong fix: a hostel warden thinks in beds
+  and that word is right for them (LODGY-79, LODGY-86).
 - **Confirm what cannot be seen, not every edit.** A destructive action always
   confirms. An *update* confirms only when it silently changes money, occupancy
   or history that the warden cannot see on the screen they are on — a room's
@@ -511,6 +658,31 @@ What protects the warden instead, in order of how much work each does:
 
 If a bin is ever revisited, size it as an epic across every DAO and export path,
 not as a column on a few tables.
+
+**What is deletable, and from where (LODGY-64).** Every entity a warden can add
+in error now has a delete, reached from the screen that entity is viewed or
+edited on, each behind a LODGY-57 confirmation:
+
+- **Hostel/property** — on its edit form. Its floors, rooms and beds cascade
+  away with it (their foreign keys are `ON DELETE CASCADE`), so a mistakenly
+  added property — including a single-unit shop with its implicit floor/room/bed
+  — deletes cleanly; it is **blocked** only while it still holds a tenancy or an
+  expense, the two records that don't cascade and would fail the delete.
+- **Tenant** — on its form; **blocked** while the tenant has any tenancy or
+  credit, so their history is never broken.
+- **Expense** — on its form; nothing hangs off it, so it deletes freely.
+- **Invoice, Payment, Credit** — on the receipt (Acknowledgement) screen, which
+  is the invoice's detail view. Point 2 above is refined here: money is no
+  longer only voided, it can be corrected by deletion, but safely. Deleting a
+  **payment** or a **credit** recalculates the invoice's status in the same
+  operation through the single `invoiceStatusFor` definition, so an invoice can
+  never be left reading PAID with less money behind it. Deleting an **invoice**
+  is **blocked** while any payment or credit still points at it, rather than
+  orphaning them.
+- **Left undeletable on purpose:** Bed (managed by the room's type),
+  TenancyAgreement (closed by checkout, never deleted, or history breaks),
+  Warden (the local profile), ReconciliationMark (reversible via its own
+  toggle).
 
 ## 5. Explicit non-goals
 - No auto-sent WhatsApp/SMS (tap-to-send only — no paid API, no backend).
@@ -589,3 +761,21 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Warden/caretaker rooms are a flag on the tenancy, not an occupancy type | Reuses the tenancy record so history reads normally and one code path covers occupancy; a separate type would fork it | LODGY-82 |
 | Non-revenue hides rent and deposit rather than only clearing them | Left editable, the warden could flip the switch and then type a rent, saving a tenancy claiming rent it would never charge | LODGY-82 |
 | Property type decides which layers the UI shows, not which exist | Wardens let shops, warehouses and flats too, where the property IS the unit; collapsing the hierarchy would have touched invoicing, occupancy, the packet and the import, and needed a migration on data that lives only on the phone | LODGY-79 |
+| Daily auto-backup writes to a folder picked once via a persisted SAF tree grant | A one-shot `CreateDocument` Uri can't be reused unattended; a persisted `OpenDocumentTree` grant survives reboots and updates so the daily job has somewhere to write | LODGY-68 |
+| The dashboard backup tile shows staleness and failure as loudly as success | A silently broken auto-backup is worse than none — a warden who believes they're covered and isn't; the tile uses the RAG tokens and the worker never retries a failure quietly | LODGY-68 |
+| Unchanged days are skipped by a content fingerprint, and only the last 7 zips kept | The zip carries photos and isn't small; churning identical daily copies and never pruning would grow the folder without bound | LODGY-68 |
+| Forgotten PIN: export a backup from the lock screen, then reset | Accountless and offline, there's no email or server fallback; the reset step opens only after a backup is saved, so a locked-out warden is never a lost warden | LODGY-76 |
+| A PIN reset blanks the warden's hash, it does not delete the row | Hostels foreign-key to `warden.id`; deleting the row fails the constraint and would orphan every property. Setup then updates the same row, so the id — and the FK — survive | LODGY-76 |
+| Bottom nav kept visible on inner screens, over labelling the back chevron | Real older wardens couldn't find the chevron or a way home; a persistent labelled bar makes Home one tap everywhere and spends no top-bar width, which matters for the longer Hindi labels | LODGY-80 |
+| Deleting a payment or credit recomputes the invoice status in the same step | A wrong payment removed on its own would leave the invoice reading PAID with nothing behind it — a wrong number is worse than a missing feature | LODGY-64 |
+| Invoice/payment/credit delete lives on the receipt screen; hostel delete cascades structure but blocks on tenancy/expense | The receipt is already the invoice's detail view; a hostel's floors/rooms/beds cascade (FK ON DELETE CASCADE) so an empty or single-unit property deletes cleanly, while tenancies and expenses (which don't cascade) block it | LODGY-64 |
+| The forgone amount lives in its own column, not in `agreedRent` | `agreedRent` is what a tenancy bills, and a non-revenue tenancy bills nothing; reusing it would put a real number where every generator looks and undo LODGY-82's no-invoice guarantee | LODGY-84 |
+| `expenses.tenancyAgreementId` is a soft link, no foreign key | It exists to make the monthly entry idempotent and to let the warden switch the option off; a cascade would erase months they may already have reported on, and SQLite cannot add an FK without rebuilding the table | LODGY-84 |
+| The forgone-rent expense is not marked recurring | `isRecurring` exists to nudge the warden to log an expense they pay by hand; this one logs itself, so marking it would nag monthly about an entry the app already made | LODGY-84 |
+| Four updates confirm, everything else still saves silently | Price per bed, a single-unit property's rent, a transfer that re-prices the tenancy, and renaming a property with reconciled months are the updates that move money or history the warden cannot see on that screen; confirming ordinary edits too would train them to dismiss dialogs unread | LODGY-65 |
+| One dialog listing every pending change, not a queue of dialogs | A warden clicking through three confirmations in a row reads none of them | LODGY-65 |
+| Releases are waves of delivered work, and every ticket carries the version it shipped in | The app shows its version for support (LODGY-38), so the number is only useful if a ticket can be traced to a build a warden actually has; see docs/RELEASES.md | LODGY-38 |
+| The onboarding picker spans every property, and offers a single-unit property whole | Following the selected hostel meant switching property before a tenant could be added, and an empty list read as "no space anywhere"; a shop has no bed to pick, so offering one was fiction | LODGY-85 |
+| Bed wording and the bed icon are chosen per property, not removed | A hostel warden thinks in beds, so renaming everything to "unit" would cost them the right word; a warehouse labelled with a bed pictogram was the actual complaint | LODGY-86 |
+| Marking a warden/caretaker room creates a tenant row per room, not one shared self record | One tenant with several active agreements would make getActiveByTenantId pick the wrong tenancy for transfer, checkout and invoicing; a duplicate name is untidy, acting on the wrong tenancy is a bug | LODGY-87 |
+| Vacancy and dues nudges run hourly, scheduled with UPDATE rather than KEEP | Both were already enqueued daily on every phone, and KEEP applies a new interval to fresh installs only - the change would have looked shipped and not been | LODGY-88 |

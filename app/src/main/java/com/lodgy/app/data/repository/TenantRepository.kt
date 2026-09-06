@@ -11,6 +11,10 @@ class TenantRepository @Inject constructor(private val tenantDao: TenantDao) {
 
     suspend fun getById(id: String): Tenant? = tenantDao.getById(id)
 
+    /** Removes a tenant added in error. The caller blocks this while the tenant has any tenancy
+     *  or credit, so it never breaks that history (LODGY-64). */
+    suspend fun delete(tenant: Tenant) = tenantDao.delete(tenant)
+
     fun observeById(id: String): Flow<Tenant?> = tenantDao.getByIdFlow(id)
 
     suspend fun create(

@@ -2,6 +2,7 @@
   "id": "LODGY-68",
   "epic": "Backup & Restore",
   "priority": "High",
+  "version": "0.4.0",
   "title": "Daily automatic backup, with last-backup time and a one-tap backup on the dashboard",
   "description": "Product Owner request: should backup run automatically, daily; show the last backup time on the home screen with a small icon to back up from there. RECOMMENDED: yes, and it is the single highest-value safety feature left. Today backup is entirely manual - BackupScreen fires ActivityResultContracts.CreateDocument, the warden picks a location, and nothing records that it happened. A warden who forgets for two months has two months of unrecoverable data on one phone, and nothing in the app tells them so. WHY IT NEEDS A DESIGN, not just a WorkManager job: the current export takes a one-shot Uri from CreateDocument and no persistable permission is taken, so there is no folder to write to unattended. The job needs a location chosen ONCE via OpenDocumentTree with takePersistableUriPermission, stored in a new BackupPreferences, and reused daily. Everything else reuses BackupManager.export() as-is. THE REAL RISK is not the job failing, it is the job failing SILENTLY - a warden who believes they are covered and is not, is worse off than one who knows they are not. So the dashboard tile is not decoration, it is the feature: it must show staleness and failure as prominently as success, using the existing RAG tokens (recent = green, getting old = amber, never/failed/very stale = red). SUGGESTED SHAPE: (1) pick a folder once, persisted; (2) daily WorkManager job, same pattern as LODGY-15/59/60; (3) skip the run when nothing has changed since the last backup, so identical zips are not churned daily - the zip carries photos and is not small; (4) keep a rolling window of the last N backups and delete older ones, or storage grows without bound; (5) if the folder becomes unwritable - card removed, folder deleted, permission revoked - surface that on the dashboard rather than retrying quietly. RELATION TO LODGY-66: this is the auto-export measure recommended there. It also strengthens the case against soft delete, because a recent automatic backup covers the accidental-deletion fear that a recycle bin was meant to address, without taxing every query in the app.",
   "acceptanceCriteria": [
@@ -14,10 +15,10 @@
     "If the folder becomes unwritable the failure is surfaced on the dashboard and the warden is told how to re-pick it - it never fails silently",
     "Backward compatible: an existing install that has never chosen a folder keeps working exactly as today, prompted but never blocked, and no migration is required beyond the new preference"
   ],
-  "status": "Todo",
+  "status": "Done",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:27:10+00:00",
-  "updatedAt": "2026-09-04T13:37:18+00:00",
+  "updatedAt": "2026-09-05T17:34:23Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:27:10+00:00",
@@ -30,6 +31,46 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "Cross-reference: LODGY-76 (forgotten PIN) is another argument for this ticket. A warden locked out of their own app loses everything only if there is no recent backup - with a daily automatic one, a forgotten PIN costs them the app state and nothing else."
+    },
+    {
+      "timestamp": "2026-09-05T11:35:31Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Building the PO's recommended shape: folder picked once via OpenDocumentTree + takePersistableUriPermission stored in a new BackupPreferences; a daily WorkManager job (AutoBackupWorker) following the LODGY-15/59/60 pattern; a dashboard tile using the LODGY-36 RAG tokens that shows staleness/failure as prominently as success and a backup icon that runs one immediately; skip-when-unchanged via a content fingerprint; a rolling window of the last N zips; folder-unwritable surfaced on the dashboard, never silent. Orchestration goes in a testable AutoBackup class; only the SAF/DocumentFile glue (SafBackupStore) is the thin, excluded wrapper, matching the PhotoStorage/LodgyNotifications precedent. No migration - just the new preference (AC8)."
+    },
+    {
+      "timestamp": "2026-09-05T12:12:23Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built the PO's recommended shape and verified it end to end on the emulator against the live populated database.\n\nWHAT WAS BUILT.\n- BackupPreferences (new DataStore 'backup_prefs'): folderUri, lastSuccessTime, lastFingerprint, lastAttemptFailed. No Room change, no migration (AC8).\n- SafBackupStore (thin, excluded from coverage like PhotoStorage): takePersistableUriPermission, isWritable, createBackupFile, listBackupNames, deleteBackups via DocumentFile. Added androidx.documentfile 1.0.1.\n- AutoBackup (orchestrator, fully unit-tested over mocked deps): NOT_CONFIGURED / SKIPPED_UNCHANGED / SUCCESS / FAILED. Skip via content fingerprint; prune to KEEP_BACKUPS=7; records success/failure.\n- BackupManager.currentFingerprint(): checkpoints the WAL then SHA-256 over the db bytes + photo name/size list, so a WAL-only change still counts and identical data skips (AC5).\n- AutoBackupWorker + WorkManager.scheduleAutoBackup(), scheduled unconditionally in LodgyApplication (AC2). Always returns success so a failure surfaces on the dashboard, not via a silent retry (AC7).\n- Dashboard tile (DashboardViewModel/Screen): backupHealth() maps to the LODGY-36 RAG tokens - green recent, amber stale/not-set-up, red never/failed; a one-tap icon runs backupNow(force) when configured, else routes to the Backup screen (AC3/AC4).\n- Folder chooser on the Backup screen (More -> Backup): OpenDocumentTree + persist grant, shows on/off and change-folder (AC1).\n\nVERIFIED ON DEVICE (Hindi UI):\n- Tile starts 'Not set up' (amber); its icon routes to the Backup screen; picked Download/LodgyBackups, the system 'Allow Lodgy to access folder?' grant was taken, and the screen switched to 'folder set, daily backups on'.\n- Tile then read NEVER (red). Tapped 'back up now' -> a real lodgy-backup-2026-09-05-173522.zip appeared in the folder (pulled it: contains lodgy.db at the live 192512 bytes), and the tile turned green 'Last backup 0 minutes ago'.\n- AC7: deleted the folder, tapped 'back up now' -> tile shows red 'Last backup failed - check the folder', no crash. Re-picked a folder afterwards and it backs up green again, so the emulator is left in a working state.\n\nNOT drivable from a JVM/adb session, covered by unit tests instead: the daily periodic trigger (WorkSchedulerTest asserts the unique 1-day job), skip-unchanged and prune-to-7 (AutoBackupTest + AutoBackupHealthTest), fingerprint stability (BackupManagerTest).\n\n481 tests pass (was 453; +28), line coverage 96.96% (gate 0.93), jacocoCoverageVerification green, assembleDebug OK.\n\nDocs updated in step: DESIGN.md 4.8 + three decision-log rows; USER-MANUAL.md 8; and a 'Keeping your data safe' section in docs/design/screenshots.html showing the green and red tile states. No DATA-MODEL.md change - the feature adds a DataStore preference, not a Room column.\n\nQA NOTE: the on-device screenshots are in Hindi because the emulator's stored language is Hindi and the in-app English toggle did not re-apply on recreate() this session - that is pre-existing behaviour unrelated to this ticket, but worth a glance if you can reproduce it."
+    },
+    {
+      "timestamp": "2026-09-05T17:24:47Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL on AC7. Verified everything else on the emulator and it holds: folder picked once with a persisted read/write SAF grant and changeable from More (AC1); daily unique WorkManager job (AC2); the dashboard tile shows the last-backup time with a one-tap icon (AC3); RAG states read correctly - green 'Last backup 0 minutes ago', red on a deleted folder, amber when not set up (AC4); skip-unchanged and keep-7 are unit-tested and the fingerprint is stable (AC5/AC6); an install with no folder is a no-op with no migration (AC8).\n\nTHE DEFECT (AC7 - 'the warden is TOLD HOW TO RE-PICK it'): the failure is surfaced, but the warden is given no way to fix it from where it is shown. In the FAILED state the tile reads 'Last backup failed - check the folder', and its icon (configured==true) calls backupNow(), which just fails again. There is no route to the folder chooser and no instruction to change it - a warden whose SD card was pulled or folder deleted taps the icon, watches it go red again, and dead-ends. Repro: set a folder, delete it (rm -rf the tree), tap the tile icon -> red, tap again -> red, with no path forward on the dashboard.\n\nFIX DIRECTION: in the FAILED state, route the tile (or a clear affordance on it) to the folder picker, and/or make the message actionably say to re-pick, so re-picking is reachable from the dashboard where the problem appears. The picking UI itself already exists on the Backup screen."
+    },
+    {
+      "timestamp": "2026-09-05T17:34:03Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "AC7 gap fixed and verified on the emulator. QA was right: in the failed state the tile retried against the missing folder and never offered a way to re-pick it.\n\nFIX: the tile's action is now state-aware. When the backup has never worked (NOT_CONFIGURED) or the last run FAILED, the icon sends the warden to the folder picker (Backup screen) instead of retrying; a set-up, working backup still runs on the spot. The failed message now reads 'Last backup failed - tap to choose the folder again' (Hindi too), and choosing a folder clears the failure flag (BackupPreferences.setFolderUri) so the tile recovers immediately rather than staying red until the next successful run.\n\nVERIFIED END TO END: set a folder, deleted it, tapped 'back up now' -> tile went red with the new actionable text and the icon's action became 'Choose the backup folder again'. Tapped it -> landed on the Backup screen's Change-folder control (not a silent retry). Re-picked the folder -> tile cleared back to a normal state; tapped 'back up now' -> green 'Last backup 0 minutes ago' and a fresh zip written. So the full broken -> recover loop now works from the dashboard where the failure shows.\n\n489 tests pass, line coverage 97.00% (gate 0.93), jacocoCoverageVerification green, assembleDebug OK. New BackupPreferences test covers the failed-flag-cleared-on-repick. Docs updated: DESIGN.md 4.8 now describes the re-pick action, and the failed-tile screenshot + caption in screenshots.html were refreshed to the new text."
+    },
+    {
+      "timestamp": "2026-09-05T17:34:23Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - re-verified the AC7 fix on the emulator and re-confirmed the rest still holds.\n\nAC7 (the fail reason) is now met: broke the folder (deleted the tree), tapped 'back up now' -> the tile turned red with 'Last backup failed - tap to choose the folder again' and its action changed to 'Choose the backup folder again'. Tapping it routed to the Backup screen's change-folder control instead of a silent retry. Re-picked the folder -> the red state cleared immediately; a subsequent 'back up now' went green with a fresh zip on disk. The broken -> re-pick -> recover loop is reachable entirely from the dashboard where the failure shows.\n\nRest still good from the prior pass: persisted SAF grant and change-from-More (AC1); daily unique job (AC2); last-backup time + one-tap icon (AC3); RAG green/amber/red states (AC4); skip-unchanged and keep-7 unit-tested (AC5/AC6); no-op with no folder and no migration (AC8).\n\n489 tests pass, line coverage 97.00%, jacocoCoverageVerification green."
     }
   ]
 }

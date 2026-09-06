@@ -109,7 +109,7 @@ class PinSetupViewModel @Inject constructor(
 
     private suspend fun persistAndFinish() {
         val pin = _uiState.value.firstPin ?: return
-        wardenRepository.createWarden(PinHasher.hash(pin))
+        wardenRepository.setPin(PinHasher.hash(pin))
         authPreferences.setPinLength(pin.length)
         authPreferences.setBiometricEnabled(_uiState.value.biometricEnabled)
         _uiState.update { it.copy(step = PinSetupStep.DONE) }

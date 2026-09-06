@@ -14,4 +14,4 @@ enum class PaymentMode { CASH, UPI, BANK_TRANSFER, OTHER }
 
 enum class NoteType { COMPLAINT, DAMAGE, GENERAL }
 
-enum class ExpenseCategory { WIFI, WATER, ELECTRICITY, TAX, MAINTENANCE, REPAIR, OTHER }
+enum class ExpenseCategory { WIFI, WATER, ELECTRICITY, TAX, MAINTENANCE, REPAIR, ACCOMMODATION, OTHER }

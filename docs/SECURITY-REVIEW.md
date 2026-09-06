@@ -39,17 +39,23 @@ could enumerate the cache. Still broader than anything needed.
 Fixed: the provider now shares only `cacheDir/camera/`, and `PhotoStorage.createCameraOutputUri()`
 writes there. The restore staging area is no longer inside any shareable path.
 
-### 3. No backoff or lockout on repeated PIN attempts — Medium — OPEN, recommend a ticket
+### 3. No backoff or lockout on repeated PIN attempts — Medium — RESOLVED (LODGY-77)
 
-`PinLockViewModel` verifies and clears the field on failure, with no delay, no attempt counter and
-no lockout. Someone holding the unlocked-but-locked phone can try PINs as fast as they can tap.
+`PinLockViewModel` verified and cleared the field on failure, with no delay, no attempt counter and
+no lockout. Someone holding the unlocked-but-locked phone could try PINs as fast as they can tap.
 A 4-digit PIN is 10,000 possibilities; that is not hand-guessable in one sitting, but it is not
-much protection either, and there is nothing to slow a scripted attack over ADB.
+much protection either, and there was nothing to slow a scripted attack over ADB.
 
-Suggested fix: count consecutive failures in `AuthPreferences` and impose an increasing delay
-(e.g. free for the first 5, then 30s, then a minute, persisted so a process restart does not reset
-it). Left as a product decision rather than changed here — it adds a way for a warden to lock
-themselves out of their own records, which deserves a deliberate choice.
+**Fixed in LODGY-77**, once LODGY-76 had added a sanctioned way out so the fix could not trap a
+warden who had merely forgotten. Consecutive failures are now counted in `AuthPreferences`
+(DataStore, so a force-stop or reboot does not reset them). The first five attempts are free; the
+sixth and beyond impose an increasing wait — 30s, then doubling, capped at five minutes
+(`PinBackoff`). A successful unlock, by PIN or biometric, clears the count immediately. The lock
+screen shows how long it is waiting and roughly how many seconds remain, so a delayed warden does
+not conclude the app is broken, and the LODGY-76 forgot-PIN route stays reachable throughout. It is
+deliberately **not** a hard lockout — there is always an eventual retry — because a permanent
+lockout adds real risk of a warden destroying their own access and buys little against someone who
+already holds the phone and its unencrypted database (see 4, and DESIGN.md 5).
 
 ### 4. Short PIN space versus an offline attacker — Low — ACCEPTED
 

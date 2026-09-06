@@ -1,0 +1,38 @@
+{
+  "id": "LODGY-88",
+  "epic": "Notifications",
+  "title": "Vacancy threshold should only offer 1-3 days, and both nudges should repeat hourly",
+  "description": "User-reported, two changes to how often the warden is told about money and empty space. FIRST, the threshold: NotificationSettingsViewModel.thresholdOptions offers 3, 7, 14 and 30 days and NotificationPreferences allows 1-90 with a default of 7. The user wants 1, 2 or 3 only - a room empty for a week is already a week of lost rent, so a month-long option is a setting nobody should be able to choose. SECOND, the frequency: WorkScheduler enqueues VacancyCheckWorker and DuesReminderWorker as PeriodicWorkRequest(1, TimeUnit.DAYS), so each runs once a day. The user wants both hourly. \n\nWORTH THE PO KNOWING before this ships, because it cuts against two tickets that are already Done. LODGY-74 and LODGY-83 exist because notification volume drove wardens to switch the category off - they collapsed a burst of one-per-record into a single summary per run. Hourly running does not undo that (each run still posts one summary, at a fixed notification id, so it REPLACES the previous one rather than stacking), but posting to the same id re-alerts: the phone will sound or vibrate every hour while a room is empty or rent is owed, which is 24 times a day for a condition that changes maybe twice a week. The quiet version of the same intent is to keep the hourly check but only re-alert when the underlying figure has CHANGED, so a warden is told promptly when something new happens and left alone when nothing has. Recommend that; build the plain hourly repeat if the PO prefers it. \n\nThe threshold change needs no migration - NotificationPreferences already coerces the stored value into range on read, so a warden who had 7 or 30 saved lands on the new maximum by itself.",
+  "acceptanceCriteria": [
+    "The vacancy threshold offers 1, 2 and 3 days and nothing longer",
+    "A warden who had a longer threshold saved is moved into the new range without losing their settings or seeing a crash",
+    "The vacancy check runs hourly rather than daily",
+    "The dues reminder runs hourly rather than daily",
+    "Running hourly does not reintroduce the notification burst LODGY-74 and LODGY-83 removed - still one summary per run, still replacing rather than stacking",
+    "The warden can still turn either category off entirely, and off still means silent",
+    "Product Owner has recorded a decision on whether an hourly run should re-alert every time or only when the figure has changed",
+    "Correct in Hindi as well as English"
+  ],
+  "status": "Testing",
+  "priority": "Medium",
+  "version": "0.4.0",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-06T11:05:00Z",
+  "updatedAt": "2026-09-06T12:20:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-06T11:05:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from direct user feedback: 'empty room notification should only be 1,2,3 days not more than that. Empty room notification should come every 1 hour. Same with payment pending - every hour.' Checked against the code before filing; the current values and the tension with LODGY-74/83 are recorded in the description."
+    },
+    {
+      "timestamp": "2026-09-06T12:20:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "Built as asked - hourly, not the only-on-change variant I recommended in the description. Flagging that plainly so the PO can change their mind after living with it: while a room is empty or rent is owed, the phone will alert once an hour. It is ONE notification, not a pile - each run posts a single summary at a fixed id, so the hourly run replaces the previous one (LODGY-74 and LODGY-83 hold, AC5) - but replacing still re-alerts. THRESHOLD: thresholdOptions is now 1, 2, 3; MAX_THRESHOLD_DAYS drops 90 to 3 and the default 7 to 3 (AC1). No migration needed, as predicted - NotificationPreferences coerces on read, so a warden who saved 7 or 30 lands on 3 by itself with nothing lost and no crash (AC2), and there is now a test asserting exactly that. SCHEDULING: both workers move from PeriodicWorkRequest(1, DAYS) to (1, HOURS) (AC3, AC4). The important part is not the interval - it is that they are now enqueued with ExistingPeriodicWorkPolicy.UPDATE instead of KEEP. Every phone already running Lodgy has these two enqueued daily, and KEEP would have kept them: the new interval would have applied to fresh installs only, and the change would have looked shipped without being shipped. Invoice generation and auto-backup keep KEEP and stay daily, deliberately. FOUND AND FIXED while testing: narrowing the range exposed 'Tell me after this many days: 1 days'. The label was a plain string with %1$d, which was fine when the smallest option was 3. It is now a plurals resource in both languages. VERIFIED ON DEVICE, and this is the check that matters because it is an UPGRADE over an install that already had the daily jobs: dumpsys jobscheduler shows VacancyCheckWorker and DuesReminderWorker next due in ~51 minutes while InvoiceGenerationWorker is still ~22 hours out. The settings screen offers '1 day / 2 days / 3 days' and both switches still turn their category off (AC6). Correct in Hindi. AC7 is recorded above rather than by the PO - the instruction was explicit, so I built it and flagged the trade-off instead of blocking on it. TESTS: 2 reworked for the hourly interval and the UPDATE policy, 2 reworked for the narrowed range including the coercion of a saved 30. Full suite 549 pass, 0 failures, coverage 95.96% line against the 0.93 gate."
+    }
+  ]
+}
