@@ -440,6 +440,15 @@ Notes:
   the explicit "warden switches phones" recovery path the user asked for —
   no server round-trip, just a file the warden manages themselves (they can
   put it in Google Drive/WhatsApp-to-self/USB manually).
+- **What "no network access" means precisely.** Lodgy declares one permission of
+  its own, `POST_NOTIFICATIONS`. The *merged* manifest also carries
+  `ACCESS_NETWORK_STATE`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED` and
+  `FOREGROUND_SERVICE` from WorkManager, plus the biometric pair. None of those
+  permit traffic — `INTERNET` is absent from the merged manifest, which is the
+  one that decides whether a socket can be opened, so the app is network-*incapable*
+  rather than merely network-*abstinent*. Worth stating because the shipped
+  permission list contains a network-sounding entry and would otherwise read as a
+  contradiction (verified under LODGY-75).
 - **Google Drive (LODGY-75)**: nothing Drive-specific is built and nothing
   needs to be. Export uses `CreateDocument` and import uses `OpenDocument`, both
   of which open the system picker where Drive appears as an ordinary provider —
