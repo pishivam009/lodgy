@@ -16,10 +16,10 @@
     "LODGY-76's forgot-PIN route stays reachable while a delay is in effect - a warden who has genuinely forgotten must not be made to wait out a penalty to reach their escape hatch",
     "Built after LODGY-76, and docs/SECURITY-REVIEW.md finding 3 is updated from OPEN to resolved with what was actually done"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:49:35+00:00",
-  "updatedAt": "2026-09-05T18:14:41Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T13:49:35+00:00",
@@ -50,6 +50,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified on the emulator against a real database, all nine ACs hold.\n\nAC1 a scripted/rapid guess is throttled: after the free attempts a wait is imposed and the keypad is frozen - typing the CORRECT PIN during the wait did nothing. AC2 the first five wrong attempts imposed no wait at all, so an ordinary mistype is free. AC3 the count lives in DataStore: while locked I force-stopped and relaunched and it came back STILL LOCKED with the countdown resumed from the persisted state, and the stored count was confirmed in the auth_prefs file (a reboot preserves DataStore the same way). AC4 a correct unlock cleared the count to 0 (also unit-verified for biometric). AC5 the lock screen says plainly it is waiting and counts the seconds down, so it never looks broken. AC6 no permanent lockout - every wait elapses and entry re-enables. AC7 biometric is independent of the PIN counter and is not penalised (code-verified; no fingerprint enrolled on the emulator to demo live), and it clears the count on success. AC8 the Forgot-PIN link stayed present and tappable all through the lockout - a genuinely-forgotten warden is not made to wait out the penalty to escape; it also survives a detour into the forgot flow and back. AC9 SECURITY-REVIEW.md finding 3 is updated OPEN -> RESOLVED with what was done.\n\nDelay schedule matches the review's suggestion (free-for-5, then 30s doubling, 5-min cap) and is unit-tested including the overflow guard for an absurd failure count.\n\n500 tests pass, line coverage 96.92%, jacocoCoverageVerification green."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. I mistyped the PIN several times today by accident and got told plainly it was wrong, with the app slowing down rather than letting anyone sit there guessing. It never locked me out of my own data."
     }
   ]
 }

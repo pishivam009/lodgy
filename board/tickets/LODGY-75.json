@@ -11,12 +11,12 @@
     "No Drive SDK, no OAuth and no INTERNET permission is added - the app stays network-free and keeps using the system picker",
     "Findings feed LODGY-68: record whether Drive grants a durable OpenDocumentTree permission suitable for unattended daily backups"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:28:16+00:00",
-  "updatedAt": "2026-09-06T15:10:00Z",
+  "updatedAt": "2026-09-06T15:47:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T13:28:16+00:00",
@@ -59,6 +59,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PO SIGN-OFF GIVEN. Closing on the Product Owner's authority, which is what the ticket's own decision reserved to them - the buildable half was verified in QA and AC1, AC2 and AC6 were always theirs to settle. \n\nRECORDED PRECISELY, so a future reader is not misled about what was demonstrated. VERIFIED IN THIS SESSION: AC3 on the device (the Backup screen names Google Drive in export, restore and the daily-backup folder); AC4 (USER-MANUAL section 8 covers both directions in plain language); AC5 against the MERGED manifest - no INTERNET permission ships and there is no Drive SDK, OAuth or play-services-auth on the runtime classpath. Also demonstrated, though it is not AC1: the export/import machinery works end to end through the system picker to local storage - a CRC-clean zip containing a valid v7 database, and a restore that recovered a deliberately wrecked hostel name and a deleted tenant. ACCEPTED ON PO AUTHORITY RATHER THAN DEMONSTRATED HERE: AC1 and AC2 against Google Drive specifically, and AC6. This emulator has no Google account and no Drive app, so Drive never appeared in the picker; the Drive-provider behaviour the ticket was written to catch - a writable-looking stream that yields a truncated file - was not exercised in this session. If the PO ran it on their own phone, adding a line here would make the record complete. \n\nCARRIED FORWARD TO LODGY-68 for AC6, since it does not disappear with this ticket: saving one file (CreateDocument) and granting a durable folder (OpenDocumentTree) are different capabilities and a provider can support one without the other, so Drive appearing during an export does not establish that unattended daily backups can land there. If it turns out Drive grants no tree access, the manual's existing advice - point the daily-backup folder at a Drive-SYNCED local folder - is already the right answer, so no documentation changes either way."
+    },
+    {
+      "timestamp": "2026-09-06T15:47:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. I do not need Lodgy to talk to Google Drive - I need to be able to put the backup there, and the phone's own file picker already does that. What was missing was that nobody told me, and now the Backup screen says it in both places and the manual walks through both directions. I did a full export and restore during this session and got my data back exactly as it was, so I trust the mechanism. I am accepting the Drive-specific part on my own sign-off rather than because it was demonstrated here - noted in the ticket so nobody later thinks otherwise."
     }
   ]
 }

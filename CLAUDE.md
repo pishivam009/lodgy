@@ -30,8 +30,9 @@ ship. See the emulator notes below for how to test one properly.
 **Every ticket carries the release it ships in.** `docs/RELEASES.md` is the
 list, and each `board/tickets/LODGY-N.json` has a `version` field naming one of
 its releases. A new ticket gets the currently open version when it is created;
-when a release closes, bump `versionCode`/`versionName` in
-`app/build.gradle.kts` to match and open the next section in RELEASES.md. The
+when a release closes, record it and open the next section in RELEASES.md - the
+version bump waits for the first commit that builds a ticket of the next release,
+so a closing build is never labelled as the one after it. The
 app shows its version on the More screen for support, so a warden's build has
 to be traceable back to the tickets in it.
 

@@ -12,12 +12,12 @@
     "Optionally, and separately decided, the warden can record the forgone rent as an expense",
     "Existing data is unaffected and no migration is required beyond whatever the flag itself needs"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-05T11:19:34Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -70,6 +70,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS on stage one - all stage-one ACs verified on the emulator against a real populated database.\n\nAC1 FIXED and verified: turning on the 'Warden / caretaker room' switch on the agreement form removes the rent, deposit AND opening-balance fields entirely (not merely clears them), and saving created the tenancy with agreedRent=0, advanceDeposit=0, nonRevenue=1 - the field QA had typed a stray rent into no longer exists in that state.\nAC2 no invoices: all three non-revenue agreements (the two seeded + the caretaker I created) have zero invoices, and InvoiceGenerationWorker filters !nonRevenue so none will ever be generated.\nAC3 with no invoices there is nothing to go overdue - the dashboard overdue count stayed at 2 (the genuine dues) and excludes these rooms.\nAC4 counts as occupied: room 101 (both caretaker beds) reads '0 vacant / 2 beds' and room 103 became '1 partial' once the caretaker moved in; the long-vacant nudge and vacant-bed queries key off beds.status='VACANT', so an OCCUPIED non-revenue bed is never nagged and never counted vacant.\nAC5 the monthly report and PDF packet are built from invoices, of which these rooms have none - no phantom dues.\nAC7 migration 4->5 is a plain ADD COLUMN DEFAULT 0, existing data unaffected, no destructive migration.\n\nAC6 (record the forgone rent as an expense) is the discretionary, separable half the PO explicitly deferred to stage two and filed as LODGY-84 - correctly out of scope for this stage-one delivery.\n\n453 unit tests pass, line coverage 96.82% (gate 0.93), jacocoCoverageVerification green."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. The caretaker's room shows as occupied, generates no rent, never appears as overdue, and never nags me that a bed is empty. Before this I had no honest way to record it."
     }
   ]
 }

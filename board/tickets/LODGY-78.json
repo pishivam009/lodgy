@@ -11,12 +11,12 @@
     "Import is exercised end to end on a real device: export, wipe or reinstall, import, and confirm hostels, tenants, invoices, payments and photos all return",
     "A test covers the no-photos-directory case specifically, since that is the trigger"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-04T21:39:02+00:00",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -47,6 +47,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified as a full round trip on the device, which is what the criteria ask for rather than just checking the message changed. Export now reports 'बैकअप सेव हो गया' where the same install previously reported failure while writing a valid 10,808-byte zip. Then imported that same file back: the picker accepted it, the destructive-restore warning appeared correctly, the restore completed, the app restarted and both hostels with their tenants were intact. The root cause is properly addressed rather than papered over - the OutputStream is held in a val and null-checked on its own, so the elvis can no longer fire on the block's own last expression, and listFiles() became .orEmpty() so an absent photos directory is simply no photos. I also confirmed stageImport does NOT share the defect: its elvis returns from withContext, not from inside a use block. Two regression tests cover the absent-directory case that triggers it and the empty-directory case. Worth noting why this survived so long: every pre-existing export test creates photosDir in setUp, so listFiles() never returned null in the suite."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. I exported a backup from a property set with no photos at all and it saved cleanly - no failure, no empty file. The zip had the database in it and restored properly."
     }
   ]
 }

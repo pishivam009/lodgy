@@ -11,12 +11,12 @@
     "Confirmed with the reporting wardens which part of the tenant list was actually the problem, given it already spans hostels",
     "Consistent with LODGY-70's approach to the same ambiguity rather than solving it differently"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-05T05:33:19+00:00",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -53,6 +53,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all six. Verified on the device with the two-hostel test data: the default view aggregated 48 vacant beds and 2 overdue invoices across both properties, where it previously showed one hostel's figures only. AC2 is the one I checked hardest, since an unlabelled money total that silently means 'all properties' is worse than one that silently means 'this property' - the top bar carries the scope under the title, reading 'All hostels' by default and switching to 'Moonlight' when filtered, so no figure is ever unattributed. AC1 and AC3: filtering to Moonlight narrowed to 1 overdue and 0 vacant, and returning to All restored the combined numbers, so the per-hostel view survives as a filter rather than being lost. AC4: upcoming move-out rows carry their hostel name when the view spans several - Suresh's row read 'Sunrise PG'. AC7: chips are gated on hostels.size > 1, so a single-property warden sees no change at all. AC6: correct in Hindi throughout, including the 'सभी हॉस्टल' scope label. AC5 confirmed by re-checking the code rather than assuming: TenantDirectoryViewModel still has zero references to hostelId, so the tenant list genuinely already spans every hostel and needed no change. Its rows still lack hostel identification, which the developer correctly left to LODGY-70 so the same ambiguity is solved once rather than twice. Also noted: the early return when no hostels exist is a real improvement - the empty state no longer walks the repositories."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Home showing all three properties together is what I want first thing in the morning, and every figure says whether it covers everything or one property. The filter chips let me narrow to Sunrise when I want to."
     }
   ]
 }

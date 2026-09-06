@@ -12,12 +12,12 @@
     "A non-revenue tenancy with this turned off behaves exactly as it does after LODGY-82, with no expense at all",
     "The forgone amount is stored somewhere that cannot be mistaken for billable rent, so LODGY-82's no-invoice guarantee still holds"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-05T07:42:49Z",
-  "updatedAt": "2026-09-06T12:45:00Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-05T07:42:49Z",
@@ -54,6 +54,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS, and the migration is the part I checked hardest because it is the one that cannot be undone on a warden's phone. Verified against the populated v6 database from the device: after upgrade user_version is 7, the three hostels, six tenants, six agreements, seven invoices and six payments are all still there, both pre-existing non-revenue tenancies defaulted to forgoneRentExpense 0 with forgoneRentAmount NULL, and the pre-existing WIFI expense has a NULL tenancy link. Nothing that existed changed behaviour (AC6). AC7 is the design decision that matters and it holds: forgoneRentAmount is its own column, and nothing on the billing path reads it - InvoiceGenerationWorker still filters nonRevenue out before creating anything, so LODGY-82's guarantee is intact. AC1 verified by the second non-revenue tenancy, left switched off, recording nothing at all on the same run. AC2: the amount offered was 5000, the room's own price per bed, and editable. AC4: the expense reached the monthly report (Total expenses Rs 6000, income minus expense -6000, total dues Rs 0) and the expense list under a new ACCOMMODATION chip, and produced no invoice for either non-revenue tenancy. ONE THING THE PO SHOULD KNOW rather than a defect: AC4 says 'and PDF exports'. The monthly report exports CSV only, and the printable packet has never carried expenses of any kind - so there was nothing to skip rather than something skipped, and the developer's read was right. If expenses belong in the packet that is its own ticket. AC3 and AC5 by inspection: generation reads getAllActive so it stops when the tenancy closes, and switching off only stops the next run - the idempotency check is 'does this tenancy already have an expense dated in this month', so nothing recorded is touched. Correct in Hindi."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and I like that it is off unless I ask. I live in my own building so I have not spent anything and I leave it off; if I were paying a caretaker partly in a room I would turn it on and see what that help really costs me. It shows up as an expense in the monthly report and never as money anyone owes me."
     }
   ]
 }

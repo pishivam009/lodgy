@@ -15,9 +15,11 @@ the thing 1.0 would be claiming.
 
 - A new ticket gets its `version` when it is created, set to the release
   currently open (the highest one below).
-- The release closes when its last ticket reaches Delivered. Bump
-  `versionCode`/`versionName` in `app/build.gradle.kts` in the same commit that
-  closes it, and open the next section here.
+- The release closes when its last ticket reaches Delivered. Record that here
+  and open the next section. Do **not** bump `versionCode`/`versionName` at that
+  moment: the build carrying that work *is* the closing version, and bumping on
+  closure would label it as the next one while containing nothing new. The bump
+  belongs in the first commit that builds a ticket of the next release.
 - A ticket that slips does not silently move: change its `version`, and say in
   its history why it moved, so the list stays a record of what actually shipped.
 - `Won't Do` tickets keep the version they were scoped into. They record a
@@ -53,7 +55,7 @@ actions, English as the first-launch default, long-vacancy nudges, local
 notifications for dues and expenses, screen transitions, and status icons.
 LODGY-48 (APK size) was closed Won't Do in this wave.
 
-## 0.4.0 (build 4) — post-launch feedback and fixes — CURRENT
+## 0.4.0 (build 4) — post-launch feedback and fixes — SHIPPED
 
 **LODGY-63 … LODGY-84.** What real use turned up, including two crashes and a
 double-booking: delete that does not break history, RAG room tiles, daily
@@ -64,6 +66,16 @@ warehouses and flats without inventing floors and beds, navigation older wardens
 can actually find, warden and caretaker rooms that bill nobody, and confirmation
 on the updates that silently move money.
 
-Every ticket in this release has reached Done. The release itself stays open
-until they reach Delivered — that is the warden's call after UAT, not QA's — so
-`versionName` stays at 0.4.0 and the next section opens when UAT closes it.
+All 26 tickets reached Delivered under UAT on 6 Sep 2026, so this release is
+closed. UAT bounced one of them — LODGY-68's dashboard tile told the warden to
+tap text that was not a tap target — and it was fixed, re-tested and accepted
+within the release rather than deferred.
+
+## 0.5.0 — open, nothing built yet
+
+`versionName` stays at 0.4.0 until the first ticket here is built.
+
+- **LODGY-89** — on Home only the Vacant tile responds to a tap; Overdue
+  invoices, Collected today and Upcoming move-outs are dead. Raised in UAT:
+  the tile a warden reaches for is the one about money owed, and it is the one
+  that does nothing.

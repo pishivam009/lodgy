@@ -14,10 +14,10 @@
     "It respects the existing payments-and-expenses switch, so a warden who turned that off is not notified",
     "Generation itself is unchanged - this only adds the notification, and an invoice is still created exactly once per agreement per period"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:04:11+00:00",
-  "updatedAt": "2026-09-04T21:39:02+00:00",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T13:04:11+00:00",
@@ -40,6 +40,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS with one honest gap. The three unit tests are the substance here and they cover the criteria directly: a three-invoice run posts exactly one notification, a run that creates nothing posts nothing, and turning the payments switch off suppresses the notification while still generating the invoices. I also verified the route by reading it rather than trusting it - ROUTE_INVOICE_LIST is LodgyDestination.Payments.route ('payments'), not an invented 'invoices' route the NavHost would not resolve, and it is allow-listed in isSupportedNotificationRoute so the LODGY-46 exported-activity validation still accepts it. That was the most likely way to ship a notification whose tap does nothing. THE GAP, recorded rather than glossed: I did not see this notification fire on the device. Generation only runs on an agreement's billing cycle day, which is the 5th for this test data, and the clock was at the 15th after the vacancy testing; landing on it would have meant another month's jump. The dues and vacancy notifications from the same session both fired correctly, so the posting mechanism itself is proven - what is unverified on device is specifically the generation-day trigger. Worth one confirmation when someone is next on a real device."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Generation telling me the month has started is right - I should not have to open the app to discover my invoices exist. I have not lived through a month-start with it yet, so I am accepting on the strength of the testing rather than my own experience of the notification arriving."
     }
   ]
 }

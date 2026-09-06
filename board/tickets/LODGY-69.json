@@ -16,12 +16,12 @@
     "The existing Tenants tab onboarding route via BedPickerScreen keeps working unchanged",
     "View description shows the room's type, price per bed and amenities - amenities being the field the PO could not see anywhere today (LODGY-71)"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-05T11:19:34Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
@@ -86,6 +86,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified end to end on the emulator against a real populated database, both routes.\n\nAC1-2 beds tappable, every tap opens a sheet and nothing navigates on a bare tap - confirmed on the room 102 grid and via All rooms.\nAC3 vacant bed offers the description panel + Assign; AC4/5 occupied bed offers View tenant, which opened the assigned tenant's full profile (verified on the Corner shop tenant and on hostel beds).\nAC6 Assign carried the tapped bed straight into onboarding - no bed re-pick.\nAC7 identical sheet reached via All rooms > room 103 > bed A.\nAC8 THE OLD BLOCKER IS FIXED. Triple-tapped 'Save and move-in' as fast as adb allows; the flow returned to the bed grid the warden tapped from and the database holds exactly ONE active tenancy on that bed (agreements 6->7, tenants 6->7; the bed's 2 total rows are 1 active + 1 historical CLOSED). The save() guard plus the nav-chain unwind both hold.\nAC9 missing-tenancy fallback confirmed in code (SelectedBed.tenantId null -> vacant behaviour).\nAC10 BedPicker onboarding route intact.\nAC11 FIXED and verified: the vacant-bed sheet shows Type (rendered localised, 'Double' as डबल - the old untranslated-enum defect is gone), price per bed, and amenities ('Attached bathroom, geyser, Wi-Fi' on the seeded room 102); a room with no amenities correctly omits the line.\n\nONE OPEN POINT FOR THE PO, not a defect and not blocking this pass: the sheet presents the description as an inline compact panel with a SINGLE action button, not two discrete 'view description' + action buttons as AC2-4 literally word it. Read as satisfied because the PO's 2026-09-04T13:04 decision said 'a compact panel is enough for view description', and that panel's content (type, price per bed, amenities, tenancy summary) is all present. If the PO wants two literal buttons, bounce at UAT - it is a small addition.\n\n453 unit tests pass, line coverage 96.82% (gate 0.93), jacocoCoverageVerification green."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Tapping a bed opens a sheet rather than jumping somewhere, which matters on a dense grid where my thumb is not precise. A vacant bed offers to assign someone; an occupied one offers the tenant. I could not find a way to put a second person on an occupied bed, which is what went wrong before."
     }
   ]
 }

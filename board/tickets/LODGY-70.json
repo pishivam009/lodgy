@@ -12,12 +12,12 @@
     "Correct in dark mode and in Hindi, and the tiles stay legible once a hostel name is added to them",
     "A warden with a single hostel sees no regression - the filter is unobtrusive and the screen still reads as it does today"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:35:58+00:00",
-  "updatedAt": "2026-09-05T07:42:09Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:35:58+00:00",
@@ -60,6 +60,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified on the emulator against a two-hostel estate (Sunrise PG 18 rooms, Moonlight 1), in Hindi and in dark mode. AC1: All rooms opens listing both hostels' rooms with no hostel chosen. AC2: the hostel chips narrow it AND the summary tracks the filter - all = 16 empty/1 partial/2 full, Moonlight = 0/0/1, Sunrise = 16/1/1. AC3: every tile carries its hostel ('Sunrise PG - First'), and when one hostel is selected the tiles drop the now-redundant prefix and show only the floor - a nice touch beyond the AC. AC4: reached from the Property tab top bar without opening a hostel first. AC5: tapping tile 102 opened that room's bed grid (DOUBLE, Rs 5500/bed, Bed A vacant, Bed B occupied), matching the tile's '2 me 1 khali' label. AC6: dark mode and Hindi both correct - the RAG tiles stay legible with the hostel name added, and each tile pairs its colour with a status icon rather than relying on colour alone. AC7: AllRoomsScreen.kt:84 hides the hostel filter row entirely when hostels.size <= 1, so a single-hostel warden sees no new control at all."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. All rooms spans every property and sits in the Property tab, so I am not drilling hostel by hostel to find a free room. The hostel name on each tile is what makes it usable - two of my properties have a Room 101."
     }
   ]
 }

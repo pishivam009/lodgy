@@ -16,10 +16,10 @@
     "Backward compatible: an existing install is unaffected until the warden uses the route, and no migration is required",
     "USER-MANUAL.md documents the route, since the warden will be reading it in a panic"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:37:18+00:00",
-  "updatedAt": "2026-09-05T17:24:47Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T13:37:18+00:00",
@@ -68,6 +68,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified the full round trip on the emulator, and every acceptance criterion holds with one wording divergence flagged for the PO below.\n\nAC1 'Forgot PIN?' is right on the lock screen. AC2 it exports a full backup via SAF without unlocking, reusing the LODGY-28 export - pulled the written zip and confirmed it holds lodgy.db with all 3 hostels / 6 tenants / 6 agreements / 7 invoices / 7 payments. AC3 the Reset button appears only AFTER a successful export - not before. AC4 reset is behind an explicit LODGY-57 confirm dialog. AC5 backing out before exporting leaves everything intact and clears nothing. AC6 the biometric-first hint and button are shown when a fingerprint is enrolled (code-verified; the emulator has none enrolled). AC7 THE ROUND TRIP: reset -> new 4-digit PIN -> app unlocked straight to a dashboard with every property and figure intact; the warden row kept its original id, its hash was re-set, and zero hostels were orphaned, so the hostels->warden foreign key held throughout. AC8 no schema change, no migration. AC9 USER-MANUAL section 1 documents the route.\n\nAlso confirmed the crash the developer hit and fixed is gone: deleting the warden row failed a FOREIGN KEY constraint; blanking the hash and reusing the row on setup is correct and does not crash.\n\nDIVERGENCE FLAGGED FOR THE PO, not failing the ticket: AC3 as written says the flow should state 'the app's data will be CLEARED and that the backup is how it comes back'. The built flow states the opposite - 'Your data stays. Only the PIN is cleared' - because the implemented reset is deliberately non-destructive (it blanks the hash; the data survives, as the ticket's own premise notes). Telling the warden their data will be cleared would be false, so the messaging is correct for the actual behaviour. The developer already raised this as a comment for the PO (restoring a forgot-time backup re-imposes the old PIN). Passing on the basis that the behaviour is safe and correct; the PO should ratify the reworded AC3 at acceptance."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and it is better than I expected. The forgot-PIN screen makes me save a backup before it will reset anything, and it says outright that my hostels, tenants and payments stay on the phone and only the PIN is cleared. That last line is exactly what I would need to read while panicking. With no account and no internet there is no other way back in, so making the backup mandatory first is the right call."
     }
   ]
 }

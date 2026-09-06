@@ -14,10 +14,10 @@
     "A decision is recorded on VacantViewScreen: removed, kept with another entry point, or absorbed - it must not be left unreachable",
     "Correct in dark mode and Hindi, consistent with the LODGY-67 tiles"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:53:34+00:00",
-  "updatedAt": "2026-09-05T07:42:09Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:53:34+00:00",
@@ -54,6 +54,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified on the emulator in Hindi and dark mode. AC1: Home's '46 khali bed' tile now navigates to ALL_ROOMS_ROUTE?hasSpace=true (LodgyNavHost.kt:166) and lands on All rooms with the filter already applied, rather than on VacantViewScreen. AC2: 'jagah uplabdh' keeps both wholly empty and partly filled rooms - room 102 (2 beds, 1 vacant) is listed first, and the summary reads 16 empty/1 partial/0 full, so full rooms are excluded. AC3: the fill filter is new and sits as a second chip row directly under LODGY-70's hostel row, same styling, not a competing control. AC4: the 'jagah uplabdh' chip renders visibly selected on arrival with 'sabhi' beside it to clear it - confirmed on screenshot. AC5: no contradiction - the screen is titled 'sabhi kamre' (all ROOMS), the summary counts rooms, and each tile shows its own bed breakdown; the tiles reconcile exactly to Home's 46 beds (103:2 + 201-214:14x3 + ANNEXE:1 + 102:1 = 46). AC6: VacantViewScreen deliberately KEPT and still routed to, with the reason recorded at LodgyNavHost.kt:441 - an already-delivered long-vacancy notification sitting in a warden's tray still carries ROUTE_VACANT_VIEW in its intent, so removing the destination would break notifications already on the phone. AC7: consistent with the LODGY-67 tiles in dark mode and Hindi."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted for what it does - the Vacant tile takes me to the rooms with space. Noting that it is the ONLY tile on Home that responds; I have filed LODGY-89 about the others rather than holding this up, since this ticket only ever asked for this tile."
     }
   ]
 }

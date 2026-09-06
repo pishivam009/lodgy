@@ -12,12 +12,12 @@
     "Invoicing, occupancy, the dashboard, the PDF packet and the CSV import all still work for both property shapes",
     "The impact on LODGY-41 and LODGY-70 is assessed before either is built on the old assumption"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T20:10:57+00:00",
-  "updatedAt": "2026-09-05T11:19:34Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T20:10:57+00:00",
@@ -54,6 +54,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - the PO's decided option (property type drives layer visibility, no structural remodel) is built and verified on the emulator against a real populated database.\n\nAC1 decision recorded (PO history + DESIGN decision log). AC2/3 created a SHOP with ₹18000 rent through the add-property form - it asked type first, then a single monthly-rent field, with no floor or bed step anywhere; the shop then opened straight to its unit view (₹18000/month, one 'this property' tile), never a floor list. AC4 the two existing hostels are untouched - full Hostel>Floor>Room>Bed model, floor list with occupancy summaries all intact.\nAC5 migration 5->6 is a plain ADD COLUMN ... DEFAULT 'HOSTEL'; user_version reads 6, no fallbackToDestructiveMigration anywhere in the source, existing data intact.\nAC6 invoicing/occupancy/dashboard verified on device (shop in the switcher, occupancy counts it, let it to a tenant normally); the printable PDF packet rendered across all three properties without crashing - pulled it and confirmed the Corner shop, its tenant and the ₹18000 rent all appear (2 pages, 117KB); CSV import operates on agreement rows and is type-agnostic (covered by the passing suite).\nAC7 impact assessed and correct: the LODGY-70 All-rooms tile for the shop shows its type ('Shop') instead of the placeholder floor label; LODGY-41 floor cards are hostel-only and unaffected.\n\nTWO MINOR WORDING LEAKS (cosmetic, not AC failures, flagging for the PO): (1) a single-unit tenant profile still reads 'Room Corner shop · Bed A' - the bed layer leaks into the profile label; (2) the printable-records scope button reads '3 hostels' when one of the three is a shop - the property/hostel rename that reached the property screens did not reach this counter.\n\n453 unit tests pass, line coverage 96.82% (gate 0.93), jacocoCoverageVerification green."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and this is the one that made the app fit what I actually own. My shop is set up as a shop - one rent, no floors, no beds to invent - and it still appears in the room view, the reports and the backup alongside the hostels. I never have to pretend it has a Bed A."
     }
   ]
 }

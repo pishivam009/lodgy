@@ -15,10 +15,10 @@
     "If the folder becomes unwritable the failure is surfaced on the dashboard and the warden is told how to re-pick it - it never fails silently",
     "Backward compatible: an existing install that has never chosen a folder keeps working exactly as today, prompted but never blocked, and no migration is required beyond the new preference"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:27:10+00:00",
-  "updatedAt": "2026-09-05T17:34:23Z",
+  "updatedAt": "2026-09-06T15:57:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:27:10+00:00",
@@ -71,6 +71,38 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - re-verified the AC7 fix on the emulator and re-confirmed the rest still holds.\n\nAC7 (the fail reason) is now met: broke the folder (deleted the tree), tapped 'back up now' -> the tile turned red with 'Last backup failed - tap to choose the folder again' and its action changed to 'Choose the backup folder again'. Tapping it routed to the Backup screen's change-folder control instead of a silent retry. Re-picked the folder -> the red state cleared immediately; a subsequent 'back up now' went green with a fresh zip on disk. The broken -> re-pick -> recover loop is reachable entirely from the dashboard where the failure shows.\n\nRest still good from the prior pass: persisted SAF grant and change-from-More (AC1); daily unique job (AC2); last-backup time + one-tap icon (AC3); RAG green/amber/red states (AC4); skip-unchanged and keep-7 unit-tested (AC5/AC6); no-op with no folder and no migration (AC8).\n\n489 tests pass, line coverage 97.00%, jacocoCoverageVerification green."
+    },
+    {
+      "timestamp": "2026-09-06T15:40:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "In Progress",
+      "note": "BOUNCED, and it is a small fix on an otherwise good feature. The tile on Home reads 'Automatic backup / Not set up - tap to choose a folder'. I tapped the words. Nothing happened. I tapped the card. Nothing happened. The card and its text are not tappable at all - the only clickable thing is a small icon at the far right (labelled 'Set up automatic backup'), which does take me to the right screen. So the app tells me to tap something that is not a tap target. I sat there tapping the sentence like it was broken. The icon reads as a 'do it now' button from its position, not as the way to answer the instruction next to it. WHY THIS MATTERS MORE THAN IT LOOKS: this is the one tile whose whole job is to stop me losing everything if my phone dies, and the app is nagging me daily about it. If the nag does not work when I respond to it, I will assume the feature is broken and stop noticing the tile - which leaves me with no backup, which is the exact thing this ticket exists to prevent. It is also the population LODGY-80 was written for: I am not going to hunt for a small icon when the words told me to tap. FIX: make the whole card tap to the same place the icon already goes. Everything else about this holds up - the tile is honest that nothing is set up, the wording tells me to pick a cloud-synced folder, and the manual backup and restore both work (I did a full export and restore during this session and got my data back intact)."
+    },
+    {
+      "timestamp": "2026-09-06T15:55:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed. The whole card is the tap target now, not just the icon - it routes to the folder picker when nothing is set up or the last run failed, and runs a backup on the spot when a folder is working, which is what the icon already did. One line; the UAT report was exact about what broke and why it mattered. Verified by repeating the warden's own action: tapped the words 'Not set up - tap to choose a folder' and landed on the Backup screen where 'Choose backup folder' lives. Full suite passes, coverage above the gate."
+    },
+    {
+      "timestamp": "2026-09-06T15:56:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. Re-ran the reproduction from the UAT bounce: tapping the status text now goes where the text says. The icon still works and still means the same thing, and the routing rule is unchanged - not-configured and failed go to the picker, a healthy backup runs immediately - so nothing else about the tile moved."
+    },
+    {
+      "timestamp": "2026-09-06T15:57:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. I tapped the sentence that told me to tap and it did what it said. That is the whole complaint closed. The rest of this feature I already trusted - the tile is honest when nothing is set up, and the manual backup and restore both got my data back intact during UAT."
     }
   ]
 }

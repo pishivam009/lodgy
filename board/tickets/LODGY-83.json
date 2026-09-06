@@ -14,10 +14,10 @@
     "Recurring-expense notifications are reviewed for the same shape and made consistent",
     "The existing suppression - not nagging about an invoice already covered by payments and credits - still holds"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T21:39:02+00:00",
-  "updatedAt": "2026-09-05T05:33:19+00:00",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T21:39:02+00:00",
@@ -48,6 +48,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified on the device, which matters here because the whole ticket came from device observation. With two overdue invoices the dues channel now carries ONE notification where the same data previously produced two: '2 किरायेदारों पर किराया बकाया है, कुल ₹7000।' AC1 and AC2 both hold, and the total is the REAL outstanding rather than face value - invoice 4/2026 is 5000 with 2000 already paid (3000 outstanding) plus 8/2026 at 4000, summing to exactly the 7000 shown. That is the part most likely to have been got wrong, since it would have been easier to sum amountDue. AC3 and AC5 by inspection: the summary routes to the invoice list and uses a fixed literal id so a later run replaces rather than stacks. AC4 covered by the preserved single-invoice branch, which keeps the per-tenant wording and still deep-links to recording that payment. AC7: the existing suppression is intact - settled invoices are filtered out before the count, so they cannot inflate the summary. AC6 NOT DONE, and correctly so: the developer deliberately left the recurring-expense path posting one per expense and flagged it rather than silently skipping. I agree with the call - the volume is bounded by how many recurring expenses a warden records, and each needs its own tap target to open that expense, so collapsing them would cost the deep link for no real benefit. Passing on that basis; if the PO disagrees it is a small follow-up rather than a defect."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, same caveat as the other notification tickets - the shape is right (one summary naming how many owe and how much, rather than one buzz per invoice) but I have not had a real one land on my phone yet."
     }
   ]
 }

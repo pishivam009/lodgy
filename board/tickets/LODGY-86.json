@@ -13,12 +13,12 @@
     "Correct in Hindi as well as English",
     "No string is left saying 'bed' in a place a warehouse can appear"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-06T09:10:00Z",
-  "updatedAt": "2026-09-06T13:20:00Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-06T09:10:00Z",
@@ -65,6 +65,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS on re-test. I re-ran the two reproductions that failed it. (1) The tenant directory now shows 'Corner shop' for the shop's tenant, where it showed 'Room Corner shop . Bed A' - and hostel rows are untouched, still 'Room 101 . Bed B' and 'Room 501 . Bed A'. (2) The vacancy path: VacantBedDetail carries the property type and the worker composes the location from it, with tests asserting the single-unit branch is taken for a SHOP and the room-and-bed branch for a HOSTEL. Fixing it at BedLocation rather than at five call sites is the right shape - a sixth screen using that label gets it for free. The three extra instances the developer found on their own - the printable packet, the transfer target list and LODGY-84's own forgone-rent note - are the ones I had not reached, and finding them unprompted is the difference between AC8 being met and appearing to be met. AC8 now holds as literally as I can check it: I diffed every string key between the two languages and found no missing keys and no format-specifier mismatches, so nothing is left half-translated either. AC1-AC5 and AC7 re-confirmed as before. NOT FIXED and correctly out of scope: a single-unit property's floor still prints as '-' in the packet's floor heading. That is a floor label, not a bed word, and it belongs to LODGY-79's invariant rather than this ticket - filing it separately would be right if the PO wants the packet tidy."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Nothing calls my shop a bed any more - the tenant list says 'Corner shop', the tiles use a door instead of a bed, and Home just says 'Vacant'. My hostel rooms still say beds, which is correct, because that is what they are."
     }
   ]
 }

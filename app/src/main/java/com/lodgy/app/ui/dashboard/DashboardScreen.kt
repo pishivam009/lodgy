@@ -189,7 +189,12 @@ private fun BackupTile(
         }
     }
 
+    // The whole card is the tap target, not just the icon. The status line says "tap to choose a
+    // folder", and in UAT a warden tapped those words, then the card, and got nothing - concluding
+    // the feature was broken. An instruction has to be tappable where it is written, and this is the
+    // one tile whose job is to stop a lost phone costing the warden everything (LODGY-68).
     Card(
+        onClick = if (actionIsChooseFolder) onSetUp else onBackupNow,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = palette.container),
     ) {

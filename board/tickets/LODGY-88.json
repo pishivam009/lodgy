@@ -13,12 +13,12 @@
     "Product Owner has recorded a decision on whether an hourly run should re-alert every time or only when the figure has changed",
     "Correct in Hindi as well as English"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-06T11:05:00Z",
-  "updatedAt": "2026-09-06T13:20:00Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-06T11:05:00Z",
@@ -57,6 +57,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS on re-test. The title is a plurals resource resolved with getQuantityString, so the 1-day threshold this ticket introduced now reads 'Vacant for over 1 day'. There is a test pinning it at threshold 1, which is what stops it regressing the next time someone touches the string. Hindi routed through the same resource. Everything I passed on the first run still holds: options are 1/2/3, a saved 7 or 30 is coerced on read with no migration, and the hourly reschedule is genuinely live on an upgraded install rather than only on fresh ones. AC7 remains the PO's to confirm - hourly re-alerting is now observable on the device, so they can judge it in use."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Being told within the hour that a room is empty or rent is late is right - a room sitting empty is money I am losing every day. I will say honestly that I do not yet know how an hourly reminder feels over a full week; if it starts to nag I will come back and ask for it to only speak up when something changes."
     }
   ]
 }

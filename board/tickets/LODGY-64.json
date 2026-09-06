@@ -11,12 +11,12 @@
     "Bed, TenancyAgreement, Warden and ReconciliationMark are explicitly left without a delete action, and the ticket records why",
     "Every new delete follows the confirmation pattern from LODGY-57 and, where relevant, the hard-block pattern from LODGY-63"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T12:05:59+00:00",
-  "updatedAt": "2026-09-05T19:03:11Z",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T12:05:59+00:00",
@@ -53,6 +53,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - drove all six deletes on the emulator against the live database; every acceptance criterion holds, with one wording point flagged for the PO.\n\nAC2/AC6 each delete is reachable from where the record is viewed/edited, behind a confirm:\n- Hostel: edit-form trash. Deleting the empty 'TShop' shop succeeded and the DB showed ZERO orphaned floors/rooms/beds - its implicit structure cascaded - back to 3 properties. Deleting the Corner shop (has a tenant) was BLOCKED.\n- Tenant: profile -> edit -> trash. Deleting Suresh (has a tenancy) was BLOCKED with a clear message.\n- Expense: edit-form trash -> confirm -> the count went 2 -> 1 in the DB.\n- Invoice/Payment/Credit on the receipt screen.\n\nAC3 (the care-case) verified TWICE, both recomputing correctly:\n- Deleted a payment from Ramesh's period-7 invoice (PAID, two payments) -> DB recomputed PARTIAL, not left PAID.\n- Deleted the Rs800 credit on his period-5 invoice (PAID via credit) -> effective due rose back to 3000, paid 2200 < 3000, DB recomputed PARTIAL. So both payment and credit deletion drive the status.\n\nAC4 deleting that period-7 invoice while it still had payments was BLOCKED ('delete those first'). AC5 Bed, TenancyAgreement, Warden and ReconciliationMark have no delete action (confirmed in code) and the reasons are recorded in the ticket and DESIGN.md 4.13. AC6 confirms appear on every delete; the hard-block pattern is used on hostel, tenant and invoice.\n\nAC1 WORDING - PASSING but flag for the PO to ratify: the AC says block while the hostel holds 'any floor, room, tenancy or financial record'. The build blocks on tenancy or expense and lets the floors/rooms/beds CASCADE away (their FKs are ON DELETE CASCADE). Read literally, 'block on any floor' would make every single-unit shop/flat (LODGY-79, which always carries an implicit floor/room/bed) permanently undeletable - defeating the ticket's own goal. The built behaviour is safe (confirmed, cascades, no orphans, backup covers it) and handles both shapes; it is just more permissive than the literal wording for a hostel with empty-but-set-up floors. The developer raised this for a PO nod; I concur it is a product call, not a defect.\n\n510 tests pass, line coverage 96.73% (gate 0.93), jacocoCoverageVerification green.\n\nEMULATOR NOTE (QA residue, all internally consistent): Ramesh's period-7 invoice is now PARTIAL (a payment deleted), his period-5 is PARTIAL (its credit deleted), and one of two expenses was deleted."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, and this is the one I leaned on hardest today. I recorded a Rs 1500 payment against Priya's Rs 4000 invoice, then deleted it the way I would after fat-fingering an amount in front of a tenant. The invoice went straight back to UNPAID with the balance at Rs 4000 - it did not sit there claiming PARTIAL with nothing behind it. It warned me first and said plainly that it would update whether the invoice reads paid, part-paid or unpaid. That is the behaviour I need to trust the numbers."
     }
   ]
 }

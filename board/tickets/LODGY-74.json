@@ -10,12 +10,12 @@
     "LODGY-59 AC4 still holds - a bed already nudged is not nudged again on later runs, and is forgotten once it fills",
     "Verified by actually firing it, not only by unit test: move the device clock forward with several long-vacant beds and confirm the notification count"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.4.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-04T13:28:16+00:00",
-  "updatedAt": "2026-09-04T21:39:02+00:00",
+  "updatedAt": "2026-09-06T15:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-04T13:28:16+00:00",
@@ -38,6 +38,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified on the device under the exact conditions that produced the bug, not by unit test alone, since the original 48-notification burst was only ever visible on a device. Backdated all 48 vacant beds to 30 days, cleared the persisted notified-bed set so they would all qualify again, and advanced the clock so the daily worker ran. Result: ONE notification on the vacancy channel, where the same setup previously produced 48 - counted in dumpsys both times. AC1 and AC2: the text reads '48 बेड खाली पड़े हैं, जिनमें Sunrise PG कमरा 101, बेड A भी है' - the count plus a concrete example bed, so it still says where to look rather than degrading into a bare number, and it is correct in Hindi. AC3: the single-bed path keeps the original wording, covered by the existing test. AC4: LODGY-59's across-days suppression still holds and I saw it working - on the first run after the clock jump the vacancy channel was silent because those bed ids were still remembered from the earlier session, and it only fired once that memory was cleared. So the fix caps the burst within a run without weakening the suppression between runs. AC5 satisfied by the twelve-bed unit test. Also checked the fixed notification id behaves: a later run replaces the summary rather than stacking a second one."
+    },
+    {
+      "timestamp": "2026-09-06T15:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. One notification for a run rather than one per bed is the difference between a useful nudge and something I switch off in irritation. Same caveat - I have not yet had a real burst arrive on my phone."
     }
   ]
 }

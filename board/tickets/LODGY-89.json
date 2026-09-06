@@ -1,0 +1,35 @@
+{
+  "id": "LODGY-89",
+  "epic": "Reporting & Dashboard",
+  "title": "On Home, only the Vacant tile responds to a tap - the money ones are dead",
+  "description": "Raised during UAT of the 0.4.0 wave. Home shows four tiles: Collected today, Overdue invoices, Vacant, and Upcoming move-outs. Only VACANT is tappable - LODGY-72 made it open All rooms filtered to what has space, and that is genuinely useful. The other three do nothing when tapped. I checked rather than assumed: the Vacant tile is wrapped in a clickable node, the other three are not.\n\nTHE PROBLEM IS WHICH ONE WORKS. Vacant is the least urgent number on that screen. The tile I reach for is OVERDUE INVOICES, because that is money I am owed and the reason I opened the app - I see '4' and my next thought is 'four? who?'. Today that means going to the Payments tab and filtering to Unpaid myself, which is three more taps to answer the question the number just raised. UPCOMING MOVE-OUTS has the same shape: it says '1' and I want to know who is leaving so I can start advertising the bed.\n\nIt is also inconsistent in a way that teaches the wrong lesson. Because one tile responds, I learn the tiles are buttons - so when the others do not, the app feels broken rather than merely limited. Either they should all lead somewhere or none should.\n\nSUGGESTED, for the PO to weigh: Overdue invoices opens the Payments list filtered to unpaid and partial; Upcoming move-outs opens the tenant list filtered to those with notice given, or the vacancy view; Collected today opens the same list filtered to today's payments. Each is an existing screen with an existing filter, so this is routing rather than new surface. If any of them has nowhere sensible to go, making it visibly non-interactive is better than leaving it looking like a button.\n\nNOT A DEFECT IN LODGY-72, which only ever asked for the vacant tile. This is the gap that ticket left behind.",
+  "acceptanceCriteria": [
+    "Tapping Overdue invoices leads somewhere that answers 'which ones?', without further filtering by hand",
+    "Tapping Upcoming move-outs shows who is leaving and when",
+    "Collected today either leads somewhere useful or is visibly not a button",
+    "Whatever is decided, the four tiles behave consistently - a warden should not have to learn which ones are buttons",
+    "The existing Vacant behaviour from LODGY-72 is preserved, including the notification route that still points at it",
+    "Each destination respects the hostel filter currently applied on Home, so the numbers and the list agree",
+    "Correct in Hindi as well as English"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-06T15:42:00Z",
+  "updatedAt": "2026-09-06T15:42:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-06T15:42:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "Filed from UAT of the 0.4.0 wave, while checking LODGY-72's vacant tile. The vacant tile works; noticing it works is what made the dead ones obvious. Proposing rather than assigning - the PO should decide whether all four route somewhere or the styling changes instead."
+    },
+    {
+      "timestamp": "2026-09-06T16:00:00Z",
+      "actor": "User",
+      "action": "comment",
+      "note": "Moved from 0.4.0 to 0.5.0. It was filed while 0.4.0 was still open, but every 0.4.0 ticket reached Delivered without it, so shipping it under that number would claim it was in a build it was never in. Recorded rather than edited silently, since RELEASES.md says a ticket that slips says why."
+    }
+  ]
+}
