@@ -610,6 +610,17 @@ and each is invisible on the screen that introduces it.
   tenant profile clipped Record a credit, Move to another bed and Checkout on
   an ordinary phone, which read as three separate missing features
   (LODGY-34, LODGY-35, and a regression against LODGY-14).
+- **"Overdue" has one definition, in `isOverdue()`.** Past the due date and not
+  settled — not merely UNPAID, which would drop a part-paid invoice that is still
+  late and pick up one not due until next month. The Home tile counts with it and
+  the Payments list filters with it, because a warden who taps "4 overdue" and is
+  shown three rows stops trusting both numbers (LODGY-89).
+- **A Home tile that leads somewhere carries the scope it was counted under.** The
+  destination takes Home's hostel filter as a route argument, so the figure and the
+  list describe the same properties. A chevron marks the tiles that lead somewhere;
+  before that, one tile of four was tappable and looked identical to the three that
+  were not, so the warden learned tiles were buttons from the one that worked and
+  then met three that did not (LODGY-89).
 - **A tenant's location is rendered once, in `BedLocation.label()`.** It reaches the
   directory, the profile, the invoice list, the acknowledgement and the transfer
   screen, so a single-unit property printed as "Room Corner shop · Bed A" was
@@ -797,3 +808,6 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Vacancy and dues nudges run hourly, scheduled with UPDATE rather than KEEP | Both were already enqueued daily on every phone, and KEEP applies a new interval to fresh installs only - the change would have looked shipped and not been | LODGY-88 |
 | A tenant's location is composed in one place, and every projection that feeds it carries the property type | The same label reaches five screens plus the nudge, the packet and the transfer list; fixing it per call site guarantees the next screen gets it wrong again | LODGY-86 |
 | Counts and notifications that span properties say "spaces", not "beds" | One vacancy run can cover a hostel and a warehouse at once, so the wording has to be true of both | LODGY-86 |
+| Overdue is defined once and shared by the tile and the list | UNPAID is not the same set - it misses a late part-paid invoice and includes next month's; a count that disagrees with the list it opens destroys trust in both | LODGY-89 |
+| A tappable Home tile passes Home's hostel filter to its destination | Otherwise tapping "1 overdue" while filtered to Moonlight would list every property's arrears | LODGY-89 |
+| Tiles that lead somewhere show a chevron; tiles that do not, do not | Consistency is achieved by making the difference visible, not by forcing every tile to navigate somewhere it has no business going | LODGY-89 |

@@ -268,8 +268,11 @@ only future ones stop.
   move-outs, across **all your properties**, with a filter to narrow to one.
   The tile reads just *Vacant*, not *vacant beds*, because a shop or warehouse
   has no beds to count.
-- Tapping **Vacant** opens **All rooms** filtered to what still has space —
-  every property, as tiles you can see at a glance.
+- Tapping **Vacant** opens **All rooms** filtered to what still has space.
+  Tapping **Overdue invoices** opens your payments list showing exactly those
+  invoices — the late ones, including part-paid, and not next month's. Both carry
+  whichever property you have Home filtered to, so the number and the list always
+  match. A small **›** marks the tiles you can tap.
 - **Monthly report** — per hostel, per month: total collected, total dues,
   occupancy, income minus expense, total expenses and credits for the period.
   - Occupancy is measured from the beds **as they stand today**, not as they

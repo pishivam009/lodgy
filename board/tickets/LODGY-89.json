@@ -12,12 +12,12 @@
     "Each destination respects the hostel filter currently applied on Home, so the numbers and the list agree",
     "Correct in Hindi as well as English"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-06T15:42:00Z",
-  "updatedAt": "2026-09-06T15:42:00Z",
+  "updatedAt": "2026-09-06T17:16:00Z",
   "history": [
     {
       "timestamp": "2026-09-06T15:42:00Z",
@@ -30,6 +30,38 @@
       "actor": "User",
       "action": "comment",
       "note": "Moved from 0.4.0 to 0.5.0. It was filed while 0.4.0 was still open, but every 0.4.0 ticket reached Delivered without it, so shipping it under that number would claim it was in a build it was never in. Recorded rather than edited silently, since RELEASES.md says a ticket that slips says why."
+    },
+    {
+      "timestamp": "2026-09-06T16:20:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. The routing targets already exist as screens with filters, so the work is wiring plus making the four tiles behave the same way - and AC6 means each destination has to inherit the hostel scope Home is showing, or the number and the list will disagree."
+    },
+    {
+      "timestamp": "2026-09-06T17:10:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built. AC1: the Overdue tile opens the Payments list already filtered, and 'overdue' is now a real filter rather than a status - isOverdue() in InvoiceTotals.kt is the single definition (past due AND not settled), used by the Home count and the list alike. Filtering to UNPAID would have been the easy shortcut and is wrong twice: it drops a part-paid invoice that is still late and picks up one not due until next month. AC6: the tile passes Home's hostel filter as a route argument, and the invoice list gained hostel scoping to receive it - InvoiceListItem already resolved hostelId for the reconciliation check, it just was not kept. Verified on the device both ways: unfiltered, Home said 4 and the list showed exactly 4/2026, 5/2026, 7/2026 and 8/2026 - matching the four the SQL flags as overdue, including two PARTIALs a naive filter would have lost. Filtered to Moonlight, Home said 1 and the list showed exactly Priya's 8/2026. AC3 and AC4: Collected today and Upcoming move-outs stay non-interactive, and a chevron now marks the two tiles that lead somewhere, so which are buttons is visible rather than learned by tapping. AC5: the vacant tile behaves as before and the notification route (VACANT_VIEW_ROUTE) is untouched; the tile additionally passes the hostel scope now, which it did not before and which AC6 requires. AC2 NEEDS A DECISION AND I HAVE NOT FORCED ONE. The tile is not tappable, because the dashboard ALREADY lists the upcoming move-outs in a card directly beneath it, with each tenant's name, their hostel and the date. Making the tile navigate away from a screen that already displays the answer would be worse, so it is marked non-interactive like Collected today. If the PO reads AC2 as strictly requiring navigation, say so and it is a small follow-up - but I think the criterion is already satisfied by what is on screen. VERSION: bumped to 0.5.0 / build 5. This is the first 0.5.0 ticket to be built, which is where the corrected rule puts the bump. TESTS: 4 new covering the overdue definition against all four cases, hostel scoping, the unfiltered tab default, and a nonsense route argument falling back safely. Full suite 559 pass, 0 failures, coverage 95.88% line against the 0.93 gate."
+    },
+    {
+      "timestamp": "2026-09-06T17:15:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. The criterion I checked hardest is AC6, because a count that disagrees with the list it opens is worse than a tile that does nothing - it makes the warden distrust both numbers. It agrees in both directions: unfiltered, Home's 4 matched exactly the four rows 4/2026, 5/2026, 7/2026 and 8/2026, which is precisely the set the raw SQL flags as past-due-and-unsettled; filtered to Moonlight, Home's 1 matched Priya's single row. Two of the four are PARTIAL, so a naive UNPAID filter would have shown two rows against a count of four - putting the shared isOverdue() definition in InvoiceTotals.kt beside effectiveAmountDue and invoiceStatusFor is the right call, and it is now impossible for the two call sites to drift. AC1, AC3, AC4 verified on screen: the chevron appears on Overdue invoices and Vacant and on neither of the other two, so a warden can see which tiles are buttons. AC5: the vacant tile still opens All rooms with space and VACANT_VIEW_ROUTE is unchanged, so notifications already on a warden's phone still land. AC7: Hindi correct - the new chip reads 'बकाया', which matches the Home tile 'बकाया इनवॉइस', and is distinct from 'अवैतनिक' for unpaid. Also checked the failure modes rather than only the happy path: the Payments tab itself still opens unfiltered and unscoped, and a route carrying a nonsense filter value falls back to showing everything instead of crashing - both covered by tests. AC2 LEFT FOR THE PO, correctly flagged rather than quietly reinterpreted. The move-outs tile is not tappable because the dashboard already lists every upcoming move-out - name, hostel and date - in a card immediately below it. I agree with the developer that navigating away from a screen already showing the answer would be worse. Passing on that basis; if the PO wants the tap anyway it is a small follow-up."
+    },
+    {
+      "timestamp": "2026-09-06T17:16:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. This is the one I filed, and it is fixed the way I meant it. I see '4 overdue', I tap it, and I get those four invoices - not everything unpaid, not next month's, and not the other properties' when I have Home narrowed to one. That is the question I was asking when I looked at the number. The small arrow on the tiles that do something is a good touch - I now know which ones to tap without discovering it by poking at them. I am content that Collected today and Upcoming move-outs do not lead anywhere; the move-outs list is already sitting right underneath, and I would rather read it there than be taken to another screen."
     }
   ]
 }

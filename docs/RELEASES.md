@@ -71,11 +71,11 @@ closed. UAT bounced one of them — LODGY-68's dashboard tile told the warden to
 tap text that was not a tap target — and it was fixed, re-tested and accepted
 within the release rather than deferred.
 
-## 0.5.0 — open, nothing built yet
+## 0.5.0 (build 5) — open — CURRENT
 
-`versionName` stays at 0.4.0 until the first ticket here is built.
-
-- **LODGY-89** — on Home only the Vacant tile responds to a tap; Overdue
-  invoices, Collected today and Upcoming move-outs are dead. Raised in UAT:
-  the tile a warden reaches for is the one about money owed, and it is the one
-  that does nothing.
+- **LODGY-89** — the Home tiles. Overdue invoices now opens the Payments list
+  already filtered to what is actually late and scoped to the property Home was
+  showing, so the number and the list agree. A chevron marks the tiles that lead
+  somewhere, so a warden can see which are buttons rather than learning it by
+  tapping. Raised in UAT: the tile a warden reaches for is the one about money
+  owed, and it was the one that did nothing.

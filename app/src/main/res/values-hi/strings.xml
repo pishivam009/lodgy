@@ -385,6 +385,7 @@
 
     <string name="invoice_list_title">इनवॉइस</string>
     <string name="invoice_filter_all">सभी</string>
+    <string name="invoice_filter_overdue">बकाया</string>
     <string name="invoice_status_unpaid">अवैतनिक</string>
     <string name="invoice_status_partial">आंशिक</string>
     <string name="invoice_status_paid">भुगतान हो गया</string>

@@ -74,6 +74,11 @@ fun InvoiceListScreen(
                     label = { Text(stringResource(R.string.invoice_filter_all)) },
                 )
                 FilterChip(
+                    selected = uiState.filter == InvoiceFilter.OVERDUE,
+                    onClick = { viewModel.onFilterChange(InvoiceFilter.OVERDUE) },
+                    label = { Text(stringResource(R.string.invoice_filter_overdue)) },
+                )
+                FilterChip(
                     selected = uiState.filter == InvoiceFilter.UNPAID,
                     onClick = { viewModel.onFilterChange(InvoiceFilter.UNPAID) },
                     label = { Text(stringResource(R.string.invoice_status_unpaid)) },

@@ -20,8 +20,8 @@ android {
         targetSdk = 37
         // Release waves, not dates. docs/RELEASES.md says what is in each one, and every
         // ticket carries the version it shipped in.
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "0.5.0"
     }
 
     buildTypes {

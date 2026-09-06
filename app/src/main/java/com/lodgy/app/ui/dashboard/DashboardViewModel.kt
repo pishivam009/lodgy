@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lodgy.app.backup.AutoBackup
 import com.lodgy.app.backup.BackupHealth
 import com.lodgy.app.backup.backupHealth
+import com.lodgy.app.data.isOverdue
 import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.BedStatus
 import com.lodgy.app.data.entity.InvoiceStatus
@@ -162,7 +163,8 @@ class DashboardViewModel @Inject constructor(
         val invoiceIdsInHostel = invoicesInHostel.map { it.id }.toSet()
 
         val now = Calendar.getInstance()
-        val overdueCount = invoicesInHostel.count { it.status != InvoiceStatus.PAID && it.dueDate < startOfDay(now) }
+        val startOfToday = startOfDay(now)
+        val overdueCount = invoicesInHostel.count { isOverdue(it.status, it.dueDate, startOfToday) }
 
         val allPayments = paymentRepository.getAll()
         val todaysCollections = allPayments

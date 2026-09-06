@@ -49,7 +49,10 @@ private data class StatTile(val value: String, val labelRes: Int, val onClick: (
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onOpenVacantBeds: () -> Unit = {},
+    // Both take the hostel currently filtered on Home (null = all), so the destination shows the
+    // same properties the number was counted from (LODGY-89).
+    onOpenVacantBeds: (String?) -> Unit = {},
+    onOpenOverdue: (String?) -> Unit = {},
     onOpenMonthlyReport: () -> Unit = {},
     onOpenBackup: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel(),
@@ -105,8 +108,14 @@ fun DashboardScreen(
             }
             val tiles = listOf(
                 StatTile(stringResource(R.string.currency_amount, uiState.todaysCollections), R.string.dashboard_collections_today),
-                StatTile(uiState.overdueInvoiceCount.toString(), R.string.dashboard_overdue_invoices),
-                StatTile(uiState.vacantBedCount.toString(), R.string.dashboard_vacant_beds, onOpenVacantBeds),
+                StatTile(
+                    uiState.overdueInvoiceCount.toString(),
+                    R.string.dashboard_overdue_invoices,
+                ) { onOpenOverdue(uiState.filterHostelId) },
+                StatTile(
+                    uiState.vacantBedCount.toString(),
+                    R.string.dashboard_vacant_beds,
+                ) { onOpenVacantBeds(uiState.filterHostelId) },
                 StatTile(uiState.upcomingMoveOuts.size.toString(), R.string.dashboard_upcoming_move_outs),
             )
             LazyVerticalGrid(
@@ -253,15 +262,32 @@ private fun StatCard(tile: StatTile) {
     }
 }
 
+/**
+ * A chevron marks the tiles that lead somewhere. Before this, one tile of four was tappable and
+ * looked identical to the three that were not, so a warden learned the tiles were buttons from the
+ * one that worked and then met three that did not - which reads as broken rather than as limited
+ * (LODGY-89).
+ */
 @Composable
 private fun StatCardContent(tile: StatTile) {
     Column(modifier = Modifier.padding(14.dp)) {
         Text(tile.value, style = MaterialTheme.typography.headlineSmall)
-        Text(
-            stringResource(tile.labelRes),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                stringResource(tile.labelRes),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            if (tile.onClick != null) {
+                Icon(
+                    CommonIcons.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(14.dp),
+                )
+            }
+        }
     }
 }
 

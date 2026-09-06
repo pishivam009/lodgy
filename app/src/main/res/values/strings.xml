@@ -389,6 +389,7 @@
 
     <string name="invoice_list_title">Invoices</string>
     <string name="invoice_filter_all">All</string>
+    <string name="invoice_filter_overdue">Overdue</string>
     <string name="invoice_status_unpaid">Unpaid</string>
     <string name="invoice_status_partial">Partial</string>
     <string name="invoice_status_paid">Paid</string>

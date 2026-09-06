@@ -85,6 +85,7 @@ private const val MANUAL_INVOICE_TENANT_PICKER_ROUTE = "manual_invoice_tenant_pi
 private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
 private const val REMINDER_ROUTE = "reminder"
 private const val VACANT_VIEW_ROUTE = ROUTE_VACANT_VIEW
+private const val INVOICE_LIST_ROUTE = "invoice_list"
 private const val MONTHLY_REPORT_ROUTE = "monthly_report"
 private const val EXPENSE_LIST_ROUTE = "expense_list"
 private const val EXPENSE_FORM_ROUTE = ROUTE_EXPENSE_FORM
@@ -180,7 +181,16 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                             onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
                         )
                         LodgyDestination.Home -> DashboardScreen(
-                            onOpenVacantBeds = { navController.navigate("$ALL_ROOMS_ROUTE?hasSpace=true") },
+                            onOpenVacantBeds = { hostelId ->
+                                // Carries Home's hostel filter, so the tile's number and the list
+                                // it opens describe the same properties (LODGY-89, AC6).
+                                val scope = hostelId?.let { "&hostelId=$it" }.orEmpty()
+                                navController.navigate("$ALL_ROOMS_ROUTE?hasSpace=true$scope")
+                            },
+                            onOpenOverdue = { hostelId ->
+                                val scope = hostelId?.let { "&hostelId=$it" }.orEmpty()
+                                navController.navigate("$INVOICE_LIST_ROUTE?filter=OVERDUE$scope")
+                            },
                             onOpenMonthlyReport = { navController.navigate(MONTHLY_REPORT_ROUTE) },
                             onOpenBackup = { navController.navigate(BACKUP_ROUTE) },
                         )
@@ -478,6 +488,21 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             // Kept as a redirect rather than deleted: LODGY-59's vacancy notification carries
             // ROUTE_VACANT_VIEW in its intent, and an already-delivered notification on a warden's
             // phone would otherwise open nothing after they update.
+            composable(
+                route = "$INVOICE_LIST_ROUTE?filter={filter}&hostelId={hostelId}",
+                arguments = listOf(
+                    navArgument("filter") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("hostelId") { type = NavType.StringType; nullable = true; defaultValue = null },
+                ),
+            ) {
+                InvoiceListScreen(
+                    onRecordPayment = { invoice -> navController.navigate("$RECORD_PAYMENT_ROUTE/${invoice.id}") },
+                    onSendReminder = { invoice -> navController.navigate("$REMINDER_ROUTE/${invoice.id}") },
+                    onOpenReceipt = { invoice -> navController.navigate("$ACKNOWLEDGEMENT_ROUTE/${invoice.id}") },
+                    onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
+                )
+            }
+
             composable(VACANT_VIEW_ROUTE) {
                 AllRoomsScreen(
                     onBack = { navController.popBackStack() },
