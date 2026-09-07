@@ -18,13 +18,19 @@
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-07T11:30:00Z",
+  "updatedAt": "2026-09-07T12:14:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
       "actor": "Product Owner",
       "action": "created",
       "note": "Filed from a user request alongside LODGY-92. Hard-blocked on LODGY-91: without occupancy periods this screen returns a confidently incomplete answer, which is the one outcome worse than not shipping it."
+    },
+    {
+      "timestamp": "2026-09-07T12:14:00Z",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "LODGY-94 has been filed so the warden can enter past stays themselves. It matters to this ticket because without it this screen opens blank for every stay that predates the feature - which for an existing warden is most of them - and the empty state would be the normal case rather than the exception. Worth designing the empty state on the assumption that backfill exists and may or may not have been used."
     }
   ]
 }

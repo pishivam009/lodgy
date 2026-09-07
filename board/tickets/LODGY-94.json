@@ -1,0 +1,32 @@
+{
+  "id": "LODGY-94",
+  "epic": "Backup & Restore",
+  "title": "Let the warden enter past stays, so room and tenant history is not empty before day one",
+  "description": "User request, and it changes the shape of LODGY-91. Occupancy periods only start existing the day the app begins recording them, so without this, tenant and bed history (LODGY-92, LODGY-93) open blank for every stay that happened before the feature shipped - which for an existing warden is most of them.\n\nTHIS RESOLVES THE OPEN DECISION ON LODGY-91, and the PO should read the two together. That ticket asks what to do about tenancies that already exist, where the app knows only the CURRENT bed and cannot know when a transfer happened. The three options there were: infer and mark it reconstructed, backfill nothing, or infer silently. If the warden can enter what actually happened, the app should stop guessing altogether - so LODGY-91 becomes 'backfill nothing automatically' and the gap is filled here with attested history instead of inferred history. A warden reading their own paper register is a better source than the app extrapolating from one column.\n\nPRECEDENT TO FOLLOW: LODGY-44 already established how this project treats historical entry - do not demand a full ledger reconstruction, offer a fast minimal path, and make skipping it harmless. The existing CSV import at More > Import past history takes phone, month, year, amount due, amount paid and reports rows it cannot match rather than dropping them silently. This should feel like a sibling of that screen, not a new idea.\n\nIT MUST NOT CREATE MONEY. A past stay is not a past invoice. If backfilling a stay generated invoices it would resurrect dues the warden collected in cash years ago - the same failure the PO guarded against when deciding LODGY-90's catch-up scope. Past money already has its own routes: the opening balance on onboarding, manual invoice entry (LODGY-16), and the CSV import. This ticket records occupancy only.\n\nA DESIGN QUESTION THAT FEEDS BACK INTO LODGY-91, and the reason this should be settled before that table is built: a stay from three years ago may belong to a tenant who left before the app existed and has no tenancy agreement at all. LODGY-91 as described stores a period per TENANCY and bed. Either the backfill also creates a closed agreement to hang the period on - which means inventing rent and deposit figures nobody remembers - or occupancy periods can reference a tenant directly, with the tenancy optional. The second is probably right, and it is cheaper to decide now than to migrate the table twice.\n\nWHERE THE REAL VALUE IS: a warden settling a deposit argument, or working out whether a bed has always been trouble, is asking about years the app was never running for. History that starts on install day answers the easy questions and none of the hard ones.",
+  "acceptanceCriteria": [
+    "A warden can record a past stay: which tenant, which bed or property, from when to when",
+    "There is a fast path for a handful of stays and a bulk path for a warden who keeps a spreadsheet, consistent with how LODGY-44 treats historical entry",
+    "Backfilled stays appear in tenant history and bed history exactly like recorded ones, so the two views do not disagree",
+    "Backfilling a stay creates no invoice, no due, no payment and no notification - past money keeps its existing routes",
+    "Overlapping stays on one bed are refused with a clear reason, since two tenants cannot occupy one bed at once and this is where a warden's own typos will surface",
+    "A stay naming a tenant or a bed the app does not have is reported rather than silently dropped, following the existing import's behaviour",
+    "A mistyped stay can be corrected or removed afterwards - a warden entering years of history from paper will get some of it wrong",
+    "Skipping backfill entirely leaves the app fully usable, and history simply starts from today",
+    "It is recorded that a backfilled stay came from the warden rather than from the app observing it, without implying the warden is less trustworthy than the app",
+    "Correct in Hindi as well as English"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-07T12:10:00Z",
+  "updatedAt": "2026-09-07T12:10:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-07T12:10:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from a user request following LODGY-91/92/93. Two things for the PO before any of this is built: it removes the need for LODGY-91 to guess at existing tenancies, and it raises a question about whether an occupancy period must belong to a tenancy at all - a tenant who left before the app existed has no agreement to attach one to."
+    }
+  ]
+}
