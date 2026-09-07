@@ -1,0 +1,30 @@
+{
+  "id": "LODGY-92",
+  "epic": "Tenant Onboarding",
+  "title": "Tenant history: how long they have stayed, and every room they have stayed in",
+  "description": "User request: opening a tenant should show their history - how long they have been living here, in which room, and whether they have moved beds.\n\nHALF OF THIS ALREADY EXISTS and should be built on rather than replaced. The notes and timeline screen (LODGY-25) already assembles itself from what the warden does: it shows recorded credits, room moves and manual notes against dates. The tenancy also already carries move-in, move-out and status, so 'how long' is derivable today without any new data.\n\nWHAT IS MISSING is the stay itself as a first-class thing: a clear 'living here since 4 Sep 2026, 3 months' rather than the warden reading a date and doing the arithmetic, and the sequence of beds they have occupied. The bed sequence needs LODGY-91 - today the app only knows their current bed, and the moves survive only as English sentences in the notes table.\n\nWHERE IT GOES: the tenant profile, near the identity block, since 'how long have you been with me' is something a warden answers while looking at the person. The detail belongs on the existing timeline rather than in a second, competing history screen - two places showing overlapping history will drift apart.\n\nA REAL CASE TO DESIGN FOR: a tenant disputing a rent increase, or asking for their deposit back, will say 'I have been here two years'. The warden needs the answer on screen while that conversation is happening, not after opening three screens. Equally, a returning tenant - one who left and came back - has more than one tenancy, and the screen should show that as two stays rather than silently showing only the latest.\n\nDepends on LODGY-91 for the bed sequence. The duration and stay summary could ship before it if the PO wants the smaller half sooner.",
+  "acceptanceCriteria": [
+    "The tenant profile states how long they have been living here, in words a warden would use, not just a move-in date",
+    "Every bed and room they have occupied is listed in order, with the dates they were there",
+    "A tenant who has left and returned shows as separate stays, not as one merged period or only the most recent",
+    "A tenant who has never moved reads naturally, without an empty or one-item 'history' section that looks broken",
+    "It uses the existing timeline for detail rather than introducing a second history screen that could disagree with it",
+    "A checked-out tenant keeps their full history, consistent with delete and checkout never destroying the past",
+    "Correct for a shop, warehouse or flat, where the stay is of the whole property and there is no bed to name",
+    "Correct in Hindi as well as English, including the duration wording"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-07T11:30:00Z",
+  "updatedAt": "2026-09-07T11:30:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-07T11:30:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from a user request. Blocked on LODGY-91 for the bed sequence; the duration half is buildable today. Deliberately scoped to extend the existing timeline rather than add a rival history screen."
+    }
+  ]
+}

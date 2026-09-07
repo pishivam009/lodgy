@@ -1,0 +1,29 @@
+{
+  "id": "LODGY-91",
+  "epic": "Property Setup",
+  "title": "Record who occupied which bed, and when, as data rather than as a sentence",
+  "description": "Foundation for LODGY-92 and LODGY-93, and it has to land first because neither of those can be built honestly without it.\n\nTHE PROBLEM, CONFIRMED IN CODE AND AGAINST LIVE DATA. A tenancy has exactly one bedId, and TenancyAgreementRepository.transferBed does `agreement.copy(bedId = newBedId)` - the previous bed is overwritten and gone. That was the right call for LODGY-34 (a transfer must not split one tenant's payment history into two tenancies) but it means the app cannot answer 'who has lived in this bed'.\n\nOn the current test data the database says Suresh is in 102/Bed B and Ramesh Kumar in 102/Bed A. Both of them actually lived in 101/Bed A first. The only record of that is two free-text tenant notes reading 'Moved from Room 101 . Bed A to Room 102 . Bed A.' - English prose, written for a human, not queryable, not translated, and carrying no dates. Ask today's data who has occupied 101/Bed A and the answer is one tenant when the truth is three.\n\nWHAT TO BUILD: occupancy as periods. A row per (tenancy, bed) span with a start and an open-ended finish - a transfer closes the current row and opens a new one, checkout closes it, onboarding opens the first one. The tenancy keeps its bedId as the current bed so nothing that reads it today has to change; the new table is what makes the past answerable.\n\nDO NOT solve this by closing and reopening the agreement on transfer. That is exactly what LODGY-34 rejected, and for a good reason - invoices and payments are keyed to the agreement, so splitting it splits the tenant's money history in half.\n\nTHE DECISION THE PO MUST MAKE, because it decides whether the feature tells the truth: what happens to tenancies that already exist. All we know about them is their CURRENT bed plus move-in and move-out - not when any transfer happened. So a backfill can only write one period per agreement at the current bed, which is simply false for anyone who has ever moved: it would place Suresh in 102/Bed B from his move-in date, and a bed-history screen would state that confidently. Three options: (a) backfill one period per agreement and mark it reconstructed, so the UI can distinguish 'recorded' from 'inferred'; (b) backfill nothing and let history begin at the ship date, which is truthful but makes every existing tenant look like they have no past; (c) backfill unmarked, which is the only one that actively lies. RECOMMEND (a). It is the same trade LODGY-52 faced and declined once already - there, the honest answer was to label the occupancy figure rather than fabricate the data behind it.\n\nWORTH KNOWING: this table is also the thing DESIGN.md's roadmap item 6 has been waiting for. LODGY-52 investigated a true past-period occupancy figure, found it needed bed-state history, and settled for labelling the report 'Occupancy (today)' instead. Once occupancy is recorded as periods, that figure becomes computable for real. Not in this ticket's scope - but the PO should know the bill is being paid for two things.",
+  "acceptanceCriteria": [
+    "Onboarding, transfer and checkout each leave a correct, closed-or-open occupancy period behind them",
+    "A transfer produces two periods for one tenancy - the old bed closed at the move, the new bed opened - and the tenancy itself is still a single unbroken agreement",
+    "Asking which tenants have occupied a given bed returns everyone who did, including those who transferred away from it",
+    "The migration is a real one tested against a populated database from the previous version, and no existing screen changes behaviour",
+    "The PO's decision on existing tenancies is recorded before the migration is written, and whatever is backfilled can be told apart from what was genuinely recorded",
+    "A non-revenue tenancy (warden or caretaker room) is recorded the same way - it is real occupancy, it just bills nobody",
+    "Periods never overlap for one bed: a bed cannot be occupied by two tenancies at the same instant"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "version": "0.5.0",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-07T11:30:00Z",
+  "updatedAt": "2026-09-07T11:30:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-07T11:30:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from a user request for tenant and bed history. Checked in code and against the live database before filing: transferBed overwrites bedId, so the bed half of that request cannot be built truthfully on today's schema - a bed-history screen would silently omit anyone who transferred away. This ticket is the data those two views need. Raised High because LODGY-92 and LODGY-93 are both blocked on it, not because the table is urgent by itself."
+    }
+  ]
+}

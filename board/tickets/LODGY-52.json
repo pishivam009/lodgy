@@ -12,7 +12,7 @@
   "version": "0.3.0",
   "assigneeRole": "Tester",
   "createdAt": "2026-09-03T20:00:00+00:00",
-  "updatedAt": "2026-09-07T00:20:00Z",
+  "updatedAt": "2026-09-07T11:32:00Z",
   "history": [
     {
       "timestamp": "2026-09-03T20:00:00+00:00",
@@ -51,6 +51,12 @@
       "from": "Done",
       "to": "Delivered",
       "note": "Accepted as an answer rather than a feature. The finding is that a report for an old month uses today's bed states, and the app says so on the report instead of quietly pretending otherwise. I would rather be told a number is approximate than be given a confident wrong one."
+    },
+    {
+      "timestamp": "2026-09-07T11:32:00Z",
+      "actor": "Product Owner",
+      "action": "comment",
+      "note": "CROSS-REFERENCE, not a reopening. LODGY-91 has been filed to record bed occupancy as periods, so that tenant and bed history (LODGY-92, LODGY-93) can be answered truthfully. If it ships, the data this ticket went looking for and could not justify building will exist as a by-product. The reasoning recorded here still stands and was right at the time: option (a) meant paying an ongoing cost to write bed-state snapshots forever, for a number nobody had described acting on, and with no way to recover the months already gone. What has changed is that a warden has now described acting on the underlying data - 'which tenants lived in this bed' - so the cost is being paid for a reason that exists independently, and the occupancy figure comes along with it. Worth the PO revisiting the 'Occupancy (today)' label once LODGY-91 lands. Note the honest limit carries over unchanged: periods only exist from the day they start being recorded, so past-period occupancy becomes computable going forward, not retrospectively."
     }
   ]
 }

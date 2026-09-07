@@ -1,0 +1,30 @@
+{
+  "id": "LODGY-93",
+  "epic": "Property Setup",
+  "title": "Bed and property history: who has occupied this space, and when",
+  "description": "User request, the other half of LODGY-92: opening a bed should show which tenants have lived in it, and the same for a shop, warehouse or flat.\n\nBLOCKED ON LODGY-91 AND NOT WORTH ATTEMPTING BEFORE IT. Today a tenancy stores only its current bed, so this screen would answer the question wrongly while looking authoritative: on the current data, asking who has occupied Room 101 Bed A returns one tenant when three have lived there. A history view that quietly omits people is worse than no history view, because the warden will believe it.\n\nWHERE IT GOES: the bed sheet already opens on a tap and already carries the room's details and the current occupant (LODGY-69, LODGY-71), so it is the natural home - past occupants below the present one.\n\nWHY A WARDEN WANTS IT: a bed comes back damaged and they need to know who had it and for how long; a tenant claims a fitting was already broken when they arrived; the warden is working out which beds turn over constantly and which are stable, which is a letting decision rather than a record-keeping one.\n\nSHOPS, WAREHOUSES AND FLATS ARE THE SAME QUERY, NOT A SECOND FEATURE. A single-unit property's implicit bed is the unit, so the history is identical underneath - only the wording changes, and LODGY-86 already established the rule: a property let whole is named as itself and never as a bed inside a room inside itself. Getting that wrong here would reintroduce exactly the defect LODGY-86 fixed.\n\nAND THE GAP BETWEEN OCCUPANCIES matters as much as the occupancies. A warden looking at this screen is often asking why a bed keeps sitting empty, so the vacant stretches between tenants are part of the answer, not whitespace.",
+  "acceptanceCriteria": [
+    "A bed shows every tenancy that has occupied it, most recent first, with the dates each covered",
+    "A tenant who transferred away from this bed still appears in its history",
+    "The current occupant is clearly the current one, not just the newest row in a list",
+    "A shop, warehouse or flat shows the same history worded for a whole property - no room number, no bed label",
+    "A bed that has never been occupied says so plainly rather than showing an empty list",
+    "Vacant stretches between occupancies are visible, since 'why does this keep sitting empty' is a reason to open this screen",
+    "Warden and caretaker occupancy appears in the history like any other, since the room was genuinely occupied",
+    "Correct in Hindi as well as English"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-07T11:30:00Z",
+  "updatedAt": "2026-09-07T11:30:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-07T11:30:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from a user request alongside LODGY-92. Hard-blocked on LODGY-91: without occupancy periods this screen returns a confidently incomplete answer, which is the one outcome worse than not shipping it."
+    }
+  ]
+}
