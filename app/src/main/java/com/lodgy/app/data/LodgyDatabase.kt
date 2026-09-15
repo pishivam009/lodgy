@@ -9,6 +9,7 @@ import com.lodgy.app.data.dao.ExpenseDao
 import com.lodgy.app.data.dao.FloorDao
 import com.lodgy.app.data.dao.HostelDao
 import com.lodgy.app.data.dao.InvoiceDao
+import com.lodgy.app.data.dao.OccupancyPeriodDao
 import com.lodgy.app.data.dao.PaymentDao
 import com.lodgy.app.data.dao.ReconciliationMarkDao
 import com.lodgy.app.data.dao.RoomDao
@@ -22,6 +23,7 @@ import com.lodgy.app.data.entity.Expense
 import com.lodgy.app.data.entity.Floor
 import com.lodgy.app.data.entity.Hostel
 import com.lodgy.app.data.entity.Invoice
+import com.lodgy.app.data.entity.OccupancyPeriod
 import com.lodgy.app.data.entity.Payment
 import com.lodgy.app.data.entity.ReconciliationMark
 import com.lodgy.app.data.entity.Room
@@ -45,8 +47,9 @@ import com.lodgy.app.data.entity.Warden
         Expense::class,
         Credit::class,
         ReconciliationMark::class,
+        OccupancyPeriod::class,
     ],
-    version = 7,
+    version = 9,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -64,6 +67,7 @@ abstract class LodgyDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
     abstract fun creditDao(): CreditDao
     abstract fun reconciliationMarkDao(): ReconciliationMarkDao
+    abstract fun occupancyPeriodDao(): OccupancyPeriodDao
 
     companion object {
         const val DATABASE_NAME = "lodgy.db"

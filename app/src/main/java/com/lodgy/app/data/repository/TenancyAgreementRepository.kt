@@ -7,7 +7,10 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
-class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgreementDao) {
+class TenancyAgreementRepository @Inject constructor(
+    private val dao: TenancyAgreementDao,
+    private val occupancyPeriodRepository: OccupancyPeriodRepository,
+) {
     suspend fun getActiveByTenantId(tenantId: String): TenancyAgreement? =
         dao.getByTenantId(tenantId).first().firstOrNull { it.status == AgreementStatus.ACTIVE }
 
@@ -52,14 +55,17 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
     }
 
     /** Moves the tenancy to another bed on the SAME agreement row - no close, no new agreement -
-     *  so invoices and payments keyed to this agreement stay one continuous tenancy. */
+     *  so invoices and payments keyed to this agreement stay one continuous tenancy. The old bed's
+     *  occupancy period closes and the new bed's opens in the same moment (LODGY-91). */
     suspend fun transferBed(agreement: TenancyAgreement, newBedId: String, agreedRent: Double) {
-        dao.update(
-            agreement.copy(bedId = newBedId, agreedRent = agreedRent, updatedAt = System.currentTimeMillis()),
-        )
+        val now = System.currentTimeMillis()
+        occupancyPeriodRepository.close(agreement.id, now)
+        occupancyPeriodRepository.open(agreement.tenantId, newBedId, agreement.id, now)
+        dao.update(agreement.copy(bedId = newBedId, agreedRent = agreedRent, updatedAt = now))
     }
 
     suspend fun close(agreement: TenancyAgreement, moveOutDate: Long, depositRefundAmount: Double) {
+        occupancyPeriodRepository.close(agreement.id, moveOutDate)
         dao.update(
             agreement.copy(
                 moveOutDate = moveOutDate,
@@ -95,6 +101,7 @@ class TenancyAgreementRepository @Inject constructor(private val dao: TenancyAgr
             updatedAt = now,
         )
         dao.insert(agreement)
+        occupancyPeriodRepository.open(tenantId, bedId, agreement.id, moveInDate)
         return agreement
     }
 }

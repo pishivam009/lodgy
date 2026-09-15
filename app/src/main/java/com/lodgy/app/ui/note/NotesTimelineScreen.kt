@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.data.dao.BedLocation
+import com.lodgy.app.data.dao.TenantStayRow
 import com.lodgy.app.data.entity.Credit
 import com.lodgy.app.data.entity.NoteType
 import com.lodgy.app.data.entity.TenantNote
@@ -75,7 +77,7 @@ fun NotesTimelineScreen(
             }
         },
     ) { padding ->
-        if (uiState.entries.isEmpty()) {
+        if (uiState.entries.isEmpty() && !uiState.showStays) {
             if (!uiState.loading) {
                 Box(modifier = Modifier.padding(padding).fillMaxWidth().padding(32.dp)) {
                     Text(
@@ -91,6 +93,9 @@ fun NotesTimelineScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(padding),
             ) {
+                if (uiState.showStays) {
+                    item(key = "stays") { StaysSection(uiState.stayGroups) }
+                }
                 items(uiState.entries, key = { entryKey(it) }) { entry ->
                     when (entry) {
                         is TimelineEntry.NoteEntry ->
@@ -102,6 +107,43 @@ fun NotesTimelineScreen(
         }
     }
 }
+
+@Composable
+private fun StaysSection(stayGroups: List<StayGroup>) {
+    val dateFormat = remember { SimpleDateFormat("d MMM yyyy", Locale.getDefault()) }
+    val present = stringResource(R.string.stay_present)
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.tenant_stays_title), style = MaterialTheme.typography.titleMedium)
+        stayGroups.forEach { group ->
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    group.periods.forEach { period ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(period.label(), style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                stringResource(
+                                    R.string.stay_range,
+                                    dateFormat.format(Date(period.startDate)),
+                                    period.endDate?.let { dateFormat.format(Date(it)) } ?: present,
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TenantStayRow.label(): String =
+    BedLocation(roomNumber, bedLabel, propertyType, hostelName).label()
 
 private fun entryKey(entry: TimelineEntry): String = when (entry) {
     is TimelineEntry.NoteEntry -> "note-${entry.note.id}"

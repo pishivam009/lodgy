@@ -82,6 +82,14 @@ private val HistoryIcon: ImageVector = strokeIcon(
     "M12,8 V12 L15,14",
 )
 
+private val StayIcon: ImageVector = strokeIcon(
+    "MoreStay",
+    "M3,19 V6",
+    "M3,15 H21 V19",
+    "M3,11 H14 A3,3 0 0,1 17,14 V15",
+    "M6,11 V8 A1,1 0 0,1 7,7 H9 A1,1 0 0,1 10,8 V11",
+)
+
 private val LanguageIcon: ImageVector = strokeIcon(
     "MoreLanguage",
     "M12,3 A9,9 0 1,0 12,21 A9,9 0 1,0 12,3 Z",
@@ -98,6 +106,7 @@ fun MoreScreen(
     onOpenBackup: () -> Unit,
     onOpenPrintableRecords: () -> Unit,
     onOpenHistoryImport: () -> Unit,
+    onOpenStayBackfill: () -> Unit,
     onOpenNotificationSettings: () -> Unit,
     themeViewModel: ThemeViewModel = hiltViewModel(),
 ) {
@@ -110,6 +119,7 @@ fun MoreScreen(
         MoreMenuItem(R.string.more_backup, BackupIcon, onOpenBackup),
         MoreMenuItem(R.string.packet_action, PrintIcon, onOpenPrintableRecords),
         MoreMenuItem(R.string.more_history_import, HistoryIcon, onOpenHistoryImport),
+        MoreMenuItem(R.string.more_stay_backfill, StayIcon, onOpenStayBackfill),
         MoreMenuItem(R.string.more_notifications, NotificationIcon, onOpenNotificationSettings),
         MoreMenuItem(R.string.more_theme, ThemeIcon, { showThemeDialog = true }),
         MoreMenuItem(R.string.more_language, LanguageIcon, { showLanguageDialog = true }),

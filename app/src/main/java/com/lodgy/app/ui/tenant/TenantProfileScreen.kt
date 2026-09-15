@@ -46,6 +46,7 @@ import com.lodgy.app.R
 import com.lodgy.app.contact.ContactIntents
 import com.lodgy.app.data.entity.TenantStatus
 import com.lodgy.app.ui.common.StatusBadge
+import com.lodgy.app.ui.common.durationLabel
 import com.lodgy.app.ui.common.icon
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.common.level
@@ -71,6 +72,7 @@ fun TenantProfileScreen(
     val location by viewModel.location.collectAsStateWithLifecycle()
     val plannedMoveOut by viewModel.plannedMoveOut.collectAsStateWithLifecycle()
     val nonRevenue by viewModel.nonRevenue.collectAsStateWithLifecycle()
+    val stayDuration by viewModel.stayDuration.collectAsStateWithLifecycle()
     var showNoticePicker by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -125,6 +127,17 @@ fun TenantProfileScreen(
                 )
             }
             StatusBadge(current.status.level, current.status.icon, current.status.label())
+            stayDuration?.let {
+                Text(
+                    stringResource(
+                        if (it.active) R.string.tenant_duration_active else R.string.tenant_duration_past,
+                        noticeDateFormat.format(Date(it.fromMillis)),
+                        durationLabel(it.fromMillis, it.toMillis),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
             ContactButtonsRow(phone = current.phone)
 

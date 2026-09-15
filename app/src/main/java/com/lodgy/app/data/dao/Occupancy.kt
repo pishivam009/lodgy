@@ -50,3 +50,52 @@ data class VacantBedRow(
     val floorLabel: String,
     val propertyType: PropertyType = PropertyType.HOSTEL,
 )
+
+/** Any bed anywhere in the warden's portfolio, occupied or not - unlike [VacantBedChoice], for
+ *  picking a bed a past stay happened on rather than one to move into (LODGY-94). */
+data class BedChoice(
+    val bedId: String,
+    val bedLabel: String,
+    val roomNumber: String,
+    val hostelId: String,
+    val hostelName: String,
+    val propertyType: PropertyType,
+)
+
+/** One tenant's span on one bed, with the location resolved for display - the timeline's room
+ *  history section groups these by [tenancyAgreementId] into stays (LODGY-92). Covers both
+ *  app-recorded and backfilled (LODGY-94) periods alike; the two read the same here. */
+data class TenantStayRow(
+    val periodId: String,
+    val tenancyAgreementId: String?,
+    val bedLabel: String,
+    val roomNumber: String,
+    val hostelName: String,
+    val propertyType: PropertyType,
+    val startDate: Long,
+    val endDate: Long?,
+)
+
+/** One tenancy that has occupied a bed, named for the bed sheet's past-occupants list (LODGY-93).
+ *  Deliberately no room/bed/property fields - the sheet showing this already knows which bed it
+ *  is, and printing that here would be the "Room Corner shop · Bed A" mistake LODGY-86 fixed. */
+data class BedOccupancyRow(
+    val periodId: String,
+    val tenantId: String,
+    val tenantName: String,
+    val startDate: Long,
+    val endDate: Long?,
+)
+
+/** A stay the warden entered from memory rather than one the app recorded live, ready to show on
+ *  the backfill screen's correct/remove list (LODGY-94). */
+data class BackfilledStayRow(
+    val periodId: String,
+    val tenantName: String,
+    val bedLabel: String,
+    val roomNumber: String,
+    val hostelName: String,
+    val propertyType: PropertyType,
+    val startDate: Long,
+    val endDate: Long?,
+)

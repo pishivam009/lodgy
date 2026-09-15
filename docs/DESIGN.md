@@ -123,6 +123,20 @@ TenantNote (complaints, damages, general notes)
 Expense
   id, hostelId, category (WIFI | WATER | ELECTRICITY | TAX | MAINTENANCE | REPAIR | OTHER),
   amount, isRecurring, incurredOn, note, createdAt
+
+OccupancyPeriod (a tenant's unbroken span on one bed)
+  id, tenantId, bedId, tenancyAgreementId (nullable), startDate,
+  endDate (nullable — open means still occupying),
+  backfilled (bool, default false), createdAt, updatedAt
+  — `TenancyAgreement.bedId` only ever holds the CURRENT bed; this is what
+    makes the past answerable. Onboarding opens the first period, a transfer
+    closes the old bed's and opens the new bed's in the same operation,
+    checkout closes the last one. See 4.3 and 6.
+  — tenancyAgreementId is nullable so a stay entered from the warden's memory
+    (4.8's backfill) can reference the tenant without inventing an agreement
+    for someone who left before the app existed.
+  — backfilled marks a period the warden typed in from memory rather than one
+    the app recorded live - not a trust flag, just its source. See 4.8.
 ```
 
 Notes:
@@ -137,15 +151,18 @@ Notes:
 - A reconciliation mark asserts nothing about the data — it never alters,
   hides or gates a record, and nothing is diffed automatically. It only
   records that a person looked.
-- Schema is at **version 7**, with migrations 1→2 (credits), 2→3
+- Schema is at **version 9**, with migrations 1→2 (credits), 2→3
   (reconciliation_marks), 3→4 (`payments.multiPeriodGroupId`), 4→5
-  (`tenancy_agreements.nonRevenue`), 5→6 (`hostels.propertyType`) and 6→7
+  (`tenancy_agreements.nonRevenue`), 5→6 (`hostels.propertyType`), 6→7
   (`tenancy_agreements.forgoneRentExpense`/`forgoneRentAmount` and
-  `expenses.tenancyAgreementId`). Every one is a plain ADD COLUMN with a
-  default that leaves existing rows behaving exactly as before. Migrations
-  are written by hand and tested against a populated database pulled off the
-  previous version rather than a synthetic one; destructive fallback is never
-  enabled, because the only copy of a warden's data is on their phone.
+  `expenses.tenancyAgreementId`), 7→8 (`occupancy_periods`, a new table) and
+  8→9 (`occupancy_periods.backfilled`). Every one is additive and leaves
+  existing rows behaving exactly as before; 7→8 backfills nothing, so
+  occupancy history is empty for any tenancy that predates it unless the
+  warden enters it themselves (4.8). Migrations are written by hand and
+  tested against a populated database pulled off the previous version rather
+  than a synthetic one; destructive fallback is never enabled, because the
+  only copy of a warden's data is on their phone.
 
 ## 4. Feature modules
 
@@ -288,6 +305,17 @@ Notes:
   gone missing falls back to the vacant behaviour rather than opening a
   profile that isn't there. The Tenants-tab route through the bed picker keeps
   working unchanged (LODGY-69).
+- **Past occupants** (LODGY-93). The same sheet lists everyone who has
+  occupied the bed, current tenant excluded (already shown above as
+  "Occupied by X"), most recent first, built live from `OccupancyPeriod` so a
+  transfer or checkout updates it without reopening the sheet. The vacant
+  stretch between two tenancies is shown too - `ui/property/BedHistory.kt`'s
+  `bedHistoryEntries` walks the periods chronologically and turns any gap
+  into its own row, since "why does this bed keep sitting empty" is as much a
+  reason to open the sheet as who was in it. A bed with no periods at all
+  says so plainly rather than showing an empty list. Warden/caretaker
+  occupancy appears the same as any tenancy - it is real occupancy, per
+  LODGY-91.
 - Finishing an agreement **unwinds the whole onboarding chain** back to
   wherever it started — the tenant list via the bed picker, the bed grid via a
   bed tap. Aiming the pop at a fixed destination stranded the second route,
@@ -347,9 +375,24 @@ Notes:
   an optional rent change that applies to future invoices only. Checkout and
   re-onboard would have split one tenancy into two histories and mis-flipped
   bed states (LODGY-34).
+- **Occupancy periods.** Onboarding, transfer and checkout each write to
+  `OccupancyPeriod` as well as `TenancyAgreement`: onboarding opens a period
+  on the agreement's first bed from the move-in date, transfer closes the old
+  bed's period and opens the new bed's in the same operation, checkout closes
+  whatever is still open at the move-out date. All three happen inside
+  `TenancyAgreementRepository`, so every caller gets this for free — a
+  non-revenue tenancy is recorded the same way, since it is real occupancy
+  that simply bills nobody (LODGY-91).
 - Wardens think room-first, name-second, so room and bed are shown next to
   the tenant everywhere a tenant is identified — directory, profile,
   invoices, payments, reminder previews (LODGY-33).
+- **Stay duration** (LODGY-92): the profile states "Living here since
+  4 Sep 2026 — 3 months" (or "Lived here from... —" once closed), derived
+  from the latest `TenancyAgreement`'s `moveInDate`/`moveOutDate`/`status` -
+  no new data, since the tenancy already carries this. The duration itself
+  is deliberately coarse (30-day months, 365-day years via
+  `ui/common/DurationLabel.kt`), a spoken answer for a warden mid-conversation
+  rather than a billing figure.
 
 ### 4.4 Rent & payments
 - Invoice generation skips agreements flagged `nonRevenue` (4.3), so a warden's
@@ -442,6 +485,18 @@ Notes:
   Timeline sorts by `occurredOn`, not by when the record was typed in.
 - Notes are fully editable and deletable (hard delete — no undo/audit
   trail needed for MVP; `updatedAt` just reflects the last edit).
+- **Room history** (LODGY-92): the timeline gets a "Room history" section
+  above the note stream, built from `OccupancyPeriod` (LODGY-91) rather than
+  the free-text note a transfer already writes - queryable, not prose. Every
+  period is grouped by `tenancyAgreementId` into a stay; a returning tenant's
+  two tenancies show as two separate stay cards, most recent first, so a
+  merged or single stay never hides that they left and came back. A
+  backfilled period with no agreement (LODGY-94) stands as its own
+  single-period stay, since there's nothing else to group it under. The
+  section is hidden entirely when there is only one period ever recorded -
+  a tenant who has never moved gets no history list to look broken. This
+  reuses the existing timeline screen rather than adding a second, competing
+  history screen that could disagree with it.
 
 ### 4.7 Expenses
 - Log expense per hostel: category, amount, date, recurring flag, note.
@@ -515,6 +570,23 @@ Notes:
   silently dropped, and unmatched phones are listed — a warden transcribing
   years of a register will get some rows wrong and needs telling which.
   Skipping it costs nothing; the app works from today onward (LODGY-44).
+- **Historical occupancy backfill**, at More → Add past stays: the sibling
+  feature for the room/bed history LODGY-91 added, for exactly the reason
+  LODGY-44 exists - `OccupancyPeriod` only starts existing the day the app
+  records it, so every stay before that is missing unless the warden enters
+  it. A fast path (`StayBackfillScreen`, pick a tenant and a bed, type two
+  dates) for a handful of stays, and the same CSV shape as LODGY-44 -
+  `phone, hostel, room, bed, start_date, end_date` - for a warden with a
+  spreadsheet. A row naming a tenant or a bed the app doesn't have is
+  reported, never silently dropped, matching the LODGY-44 import's
+  behaviour. Backfilled periods carry no `tenancyAgreementId` and write
+  nothing else - no invoice, due, payment or notification, since a past stay
+  is not a past bill and LODGY-90 already drew that line for catch-up
+  billing. Two stays that would overlap on the same bed are refused with a
+  reason rather than silently accepted, which is where a warden's own typos
+  surface; an existing entry can be corrected in place or removed. Skipping
+  this entirely is fine - history simply starts from today, same as skipping
+  LODGY-44's import (LODGY-94).
 - **Orphaned photos** are cleaned up: a photo is written to app storage the
   moment it's picked, so an abandoned form used to leave a file nothing
   referenced, accumulating and riding along in every backup (LODGY-51).
@@ -766,8 +838,10 @@ edited on, each behind a LODGY-57 confirmation:
    property.
 5. **Notice board / announcements** — meaningful once there's a tenant app
    to display them in; until then, WhatsApp broadcast covers it.
-6. **Historical bed-state snapshots** — the only route to a true past-period
-   occupancy figure (4.5). Considered and parked, not forgotten.
+6. **A true past-period occupancy figure** — `OccupancyPeriod` (LODGY-91)
+   supplies the bed-state history this needed; the dashboard figure still
+   reads current state only (LODGY-52), so this is now a query away rather
+   than a schema change away. Still not done — parked, not forgotten.
 
 ## 7. Decision log since v1
 
@@ -812,6 +886,14 @@ changed. The ticket holds the full argument; this is the shape of it.
 | The dashboard backup tile shows staleness and failure as loudly as success | A silently broken auto-backup is worse than none — a warden who believes they're covered and isn't; the tile uses the RAG tokens and the worker never retries a failure quietly | LODGY-68 |
 | Unchanged days are skipped by a content fingerprint, and only the last 7 zips kept | The zip carries photos and isn't small; churning identical daily copies and never pruning would grow the folder without bound | LODGY-68 |
 | Forgotten PIN: export a backup from the lock screen, then reset | Accountless and offline, there's no email or server fallback; the reset step opens only after a backup is saved, so a locked-out warden is never a lost warden | LODGY-76 |
+| Occupancy recorded as periods, not inferred from the current bed | `transferBed` overwrites `bedId`, so a bed's past occupants can't be reconstructed from today's data; a period per (tenant, bed) span is the only honest source, kept separate from `TenancyAgreement` so one tenancy still stays one row | LODGY-91 |
+| No automatic backfill of occupancy periods for tenancies that predate the table | An inferred period would place a transferred tenant at the wrong bed since move-in with no way to flag it as a guess; LODGY-94 lets the warden enter what actually happened instead | LODGY-91, LODGY-94 |
+| `OccupancyPeriod.tenancyAgreementId` is nullable | A backfilled stay (LODGY-94) may belong to a tenant who left before the app existed and has no agreement to invent rent/deposit figures for | LODGY-91 |
+| Backfilling a stay writes no invoice, due, payment or notification | A past stay is not a past bill; LODGY-90 already drew that line for catch-up billing, and resurrecting cash the warden already collected would be worse than an empty history | LODGY-94 |
+| Overlapping backfilled stays on one bed are refused, not silently accepted | The bed-uniqueness invariant onboarding/transfer/checkout keep by construction has no such guarantee once a warden is typing in dates from paper; this is where their own typos need to surface | LODGY-94 |
+| Room history lives on the existing notes timeline, not a new screen | A second history view could disagree with the first; the timeline already assembles itself from what the warden does | LODGY-92 |
+| Room history is hidden when a tenant has exactly one period ever | A one-row "history" section for someone who never moved reads as broken, not informative | LODGY-92 |
+| The bed sheet's past-occupants list excludes the current tenant and shows vacant gaps | The current occupant is already named above it as "Occupied by X" - repeating them as the newest history row would blur which one is current; the gaps answer "why does this bed keep sitting empty" | LODGY-93 |
 | A PIN reset blanks the warden's hash, it does not delete the row | Hostels foreign-key to `warden.id`; deleting the row fails the constraint and would orphan every property. Setup then updates the same row, so the id — and the FK — survive | LODGY-76 |
 | Bottom nav kept visible on inner screens, over labelling the back chevron | Real older wardens couldn't find the chevron or a way home; a persistent labelled bar makes Home one tap everywhere and spends no top-bar width, which matters for the longer Hindi labels | LODGY-80 |
 | Deleting a payment or credit recomputes the invoice status in the same step | A wrong payment removed on its own would leave the invoice reading PAID with nothing behind it — a wrong number is worse than a missing feature | LODGY-64 |

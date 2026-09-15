@@ -3,10 +3,12 @@ package com.lodgy.app.ui.property
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lodgy.app.data.dao.BedOccupancyRow
 import com.lodgy.app.data.entity.Bed
 import com.lodgy.app.data.entity.PropertyType
 import com.lodgy.app.data.entity.RoomType
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.OccupancyPeriodRepository
 import com.lodgy.app.data.repository.RoomRepository
 import com.lodgy.app.data.repository.TenantRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
@@ -15,6 +17,7 @@ import com.lodgy.app.ui.common.BedFilter
 import com.lodgy.app.ui.common.matches
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +47,11 @@ data class BedGridUiState(
     /** Non-null while the warden is naming the occupant of their own or a caretaker's room,
      *  pre-filled with the warden's name (LODGY-87). */
     val markingOwnRoom: String? = null,
+    /** Every tenancy this bed has ever had, current one included, newest first (LODGY-93). */
+    val bedHistory: List<BedOccupancyRow> = emptyList(),
+    /** True from the moment a sheet opens until its history has actually loaded, so "never
+     *  occupied" cannot flash on a bed that turns out to have history (LODGY-93). */
+    val bedHistoryLoading: Boolean = false,
 ) {
     val filteredBeds: List<Bed> get() = beds.filter { filter.matches(it.status) }
 
@@ -59,10 +67,12 @@ class BedGridViewModel @Inject constructor(
     private val tenancyAgreementRepository: TenancyAgreementRepository,
     private val tenantRepository: TenantRepository,
     private val wardenRepository: WardenRepository,
+    private val occupancyPeriodRepository: OccupancyPeriodRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val roomId: String = checkNotNull(savedStateHandle["roomId"])
+    private var historyJob: Job? = null
 
     private val _uiState = MutableStateFlow(BedGridUiState())
     val uiState: StateFlow<BedGridUiState> = _uiState.asStateFlow()
@@ -96,12 +106,26 @@ class BedGridViewModel @Inject constructor(
             val agreement = tenancyAgreementRepository.getActiveByBedId(bed.id)
             val tenant = agreement?.let { tenantRepository.getById(it.tenantId) }
             _uiState.update {
-                it.copy(selectedBed = SelectedBed(bed, tenant?.id, tenant?.name.orEmpty()))
+                it.copy(
+                    selectedBed = SelectedBed(bed, tenant?.id, tenant?.name.orEmpty()),
+                    bedHistory = emptyList(),
+                    bedHistoryLoading = true,
+                )
+            }
+        }
+        historyJob?.cancel()
+        historyJob = viewModelScope.launch {
+            occupancyPeriodRepository.observeByBedId(bed.id).collect { rows ->
+                _uiState.update { it.copy(bedHistory = rows, bedHistoryLoading = false) }
             }
         }
     }
 
-    fun onBedSheetDismissed() = _uiState.update { it.copy(selectedBed = null) }
+    fun onBedSheetDismissed() {
+        historyJob?.cancel()
+        historyJob = null
+        _uiState.update { it.copy(selectedBed = null, bedHistory = emptyList(), bedHistoryLoading = false) }
+    }
 
     /**
      * The shortcut past onboarding for a room the warden or a caretaker lives in (LODGY-87).

@@ -29,6 +29,9 @@ erDiagram
     BED      ||--o{ TENANCY_AGREEMENT : "is let by"
     TENANT   ||--o{ TENANT_NOTE : "has"
     TENANT   ||--o{ CREDIT : "is owed"
+    TENANT   ||--o{ OCCUPANCY_PERIOD : "occupied a bed during"
+    BED      ||--o{ OCCUPANCY_PERIOD : "was occupied during"
+    TENANCY_AGREEMENT ||--o{ OCCUPANCY_PERIOD : "covers (nullable)"
 
     TENANCY_AGREEMENT ||--o{ INVOICE : "bills"
     INVOICE  ||--o{ PAYMENT : "settled by"
@@ -149,6 +152,15 @@ erDiagram
         int    periodYear
         string note "nullable"
     }
+    OCCUPANCY_PERIOD {
+        string id PK
+        string tenantId FK
+        string bedId FK
+        string tenancyAgreementId FK "nullable - null for a backfilled stay"
+        long   startDate
+        long   endDate "nullable - null while still occupied"
+        bool   backfilled "warden-entered vs. app-recorded, default false"
+    }
 ```
 
 ---
@@ -214,6 +226,21 @@ may already have reported on, and a cascade would erase it. Added in
 **migration 6 → 7** as three plain `ADD COLUMN`s plus the index, so no existing
 tenancy starts recording a cost it was never asked to.
 
+`OccupancyPeriod` exists because `agreement.bedId` only ever holds the *current*
+bed — a transfer overwrites it, so the row itself cannot say where a tenant was
+before. Each period is one unbroken (tenant, bed) span: onboarding opens the
+first one, a transfer closes the old bed's span and opens the new bed's span in
+the same operation, checkout closes the last one. `tenancyAgreementId` is
+nullable on purpose — a stay backfilled by the warden (LODGY-94) may belong to
+someone who left before the app existed and has no agreement to reference, so
+the period hangs off `tenantId` directly and the agreement link is filled in
+only when one really exists. Added in **migration 7 → 8** as a new table; no
+existing tenancy's rows are backfilled into it, so history before this
+migration is empty unless the warden enters it themselves. `backfilled`
+(**migration 8 → 9**, `ADD COLUMN ... NOT NULL DEFAULT 0`) marks exactly
+that: true for a period the warden typed in from memory or paper, false for
+one the app watched happen live through onboarding, transfer or checkout.
+
 Because that seam exists, a tenant's hostel is not stored anywhere. It is derived:
 `agreement → bed → room → floor → hostel`. Anything that needs to group tenants,
 invoices or payments by property has to walk that join — which is why, for
@@ -241,6 +268,9 @@ flowchart TD
     T -->|"NO ACTION ⛔"| A
     T -->|NO ACTION| N[Tenant Note]
     I -->|SET NULL| C
+    B -->|"NO ACTION ⛔"| OP[Occupancy Period]
+    T -->|"NO ACTION ⛔"| OP
+    A -->|NO ACTION| OP
 
     style B fill:#fde2e2,stroke:#c0392b,color:#111
     style A fill:#fde2e2,stroke:#c0392b,color:#111
@@ -252,7 +282,7 @@ The property tree cascades cleanly all the way down to `Bed`. It then **stops**:
 
 That asymmetry is deliberate — financial history must not vanish because someone
 edited the property — but it means **a delete that removes a bed still referenced
-by an agreement fails at the database, not in the UI**. With Room's foreign-key
+by an agreement or an occupancy period fails at the database, not in the UI**. With Room's foreign-key
 enforcement on, SQLite raises `SQLITE_CONSTRAINT_FOREIGNKEY` and, if nothing
 catches it, the app dies.
 
@@ -287,3 +317,9 @@ confirmed an action that cannot complete.
   notification has nothing better to key on.
 - **`Credit.invoiceId` is nullable and `SET NULL` on delete**, so a credit can be
   recorded against a tenant before the invoice it will offset exists.
+- **`OccupancyPeriod.tenancyAgreementId` is nullable but `NO ACTION`, not `SET
+  NULL`**, unlike `Credit.invoiceId`. A credit's invoice link is genuinely
+  optional from the start; an occupancy period's is only ever null because the
+  warden entered a stay with no agreement to attach (LODGY-94) — an agreement
+  that already exists should never be deletable out from under a period that
+  references it, and today nothing deletes a `TenancyAgreement` at all (4.13).

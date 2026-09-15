@@ -17,6 +17,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/** How long a tenant has been living here, from their latest tenancy - "living here since" while
+ *  [active], "lived here for" once it has closed (LODGY-92). */
+data class StayDuration(val fromMillis: Long, val toMillis: Long, val active: Boolean)
+
 @HiltViewModel
 class TenantProfileViewModel @Inject constructor(
     tenantRepository: TenantRepository,
@@ -40,6 +44,9 @@ class TenantProfileViewModel @Inject constructor(
     private val _nonRevenue = MutableStateFlow(false)
     val nonRevenue: StateFlow<Boolean> = _nonRevenue.asStateFlow()
 
+    private val _stayDuration = MutableStateFlow<StayDuration?>(null)
+    val stayDuration: StateFlow<StayDuration?> = _stayDuration.asStateFlow()
+
     init {
         viewModelScope.launch {
             tenantRepository.observeById(tenantId).collect { _tenant.value = it }
@@ -54,6 +61,13 @@ class TenantProfileViewModel @Inject constructor(
                 val active = agreement?.takeIf { it.status == AgreementStatus.ACTIVE }
                 _plannedMoveOut.value = active?.moveOutDate
                 _nonRevenue.value = active?.nonRevenue == true
+                _stayDuration.value = agreement?.let {
+                    if (it.status == AgreementStatus.ACTIVE) {
+                        StayDuration(it.moveInDate, System.currentTimeMillis(), active = true)
+                    } else {
+                        StayDuration(it.moveInDate, it.moveOutDate ?: it.moveInDate, active = false)
+                    }
+                }
             }
         }
     }

@@ -9,12 +9,15 @@ import com.lodgy.app.data.MIGRATION_3_4
 import com.lodgy.app.data.MIGRATION_4_5
 import com.lodgy.app.data.MIGRATION_5_6
 import com.lodgy.app.data.MIGRATION_6_7
+import com.lodgy.app.data.MIGRATION_7_8
+import com.lodgy.app.data.MIGRATION_8_9
 import com.lodgy.app.data.dao.BedDao
 import com.lodgy.app.data.dao.CreditDao
 import com.lodgy.app.data.dao.ExpenseDao
 import com.lodgy.app.data.dao.FloorDao
 import com.lodgy.app.data.dao.HostelDao
 import com.lodgy.app.data.dao.InvoiceDao
+import com.lodgy.app.data.dao.OccupancyPeriodDao
 import com.lodgy.app.data.dao.PaymentDao
 import com.lodgy.app.data.dao.ReconciliationMarkDao
 import com.lodgy.app.data.dao.RoomDao
@@ -39,7 +42,7 @@ object DatabaseModule {
         Room.databaseBuilder(context, LodgyDatabase::class.java, LodgyDatabase.DATABASE_NAME)
             .addMigrations(
                 MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-                MIGRATION_6_7,
+                MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
             )
             .build()
 
@@ -81,4 +84,7 @@ object DatabaseModule {
 
     @Provides
     fun provideReconciliationMarkDao(db: LodgyDatabase): ReconciliationMarkDao = db.reconciliationMarkDao()
+
+    @Provides
+    fun provideOccupancyPeriodDao(db: LodgyDatabase): OccupancyPeriodDao = db.occupancyPeriodDao()
 }

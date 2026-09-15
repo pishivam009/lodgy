@@ -16,10 +16,12 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
+import com.lodgy.app.data.dao.BedOccupancyRow
 import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.entity.Tenant
 import com.lodgy.app.data.entity.TenantStatus
+import com.lodgy.app.data.repository.OccupancyPeriodRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
 import com.lodgy.app.data.repository.TenantRepository
 import com.lodgy.app.data.repository.WardenRepository
@@ -40,6 +42,7 @@ class BedGridViewModelTest {
     private val agreementRepository: TenancyAgreementRepository = mockk()
     private val tenantRepository: TenantRepository = mockk()
     private val wardenRepository: WardenRepository = mockk()
+    private val occupancyPeriodRepository: OccupancyPeriodRepository = mockk()
 
     private fun agreement(bedId: String, tenantId: String) = TenancyAgreement(
         id = "a-$bedId", tenantId = tenantId, bedId = bedId, agreedRent = 0.0, advanceDeposit = 0.0,
@@ -61,7 +64,11 @@ class BedGridViewModelTest {
         val bedA = Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L)
         every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(bedB, bedA))
 
-        val viewModel = BedGridViewModel(bedRepository, roomRepository, agreementRepository, tenantRepository, wardenRepository, SavedStateHandle(mapOf("roomId" to "r1")))
+        every { occupancyPeriodRepository.observeByBedId(any()) } returns flowOf(emptyList())
+        val viewModel = BedGridViewModel(
+            bedRepository, roomRepository, agreementRepository, tenantRepository, wardenRepository,
+            occupancyPeriodRepository, SavedStateHandle(mapOf("roomId" to "r1")),
+        )
         val state = viewModel.uiState.value
 
         assertEquals("101", state.roomNumber)
@@ -119,6 +126,23 @@ class BedGridViewModelTest {
     }
 
     @Test
+    fun `tapping a bed loads its occupancy history`() = runTest {
+        coEvery { roomRepository.getPropertyForRoom("r1") } returns RoomProperty("Sunrise PG", PropertyType.HOSTEL)
+        coEvery { roomRepository.getById("r1") } returns Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        val bed = Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L)
+        every { bedRepository.getByRoomId("r1") } returns flowOf(listOf(bed))
+        coEvery { agreementRepository.getActiveByBedId("b1") } returns agreement("b1", "t1")
+        coEvery { tenantRepository.getById("t1") } returns tenant("t1", "Priya")
+        val history = listOf(BedOccupancyRow("p1", "t0", "Suresh", 0L, 500L))
+
+        val viewModel = viewModel()
+        every { occupancyPeriodRepository.observeByBedId("b1") } returns flowOf(history)
+        viewModel.onBedSelected(bed)
+
+        assertEquals(history, viewModel.uiState.value.bedHistory)
+    }
+
+    @Test
     fun `dismissing clears the sheet`() = runTest {
         coEvery { roomRepository.getPropertyForRoom("r1") } returns RoomProperty("Sunrise PG", PropertyType.HOSTEL)
         coEvery { roomRepository.getById("r1") } returns Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
@@ -131,6 +155,7 @@ class BedGridViewModelTest {
         viewModel.onBedSheetDismissed()
 
         assertNull(viewModel.uiState.value.selectedBed)
+        assertEquals(emptyList<BedOccupancyRow>(), viewModel.uiState.value.bedHistory)
     }
 
     /** What the ViewModel reads on init. Unstubbed, MockK throws inside that coroutine and the
@@ -141,10 +166,13 @@ class BedGridViewModelTest {
         every { bedRepository.getByRoomId("r1") } returns flowOf(emptyList())
     }
 
-    private fun viewModel() = BedGridViewModel(
-        bedRepository, roomRepository, agreementRepository, tenantRepository, wardenRepository,
-        SavedStateHandle(mapOf("roomId" to "r1")),
-    )
+    private fun viewModel(): BedGridViewModel {
+        every { occupancyPeriodRepository.observeByBedId(any()) } returns flowOf(emptyList())
+        return BedGridViewModel(
+            bedRepository, roomRepository, agreementRepository, tenantRepository, wardenRepository,
+            occupancyPeriodRepository, SavedStateHandle(mapOf("roomId" to "r1")),
+        )
+    }
 
     /**
      * LODGY-87. Reaching LODGY-82's switch used to mean typing yourself in as a tenant, with a

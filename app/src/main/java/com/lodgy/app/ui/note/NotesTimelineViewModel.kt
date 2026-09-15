@@ -3,9 +3,11 @@ package com.lodgy.app.ui.note
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lodgy.app.data.dao.TenantStayRow
 import com.lodgy.app.data.entity.Credit
 import com.lodgy.app.data.entity.TenantNote
 import com.lodgy.app.data.repository.CreditRepository
+import com.lodgy.app.data.repository.OccupancyPeriodRepository
 import com.lodgy.app.data.repository.TenantNoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -30,17 +32,28 @@ sealed interface TimelineEntry {
     }
 }
 
+/** One tenancy's bed sequence - a returning tenant has more than one of these, shown as separate
+ *  stays rather than merged (LODGY-92). A backfilled period with no agreement to group under
+ *  ([TenantStayRow.tenancyAgreementId] null) is its own single-period stay. */
+data class StayGroup(val tenancyAgreementId: String?, val periods: List<TenantStayRow>)
+
 data class NotesTimelineUiState(
     val loading: Boolean = true,
     val entries: List<TimelineEntry> = emptyList(),
+    val stayGroups: List<StayGroup> = emptyList(),
 ) {
     val notes: List<TenantNote> get() = entries.filterIsInstance<TimelineEntry.NoteEntry>().map { it.note }
+
+    /** A tenant who has never moved has exactly one period ever recorded; showing a one-row
+     *  "history" section for them would read as broken rather than informative. */
+    val showStays: Boolean get() = stayGroups.sumOf { it.periods.size } > 1
 }
 
 @HiltViewModel
 class NotesTimelineViewModel @Inject constructor(
     tenantNoteRepository: TenantNoteRepository,
     creditRepository: CreditRepository,
+    occupancyPeriodRepository: OccupancyPeriodRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -54,10 +67,19 @@ class NotesTimelineViewModel @Inject constructor(
             combine(
                 tenantNoteRepository.getByTenantId(tenantId),
                 creditRepository.getByTenantId(tenantId),
-            ) { notes, credits ->
-                (notes.map(TimelineEntry::NoteEntry) + credits.map(TimelineEntry::CreditEntry))
+                occupancyPeriodRepository.observeStaysByTenantId(tenantId),
+            ) { notes, credits, stays ->
+                val entries = (notes.map(TimelineEntry::NoteEntry) + credits.map(TimelineEntry::CreditEntry))
                     .sortedByDescending { it.occurredOn }
-            }.collect { entries -> _uiState.update { it.copy(loading = false, entries = entries) } }
+                val stayGroups = stays
+                    .groupBy { it.tenancyAgreementId ?: it.periodId }
+                    .values
+                    .map { periods -> StayGroup(periods.first().tenancyAgreementId, periods) }
+                    .sortedByDescending { group -> group.periods.minOf { it.startDate } }
+                Pair(entries, stayGroups)
+            }.collect { (entries, stayGroups) ->
+                _uiState.update { it.copy(loading = false, entries = entries, stayGroups = stayGroups) }
+            }
         }
     }
 }

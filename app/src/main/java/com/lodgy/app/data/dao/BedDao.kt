@@ -111,6 +111,18 @@ interface BedDao {
     )
     suspend fun getVacantChoices(): List<VacantBedChoice>
 
+    /** Every bed anywhere in the warden's portfolio, occupied or not - for naming a bed a past
+     *  stay happened on (LODGY-94), where the bed need not be free today. */
+    @Query(
+        "SELECT beds.id AS bedId, beds.label AS bedLabel, rooms.roomNumber AS roomNumber, " +
+            "hostels.id AS hostelId, hostels.name AS hostelName, hostels.propertyType AS propertyType " +
+            "FROM beds INNER JOIN rooms ON rooms.id = beds.roomId " +
+            "INNER JOIN floors ON floors.id = rooms.floorId " +
+            "INNER JOIN hostels ON hostels.id = floors.hostelId " +
+            "ORDER BY hostels.name, floors.sortOrder, rooms.roomNumber, beds.label",
+    )
+    suspend fun getAllChoices(): List<BedChoice>
+
     /** The market rate the warden is forgoing on a non-revenue room, which is what the
      *  forgone-rent expense defaults to (LODGY-84). */
     @Query(

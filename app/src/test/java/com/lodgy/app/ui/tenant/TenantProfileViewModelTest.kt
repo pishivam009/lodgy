@@ -156,4 +156,45 @@ class TenantProfileViewModelTest {
             flowOf(listOf(activeAgreement()))
         assertFalse(viewModel().nonRevenue.value)
     }
+
+    @Test
+    fun `an active tenancy's stay duration runs from move-in to now`() {
+        every { tenantRepository.observeById("t1") } returns flowOf(tenant)
+        every { agreementRepository.observeByTenantId("t1") } returns
+            flowOf(listOf(activeAgreement().copy(moveInDate = 1_000L)))
+        coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
+
+        val duration = viewModel().stayDuration.value
+        assertEquals(1_000L, duration?.fromMillis)
+        assertTrue(duration?.active == true)
+    }
+
+    @Test
+    fun `a closed tenancy's stay duration runs from move-in to move-out, not to now`() {
+        every { tenantRepository.observeById("t1") } returns flowOf(tenant)
+        every { agreementRepository.observeByTenantId("t1") } returns flowOf(
+            listOf(
+                TenancyAgreement(
+                    tenantId = "t1", bedId = "b1", agreedRent = 0.0, advanceDeposit = 0.0,
+                    billingCycleDay = 1, moveInDate = 1_000L, moveOutDate = 5_000L,
+                    depositRefundAmount = null, status = AgreementStatus.CLOSED,
+                    createdAt = 0L, updatedAt = 0L,
+                ),
+            ),
+        )
+        coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
+
+        val duration = viewModel().stayDuration.value
+        assertEquals(1_000L, duration?.fromMillis)
+        assertEquals(5_000L, duration?.toMillis)
+        assertFalse(duration?.active == true)
+    }
+
+    @Test
+    fun `no agreement at all leaves the stay duration empty`() {
+        every { tenantRepository.observeById("t1") } returns flowOf(tenant)
+        every { agreementRepository.observeByTenantId("t1") } returns flowOf(emptyList())
+
+        assertNull(viewModel().stayDuration.value)
+    }
 }

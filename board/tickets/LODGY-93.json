@@ -13,12 +13,12 @@
     "Warden and caretaker occupancy appears in the history like any other, since the room was genuinely occupied",
     "Correct in Hindi as well as English"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-07T12:14:00Z",
+  "updatedAt": "2026-09-15T04:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -31,6 +31,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "LODGY-94 has been filed so the warden can enter past stays themselves. It matters to this ticket because without it this screen opens blank for every stay that predates the feature - which for an existing warden is most of them - and the empty state would be the normal case rather than the exception. Worth designing the empty state on the assumption that backfill exists and may or may not have been used."
+    },
+    {
+      "timestamp": "2026-09-15T03:15:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting, on top of LODGY-91's occupancy_periods table (now built, in Testing)."
+    },
+    {
+      "timestamp": "2026-09-15T04:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built: the bed sheet (BedGridScreen's BedActionSheet) now lists past occupants below 'Occupied by X', built live via a new OccupancyPeriodDao.observeByBedId query (BedGridViewModel.onBedSelected/onBedSheetDismissed manage the collection's lifecycle so it doesn't leak across bed taps). Vacant stretches between tenancies are computed by a new pure, tested function (ui/property/BedHistory.kt: bedHistoryEntries walks periods chronologically and turns any gap into its own row; pastOccupancyEntries excludes the still-open period itself but keeps a gap right before it visible). A bed with no periods at all says 'Never occupied.' plainly. No room/bed labels are printed in the rows themselves, so a shop/warehouse/flat's history reads correctly with no code branch needed. Docs: DESIGN.md 4.3 + decision log, USER-MANUAL.md property section. Unit tests: BedHistoryTest (the gap/exclusion logic), BedGridViewModelTest extended (history loads on select, clears on dismiss). FULL SUITE ACROSS LODGY-91/92/93/94 (all four tickets' code together): 630 tests, 0 failures, line coverage 95.71% (gate 0.93), assembleDebug succeeds. Caught and fixed 4 test bugs of my own before this passed (a MockK stub-ordering mistake and three wrong hand-computed expected values) - noting it so the tester knows the suite was actually exercised, not just written. SAME FLAG AS LODGY-91/92/94: not verified on a device - no working emulator this session (see LODGY-91's note for what was tried). SEPARATELY: this session's gradle runs repeatedly got OOM-killed by Windows - the machine has 8GB total RAM and Android Studio alone was holding 1.1-1.4GB with my own orphaned Gradle/Kotlin daemons stacking on top after each kill; had to manually kill leftover java.exe processes between attempts to get a clean run through. Worth the PO/warden knowing this machine is tight for local Android builds alongside Studio."
     }
   ]
 }

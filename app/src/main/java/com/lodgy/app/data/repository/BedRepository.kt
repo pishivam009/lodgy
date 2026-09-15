@@ -1,5 +1,6 @@
 package com.lodgy.app.data.repository
 
+import com.lodgy.app.data.dao.BedChoice
 import com.lodgy.app.data.dao.BedDao
 import com.lodgy.app.data.dao.BedLocation
 import com.lodgy.app.data.dao.FloorOccupancy
@@ -44,6 +45,8 @@ class BedRepository @Inject constructor(private val bedDao: BedDao) {
     suspend fun getVacantBedIds(): List<String> = bedDao.getVacantBedIds()
 
     suspend fun getVacantChoices(): List<VacantBedChoice> = bedDao.getVacantChoices()
+
+    suspend fun getAllChoices(): List<BedChoice> = bedDao.getAllChoices()
 
     /** Distinguishes "you are full" from "you have no property yet" on the onboarding picker. */
     suspend fun hasAnyBed(): Boolean = bedDao.hasAnyBed()

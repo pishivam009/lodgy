@@ -7,6 +7,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -17,7 +18,8 @@ import org.junit.Test
 class TenancyAgreementRepositoryTest {
 
     private val dao: TenancyAgreementDao = mockk()
-    private val repository = TenancyAgreementRepository(dao)
+    private val occupancyPeriodRepository: OccupancyPeriodRepository = mockk(relaxed = true)
+    private val repository = TenancyAgreementRepository(dao, occupancyPeriodRepository)
 
     private fun agreement(id: String, status: AgreementStatus) = TenancyAgreement(
         id = id, tenantId = "t1", bedId = "b1", agreedRent = 1000.0, advanceDeposit = 2000.0,
@@ -53,6 +55,16 @@ class TenancyAgreementRepositoryTest {
     }
 
     @Test
+    fun `create opens an occupancy period on the new agreement's bed from the move-in date`() = runTest {
+        val inserted = slot<TenancyAgreement>()
+        coEvery { dao.insert(capture(inserted)) } returns Unit
+
+        val created = repository.create("t1", "b1", 1500.0, 3000.0, 5, 100L)
+
+        coVerify { occupancyPeriodRepository.open("t1", "b1", created.id, 100L) }
+    }
+
+    @Test
     fun `close sets status CLOSED with the move-out date and refund amount`() = runTest {
         val existing = agreement("a1", AgreementStatus.ACTIVE)
         val updated = slot<TenancyAgreement>()
@@ -63,6 +75,16 @@ class TenancyAgreementRepositoryTest {
         assertEquals(AgreementStatus.CLOSED, updated.captured.status)
         assertEquals(999L, updated.captured.moveOutDate)
         assertEquals(1800.0, updated.captured.depositRefundAmount!!, 0.0001)
+    }
+
+    @Test
+    fun `close ends the agreement's open occupancy period at the move-out date`() = runTest {
+        val existing = agreement("a1", AgreementStatus.ACTIVE)
+        coEvery { dao.update(any()) } returns Unit
+
+        repository.close(existing, moveOutDate = 999L, depositRefundAmount = 1800.0)
+
+        coVerify { occupancyPeriodRepository.close("a1", 999L) }
     }
 
     @Test
@@ -79,6 +101,19 @@ class TenancyAgreementRepositoryTest {
         assertEquals(AgreementStatus.ACTIVE, updated.captured.status)
         assertNull(updated.captured.moveOutDate)
         coVerify(exactly = 0) { dao.insert(any()) }
+    }
+
+    @Test
+    fun `transferBed closes the old bed's occupancy period and opens one on the new bed`() = runTest {
+        val active = agreement("a1", AgreementStatus.ACTIVE)
+        coEvery { dao.update(any()) } returns Unit
+
+        repository.transferBed(active, "new-bed", 5500.0)
+
+        coVerifyOrder {
+            occupancyPeriodRepository.close("a1", any())
+            occupancyPeriodRepository.open("t1", "new-bed", "a1", any())
+        }
     }
 
     @Test

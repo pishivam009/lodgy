@@ -35,6 +35,7 @@ import com.lodgy.app.ui.property.RoomListScreen
 import com.lodgy.app.ui.backup.BackupScreen
 import com.lodgy.app.ui.backup.DataPacketScreen
 import com.lodgy.app.ui.backup.HistoryImportScreen
+import com.lodgy.app.ui.backup.StayBackfillScreen
 import com.lodgy.app.ui.dashboard.DashboardScreen
 import com.lodgy.app.ui.dashboard.MonthlyReportScreen
 import com.lodgy.app.ui.expense.ExpenseFormScreen
@@ -94,6 +95,7 @@ private const val NOTE_FORM_ROUTE = "note_form"
 private const val BACKUP_ROUTE = "backup"
 private const val DATA_PACKET_ROUTE = "data_packet"
 private const val HISTORY_IMPORT_ROUTE = "history_import"
+private const val STAY_BACKFILL_ROUTE = "stay_backfill"
 private const val NOTIFICATION_SETTINGS_ROUTE = "notification_settings"
 
 @Composable
@@ -199,6 +201,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                             onOpenBackup = { navController.navigate(BACKUP_ROUTE) },
                             onOpenPrintableRecords = { navController.navigate(DATA_PACKET_ROUTE) },
                             onOpenHistoryImport = { navController.navigate(HISTORY_IMPORT_ROUTE) },
+                            onOpenStayBackfill = { navController.navigate(STAY_BACKFILL_ROUTE) },
                             onOpenNotificationSettings = { navController.navigate(NOTIFICATION_SETTINGS_ROUTE) },
                         )
                     }
@@ -542,6 +545,10 @@ fun LodgyNavHost(pendingRoute: String? = null) {
 
             composable(HISTORY_IMPORT_ROUTE) {
                 HistoryImportScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(STAY_BACKFILL_ROUTE) {
+                StayBackfillScreen(onBack = { navController.popBackStack() })
             }
 
             composable(NOTIFICATION_SETTINGS_ROUTE) {

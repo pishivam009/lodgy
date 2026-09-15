@@ -12,12 +12,12 @@
     "A non-revenue tenancy (warden or caretaker room) is recorded the same way - it is real occupancy, it just bills nobody",
     "Periods never overlap for one bed: a bed cannot be occupied by two tenancies at the same instant"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "High",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-07T12:12:00Z",
+  "updatedAt": "2026-09-15T01:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -30,6 +30,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "THE OPEN DECISION IN THIS TICKET IS NOW ANSWERED BY LODGY-94, which adds a way for the warden to enter past stays themselves. Given that, this ticket should BACKFILL NOTHING automatically - option (b) of the three listed above. The reasoning that made option (a) the recommendation was that an empty history makes every existing tenant look like they have no past; if the warden can fill it with what actually happened, the app guessing at it is strictly worse. A period inferred from the current bed would place a transferred tenant at the wrong bed since their move-in date, and no flag makes that useful. \n\nALSO FROM LODGY-94, AND IT MAY CHANGE THIS TABLE'S SHAPE, so please settle it before writing the migration: a stay being backfilled may belong to a tenant who left before the app existed and has no tenancy agreement. If an occupancy period must reference a TENANCY, the backfill has to invent a closed agreement with rent and deposit figures nobody remembers. Letting a period reference the tenant directly, with the tenancy optional, avoids that and costs little now - and considerably more if the table has to be migrated twice."
+    },
+    {
+      "timestamp": "2026-09-15T00:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - building occupancy_periods per the PO's settled decisions: no automatic backfill, tenantId required, tenancyAgreementId nullable. Schema v7 -> v8."
+    },
+    {
+      "timestamp": "2026-09-15T01:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built: OccupancyPeriod entity, OccupancyPeriodDao and OccupancyPeriodRepository (app/src/main/java/com/lodgy/app/data/{entity,dao,repository}/OccupancyPeriod*.kt), MIGRATION_7_8 (Migrations.kt), LodgyDatabase bumped to v8, DatabaseModule wired. TenancyAgreementRepository.create/transferBed/close now open/close periods (occupancy_periods.tenancyAgreementId nullable per the PO's decision) - every onboarding path (bed grid, agreement form) and transfer/checkout goes through these three methods, so no UI code changed. No backfill migration, as decided. Docs updated: DESIGN.md section 3 + decision log + roadmap item 6, DATA-MODEL.md ERD/delete diagram/notes. Unit tests: TenancyAgreementRepositoryTest extended, new OccupancyPeriodRepositoryTest - 578 tests pass, 0 failures, line coverage 95.9% (gate 0.93). assembleDebug succeeds. FLAG FOR TESTER: the migration was NOT verified against a populated device database - the emulator in this environment failed to boot (stalled post-boot-animation after 15+ min on two separate launches, even after fixing a missing AVD .ini file) and the user chose to proceed without it. Please run the migration against a real pre-v8 database pulled off a device before this ships, per CLAUDE.md's standing migration-testing requirement."
     }
   ]
 }

@@ -79,3 +79,40 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         )
     }
 }
+
+/**
+ * Adds occupancy periods - a row per (tenant, bed) span, so a transfer no longer erases which bed
+ * a tenant occupied before it (LODGY-91). A brand-new table, so nothing existing changes shape or
+ * behaviour; per the PO's decision recorded on the ticket, no rows are backfilled for tenancies
+ * that predate this table; a warden can add that history themselves through LODGY-94.
+ */
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `occupancy_periods` (" +
+                "`id` TEXT NOT NULL, `tenantId` TEXT NOT NULL, `bedId` TEXT NOT NULL, " +
+                "`tenancyAgreementId` TEXT, `startDate` INTEGER NOT NULL, `endDate` INTEGER, " +
+                "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`id`), " +
+                "FOREIGN KEY(`tenantId`) REFERENCES `tenants`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , " +
+                "FOREIGN KEY(`bedId`) REFERENCES `beds`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , " +
+                "FOREIGN KEY(`tenancyAgreementId`) REFERENCES `tenancy_agreements`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_occupancy_periods_tenantId` ON `occupancy_periods` (`tenantId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_occupancy_periods_bedId` ON `occupancy_periods` (`bedId`)")
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_occupancy_periods_tenancyAgreementId` " +
+                "ON `occupancy_periods` (`tenancyAgreementId`)",
+        )
+    }
+}
+
+/** Adds the backfilled flag - whether the warden typed a stay in from memory (LODGY-94) rather
+ *  than the app recording it live. Plain ADD COLUMN defaulting to 0, so every period written by
+ *  MIGRATION_7_8's launch (all of them, live-recorded) reads as not backfilled. */
+val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `occupancy_periods` ADD COLUMN `backfilled` INTEGER NOT NULL DEFAULT 0")
+    }
+}

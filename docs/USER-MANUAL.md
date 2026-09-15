@@ -33,7 +33,7 @@ The five tabs:
 | **Property** | Hostels, floors, rooms, beds |
 | **Tenants** | Tenant directory, profiles, notes, checkout |
 | **Payments** | Invoices, payments, reminders, receipts |
-| **More** | Expenses, backup, printable records, history import, notifications, appearance, language |
+| **More** | Expenses, backup, printable records, history import, past-stay backfill, notifications, appearance, language |
 
 ---
 
@@ -117,6 +117,12 @@ The rest of this section is about hostels.
   isn't. Nothing happens from the tap alone, so a mis-touch on a crowded grid
   can't take you somewhere unexpected. Assigning from here skips the
   bed-picking step, since you've already told Lodgy which bed you mean.
+- **Past occupants.** That same panel lists everyone who has lived on the
+  bed before the current tenant, most recent first, with the dates — useful
+  when a bed comes back damaged and you need to know who had it, or a tenant
+  says a fitting was already broken when they moved in. Any real gap between
+  tenants is shown too, so you can see at a glance whether a bed keeps
+  sitting empty. A bed that's never had anyone says so plainly.
 
 ## 3. Bringing in a tenant
 
@@ -179,6 +185,10 @@ only future ones stop.
   many vacated tenants a filter is hiding); sort by name or by room.
 - Room and bed are shown alongside the name wherever a tenant appears, so you
   never have to remember who is in 104-B.
+- The profile states how long they've been with you — *Living here since
+  4 Sep 2026 — 3 months*, or *Lived here from... —* once they've checked out
+  — so you have the answer on screen the moment a tenant asks about a rent
+  increase or their deposit, without doing the arithmetic yourself.
 - **Quick contact** buttons on the profile — Call, WhatsApp, SMS — open the
   dialer or app with the number filled in. Nothing dials or sends by itself.
 - **Notes & timeline**, **notice**, **transfer**, **credit**, **multi-month
@@ -197,6 +207,13 @@ only future ones stop.
 - Each note carries the date it *happened*, which you can set to the past —
   the timeline sorts by that, not by when you typed it in. Notes are editable
   and deletable, with a confirmation before deleting.
+- **Room history.** If a tenant has ever transferred, or has left and come
+  back, a **Room history** section sits above the notes and shows every room
+  and bed they've occupied with the dates, grouped so a return shows as a
+  separate stay rather than one merged period. A tenant who's never moved
+  doesn't get this section at all — there's nothing to list. Stays you've
+  added yourself through **Add past stays** (More menu) show here too,
+  exactly like ones Lodgy recorded live.
 
 ### Notice, transfer and checkout
 
@@ -354,6 +371,20 @@ points you at system settings.
   tenants by phone number, tells you how many rows it can use, names any line
   it couldn't read and why, and lists rows whose phone number no tenant uses.
   Skipping this changes nothing — the app works fine from today onward.
+- **Add past stays.** Optional, at More → **Add past stays**. Room and tenant
+  history (see the tenant profile and the bed sheet) only starts from the day
+  you begin using this feature — anything before that is blank unless you
+  fill it in here. Add a stay by picking the tenant, the room/bed and the
+  dates they were there, or bring in a spreadsheet as
+  `phone, hostel, room, bed, start_date, end_date` (dates as `2023-01-15`,
+  header optional) — the same way the history import above works. A row
+  naming a tenant or a room/bed Lodgy doesn't recognise is listed rather than
+  dropped, and two stays that would put someone on a bed already occupied by
+  someone else are refused so you know to check the dates. Anything you add
+  can be corrected or removed afterwards. This only records where someone
+  stayed — it never creates a bill, so it can't resurrect a due you already
+  collected in cash. Skipping this is fine — history simply starts from
+  today.
 
 ## 9. Appearance and language
 

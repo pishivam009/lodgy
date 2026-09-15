@@ -27,9 +27,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,11 +39,15 @@ import com.lodgy.app.R
 import com.lodgy.app.data.entity.Bed
 import com.lodgy.app.ui.common.BedFilter
 import com.lodgy.app.ui.common.FilterChipRow
+import com.lodgy.app.ui.common.durationLabel
 import com.lodgy.app.ui.common.icon
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.common.level
 import com.lodgy.app.ui.icons.CommonIcons
 import com.lodgy.app.ui.theme.LodgyStatus
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -221,6 +227,8 @@ private fun BedActionSheet(
                 )
             }
 
+            BedHistorySection(uiState)
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             // An occupied bed offers the person in it; a vacant one offers filling it. A bed whose
@@ -248,6 +256,55 @@ private fun BedActionSheet(
                         ),
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BedHistorySection(uiState: BedGridUiState) {
+    val dateFormat = remember { SimpleDateFormat("d MMM yyyy", Locale.getDefault()) }
+
+    if (uiState.bedHistoryLoading) return
+
+    if (uiState.bedHistory.isEmpty()) {
+        Text(
+            stringResource(R.string.bed_history_never),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        return
+    }
+
+    val entries = uiState.pastOccupancyEntries()
+    if (entries.isEmpty()) return
+
+    Column(modifier = Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(stringResource(R.string.bed_history_title), style = MaterialTheme.typography.labelLarge)
+        entries.forEach { entry ->
+            when (entry) {
+                is BedHistoryEntry.Occupied -> Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(entry.row.tenantName, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(
+                            R.string.stay_range,
+                            dateFormat.format(Date(entry.row.startDate)),
+                            entry.row.endDate?.let { dateFormat.format(Date(it)) }.orEmpty(),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                is BedHistoryEntry.Vacant -> Text(
+                    stringResource(R.string.bed_history_vacant, durationLabel(entry.fromMillis, entry.toMillis)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontStyle = FontStyle.Italic,
+                )
             }
         }
     }

@@ -13,12 +13,12 @@
     "Correct for a shop, warehouse or flat, where the stay is of the whole property and there is no bed to name",
     "Correct in Hindi as well as English, including the duration wording"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-07T12:14:00Z",
+  "updatedAt": "2026-09-15T03:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -31,6 +31,22 @@
       "actor": "Product Owner",
       "action": "comment",
       "note": "LODGY-94 has been filed so the warden can enter past stays themselves. It matters to this ticket because without it this screen opens blank for every stay that predates the feature - which for an existing warden is most of them - and the empty state would be the normal case rather than the exception. Worth designing the empty state on the assumption that backfill exists and may or may not have been used."
+    },
+    {
+      "timestamp": "2026-09-15T02:15:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting, on top of LODGY-91's occupancy_periods table (now built, in Testing)."
+    },
+    {
+      "timestamp": "2026-09-15T03:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built: stay duration on TenantProfileScreen ('Living here since X - 3 months' / 'Lived here from X - 3 months'), derived from the latest TenancyAgreement (TenantProfileViewModel.stayDuration, no new data needed) via a new reusable ui/common/DurationLabel.kt (durationValue is a pure, tested bucketing function; durationLabel is the thin @Composable wrapper). Room history: NotesTimelineViewModel now also observes OccupancyPeriodRepository.observeStaysByTenantId (new live DAO query joining bed/room/hostel) and groups periods into stays by tenancyAgreementId (null-agreement/backfilled periods each stand alone); NotesTimelineScreen renders a 'Room history' section above the note stream, hidden when a tenant has only ever had one period (never moved). Reuses the existing timeline screen - no new nav destination. Docs: DESIGN.md 4.3 (duration) + 4.6 (room history) + decision log, USER-MANUAL.md (profile + notes-and-timeline sections). Unit tests: DurationLabelTest (pure bucketing logic), NotesTimelineViewModelTest extended (grouping, single-period hiding), TenantProfileViewModelTest extended (active vs closed duration), OccupancyPeriodRepositoryTest extended (observeStaysByTenantId passthrough). Full suite green, coverage above the 0.93 gate - see the combined LODGY-91/92/93 build numbers on LODGY-93's handoff note. assembleDebug succeeds. Not verified on-device for the same reason noted on LODGY-91/94: no working emulator this session."
     }
   ]
 }
