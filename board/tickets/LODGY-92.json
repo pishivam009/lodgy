@@ -13,12 +13,12 @@
     "Correct for a shop, warehouse or flat, where the stay is of the whole property and there is no bed to name",
     "Correct in Hindi as well as English, including the duration wording"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-18T12:00:00Z",
+  "updatedAt": "2026-09-18T13:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -85,6 +85,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - re-verified the exact original failure and its opposite on-device. Ramesh Kumar's single backfilled stay (Room 101 Bed A, 1 Jun 2023 - 31 Dec 2023) now correctly shows in his Room history section, which was completely absent before this fix. To confirm no overcorrection, onboarded a fresh tenant (\"Clean Check\", non-revenue, Room 104 Bed A) with exactly one ordinary app-recorded period and nothing backfilled - their Notes & Timeline correctly shows no Room history section at all, same as before this fix. Both halves of the fix hold together as intended."
+    },
+    {
+      "timestamp": "2026-09-18T13:00:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Went back to the exact tenant this failed on before - Ramesh Kumar. His Room history now shows Room 101 Bed A, 1 Jun 2023 - 31 Dec 2023, right next to the note I already had recording that same move. If he ever disputes how long he has been with me, or which rooms he has had, I now have something to point to instead of re-reading old notes and doing date math myself. That is the actual job this ticket was for, and it does it now."
     }
   ]
 }

@@ -15,12 +15,12 @@
     "It is recorded that a backfilled stay came from the warden rather than from the app observing it, without implying the warden is less trustworthy than the app",
     "Correct in Hindi as well as English"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T12:10:00Z",
-  "updatedAt": "2026-09-18T12:00:00Z",
+  "updatedAt": "2026-09-18T13:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T12:10:00Z",
@@ -81,6 +81,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - AC3 specifically re-verified: Ramesh Kumar's one backfilled prior room now shows on both his bed's history (already worked) and his own tenant profile (was the gap) - the two views agree, per AC3's literal wording. Shares its fix with LODGY-92 (see that ticket); no changes to this ticket's own screen were needed or made."
+    },
+    {
+      "timestamp": "2026-09-18T13:00:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. What I type in through Add past stays now actually shows up where I would look for it - on the tenant's own profile, not just on the bed. Backfilling one old room for a tenant used to feel pointless since it vanished from the one place I would check; now it does what I expected the first time I used this screen."
     }
   ]
 }
