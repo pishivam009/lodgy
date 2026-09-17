@@ -17,7 +17,7 @@
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-15T01:00:00Z",
+  "updatedAt": "2026-09-17T15:50:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -46,6 +46,12 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built: OccupancyPeriod entity, OccupancyPeriodDao and OccupancyPeriodRepository (app/src/main/java/com/lodgy/app/data/{entity,dao,repository}/OccupancyPeriod*.kt), MIGRATION_7_8 (Migrations.kt), LodgyDatabase bumped to v8, DatabaseModule wired. TenancyAgreementRepository.create/transferBed/close now open/close periods (occupancy_periods.tenancyAgreementId nullable per the PO's decision) - every onboarding path (bed grid, agreement form) and transfer/checkout goes through these three methods, so no UI code changed. No backfill migration, as decided. Docs updated: DESIGN.md section 3 + decision log + roadmap item 6, DATA-MODEL.md ERD/delete diagram/notes. Unit tests: TenancyAgreementRepositoryTest extended, new OccupancyPeriodRepositoryTest - 578 tests pass, 0 failures, line coverage 95.9% (gate 0.93). assembleDebug succeeds. FLAG FOR TESTER: the migration was NOT verified against a populated device database - the emulator in this environment failed to boot (stalled post-boot-animation after 15+ min on two separate launches, even after fixing a missing AVD .ini file) and the user chose to proceed without it. Please run the migration against a real pre-v8 database pulled off a device before this ships, per CLAUDE.md's standing migration-testing requirement."
+    },
+    {
+      "timestamp": "2026-09-17T15:50:00Z",
+      "actor": "Developer",
+      "action": "comment",
+      "note": "Migration verification requested on LODGY-91/92/93/94 is done. Built the 0.4.0-released code (schema v7) in a separate worktree, installed it on a real emulator, and seeded a populated database directly via the on-device sqlite3 binary (run-as, not the UI) with 1 hostel, 3 rooms, 5 beds, 5 tenants (one closed, one non-revenue) and 5 tenancy agreements. Force-stopped, installed this branch's build over it (adb install -r, same as a warden updating in place), and opened the app: MIGRATION_7_8 and MIGRATION_8_9 both ran, PRAGMA user_version reads 9, occupancy_periods exists with exactly the migration's columns including backfilled, and every pre-existing row survived untouched (counts unchanged) with occupancy_periods correctly empty - no backfill, as decided. Then exercised the app on the upgraded data: bed history correctly said \"Never occupied\" rather than fabricating a period for the pre-migration tenant, tenant profile duration rendered correctly, and a live transfer through the UI wrote a real occupancy_period (open() fired; close() was a documented no-op since no prior period existed for a tenancy seeded outside the app). No crash in the Lodgy process at any point. This clears the flag raised when LODGY-91/92/93/94 moved to Testing."
     }
   ]
 }

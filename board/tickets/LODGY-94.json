@@ -20,7 +20,7 @@
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T12:10:00Z",
-  "updatedAt": "2026-09-15T02:00:00Z",
+  "updatedAt": "2026-09-17T15:50:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T12:10:00Z",
@@ -43,6 +43,12 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built: OccupancyPeriod.backfilled + MIGRATION_8_9 (Migrations.kt), OccupancyPeriodDao.delete/getById/getBackfilledStays, BedDao.getAllChoices (any bed, not just vacant - Occupancy.kt: BedChoice, BackfilledStayRow), OccupancyPeriodRepository.backfill/editBackfilled/delete with overlap validation (BackfillOutcome sealed result). CSV parser at backup/StayCsv.kt (phone,hostel,room,bed,start_date,end_date - ISO dates), reusing the existing HistoryCsvReader. New screen: ui/backup/StayBackfillScreen.kt + StayBackfillViewModel.kt, reached from More -> 'Add past stays' (LodgyNavHost STAY_BACKFILL_ROUTE, MoreScreen new menu row) - a manual add/edit/delete form plus the same CSV bulk path as LODGY-44's history import. No invoice/payment/notification is ever written by this path. Docs: DESIGN.md 4.8 + decision log + data model section, DATA-MODEL.md, USER-MANUAL.md (More table + new bullet). Unit tests: StayCsvTest, OccupancyPeriodRepositoryTest extended (backfill/editBackfilled/delete/overlap cases), StayBackfillViewModelTest - 605 tests pass, 0 failures, line coverage 95.9% (gate 0.93). assembleDebug succeeds. SAME FLAG AS LODGY-91: migrations 8->9 not verified against a populated device database - no working emulator this session (see LODGY-91's note). Also: docs/design/screenshots.html was not updated - it has no image for this screen (consistent with LODGY-44's history-import screen also being absent from it), and no emulator was available to capture one this session."
+    },
+    {
+      "timestamp": "2026-09-17T15:50:00Z",
+      "actor": "Developer",
+      "action": "comment",
+      "note": "See LODGY-91's comment at 2026-09-17T15:50:00Z - the device migration verification flagged on all four of LODGY-91/92/93/94 is done, on a populated database, with no data loss and no crash."
     }
   ]
 }

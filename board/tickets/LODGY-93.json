@@ -18,7 +18,7 @@
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-15T04:00:00Z",
+  "updatedAt": "2026-09-17T15:50:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -47,6 +47,12 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Built: the bed sheet (BedGridScreen's BedActionSheet) now lists past occupants below 'Occupied by X', built live via a new OccupancyPeriodDao.observeByBedId query (BedGridViewModel.onBedSelected/onBedSheetDismissed manage the collection's lifecycle so it doesn't leak across bed taps). Vacant stretches between tenancies are computed by a new pure, tested function (ui/property/BedHistory.kt: bedHistoryEntries walks periods chronologically and turns any gap into its own row; pastOccupancyEntries excludes the still-open period itself but keeps a gap right before it visible). A bed with no periods at all says 'Never occupied.' plainly. No room/bed labels are printed in the rows themselves, so a shop/warehouse/flat's history reads correctly with no code branch needed. Docs: DESIGN.md 4.3 + decision log, USER-MANUAL.md property section. Unit tests: BedHistoryTest (the gap/exclusion logic), BedGridViewModelTest extended (history loads on select, clears on dismiss). FULL SUITE ACROSS LODGY-91/92/93/94 (all four tickets' code together): 630 tests, 0 failures, line coverage 95.71% (gate 0.93), assembleDebug succeeds. Caught and fixed 4 test bugs of my own before this passed (a MockK stub-ordering mistake and three wrong hand-computed expected values) - noting it so the tester knows the suite was actually exercised, not just written. SAME FLAG AS LODGY-91/92/94: not verified on a device - no working emulator this session (see LODGY-91's note for what was tried). SEPARATELY: this session's gradle runs repeatedly got OOM-killed by Windows - the machine has 8GB total RAM and Android Studio alone was holding 1.1-1.4GB with my own orphaned Gradle/Kotlin daemons stacking on top after each kill; had to manually kill leftover java.exe processes between attempts to get a clean run through. Worth the PO/warden knowing this machine is tight for local Android builds alongside Studio."
+    },
+    {
+      "timestamp": "2026-09-17T15:50:00Z",
+      "actor": "Developer",
+      "action": "comment",
+      "note": "See LODGY-91's comment at 2026-09-17T15:50:00Z - the device migration verification flagged on all four of LODGY-91/92/93/94 is done, on a populated database, with no data loss and no crash."
     }
   ]
 }
