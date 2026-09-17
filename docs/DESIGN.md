@@ -322,11 +322,17 @@ Notes:
   `bedHistoryEntries` adds a trailing `Vacant` row from the most recent
   period's `endDate` to now whenever that period is closed and nothing has
   opened since, reusing the exact same row and wording as a between-tenancies
-  gap rather than inventing a second way to say the same thing. A bed
-  currently occupied gets no such row (there is nothing after the open
-  period to measure yet), and a bed with no periods at all still says "Never
-  occupied" rather than "vacant forever" - the trailing entry only applies
-  once there is a real checkout to measure from.
+  gap rather than inventing a second way to say the same thing. Whether the
+  bed is occupied right now comes from `bed.status`, passed in as
+  `currentlyOccupied`, never inferred from the periods list alone: a bed can
+  be genuinely occupied by a tenancy that predates occupancy-period tracking
+  and has never transferred, so it has no period of its own, while an older,
+  unrelated closed period (a previous tenant's backfilled stay, say) still
+  sits in the table - that period being "last" does not mean the bed is
+  empty, and QA caught exactly this false reading before it shipped. A bed
+  with no periods at all still says "Never occupied" rather than "vacant
+  forever" - the trailing entry only applies once there is a real checkout
+  to measure from, on a bed that is actually vacant now.
 - Finishing an agreement **unwinds the whole onboarding chain** back to
   wherever it started — the tenant list via the bed picker, the bed grid via a
   bed tap. Aiming the pop at a fixed destination stranded the second route,
@@ -915,6 +921,7 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Room history is hidden only when a tenant's one-and-only period is app-recorded, not backfilled | A one-row section for someone who never moved reads as broken; a single *backfilled* period is different - the warden typed it in on purpose, and hiding it buries what they just entered - caught in UAT when it silently ate a tenant's only recorded prior room | LODGY-92, LODGY-94 |
 | The bed sheet's past-occupants list excludes the current tenant and shows vacant gaps | The current occupant is already named above it as "Occupied by X" - repeating them as the newest history row would blur which one is current; the gaps answer "why does this bed keep sitting empty" | LODGY-93 |
 | A bed's vacant-since-last-checkout stretch reuses the same row/wording as a between-tenancies gap | "Why does this bed keep sitting empty" applies just as much to a bed nobody has moved into since the last tenant left; a second wording for the same question would be one more thing to keep consistent for no benefit | LODGY-95 |
+| Whether a bed is vacant-since-last-checkout is read from `bed.status`, never inferred from its last period being closed | A currently-occupied bed can have zero periods of its own (pre-tracking tenancy, never transferred) alongside an older unrelated closed one; QA caught this reading as a false "vacant" on a bed that was occupied the whole time | LODGY-95 |
 | A PIN reset blanks the warden's hash, it does not delete the row | Hostels foreign-key to `warden.id`; deleting the row fails the constraint and would orphan every property. Setup then updates the same row, so the id — and the FK — survive | LODGY-76 |
 | Bottom nav kept visible on inner screens, over labelling the back chevron | Real older wardens couldn't find the chevron or a way home; a persistent labelled bar makes Home one tap everywhere and spends no top-bar width, which matters for the longer Hindi labels | LODGY-80 |
 | Deleting a payment or credit recomputes the invoice status in the same step | A wrong payment removed on its own would leave the invoice reading PAID with nothing behind it — a wrong number is worse than a missing feature | LODGY-64 |

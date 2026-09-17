@@ -10,12 +10,12 @@
     "Correct for a shop, warehouse or flat, consistent with the rest of LODGY-93's history rows carrying no room/bed label",
     "Correct in Hindi as well as English"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "Low",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-18T11:00:00Z",
-  "updatedAt": "2026-09-18T12:00:00Z",
+  "updatedAt": "2026-09-18T12:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T11:00:00Z",
@@ -46,6 +46,14 @@
       "from": "Testing",
       "to": "In Progress",
       "note": "FAIL - real regression, found while testing AC3 (\"a bed whose most recent period is still open (currently occupied) is unaffected\"). bedHistoryEntries infers \"is this bed currently vacant\" from whether the chronologically LAST occupancy_period is closed - but that is not reliable. Room 102 Bed A is genuinely OCCUPIED right now (beds.status=OCCUPIED, Ramesh Kumar's tenancy is ACTIVE there) - but his tenancy predates occupancy-period tracking and has never been transferred, so it has ZERO occupancy_periods of its own. The bed does have one older, unrelated CLOSED backfilled period (Test Kumar, 1 Jan - 1 Feb 2024). Because that closed period is the only one on record and therefore chronologically \"last\", the new trailing-vacancy logic fires and the sheet reads \"Vacant for 2 year(s) 7 month(s)\" directly above \"Occupied by Ramesh Kumar\" - actively wrong, not just unhelpful. This is exactly the same class of bug as the one just fixed on LODGY-92/94 (inferring real-world state from occupancy_periods alone, when a pre-existing/untransferred tenancy has none) - it will hit every currently-occupied bed that also has any older recorded history once one of the beds involved predates this feature, which for an existing warden is common. Root cause: bedHistoryEntries/pastOccupancyEntries have no signal for \"is this bed ACTUALLY occupied right now\" independent of the periods list - they need one (bed.status, or the same tenantId != null check the sheet already uses for \"Occupied by X\") and must suppress the trailing entry whenever it is OCCUPIED, regardless of what the last period's endDate says. IMPORTANT: this shares the exact function LODGY-93 (already Delivered) depends on for its own past-occupants list - LODGY-93 itself did not have this bug before this change (it never inferred vacancy, only ever filtered a still-open period), so this is a regression introduced by this ticket's own code, not a pre-existing LODGY-93 defect. Fixing this restores correctness for both. AC1 (trailing vacancy on a genuinely vacant bed, verified on Room 101 Bed A: \"Vacant for 2 year(s) 8 month(s)\" correctly shown) and the never-occupied-bed guard (untouched, separate code path) are fine - only the occupied-bed case is broken."
+    },
+    {
+      "timestamp": "2026-09-18T12:20:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed the regression the Tester found. bedHistoryEntries and pastOccupancyEntries (app/src/main/java/com/lodgy/app/ui/property/BedHistory.kt) now take an explicit currentlyOccupied: Boolean instead of inferring vacancy from whether the last period is closed. pastOccupancyEntries computes it from the authoritative source - selectedBed.bed.status == BedStatus.OCCUPIED - not from the periods list, so a bed occupied by an untracked pre-existing tenancy with an older unrelated closed period on file no longer reads as vacant. New tests: the exact regression case (occupied bed, one closed unrelated period, no trailing entry) at both the pastOccupancyEntries level and the bedHistoryEntries level directly. 636 tests pass (2 new), 0 failures, line coverage 95.72% (gate 0.93), assembleDebug succeeds. Docs: DESIGN.md 4.3 + decision log updated with the corrected reasoning. Please re-verify on Room 102 Bed A specifically (the exact bed that showed the false reading) alongside the two cases already passed (Room 101 Bed A genuinely vacant, and the never-occupied guard)."
     }
   ]
 }

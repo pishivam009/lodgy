@@ -1,6 +1,8 @@
 package com.lodgy.app.ui.property
 
 import com.lodgy.app.data.dao.BedOccupancyRow
+import com.lodgy.app.data.entity.Bed
+import com.lodgy.app.data.entity.BedStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -9,6 +11,12 @@ class BedHistoryTest {
 
     private fun row(id: String, start: Long, end: Long?) =
         BedOccupancyRow(periodId = id, tenantId = "t-$id", tenantName = "Tenant $id", startDate = start, endDate = end)
+
+    private fun occupiedBed() = SelectedBed(
+        bed = Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L),
+        tenantId = "t-current",
+        tenantName = "Current Tenant",
+    )
 
     @Test
     fun `a bed with one still-open period has no gap`() {
@@ -132,5 +140,25 @@ class BedHistoryTest {
             listOf(BedHistoryEntry.Vacant(200L, 900L), BedHistoryEntry.Occupied(row("p1", 100L, 200L))),
             entries,
         )
+    }
+
+    @Test
+    fun `a currently-occupied bed never gets a trailing vacant entry, even if its only recorded period is closed`() {
+        // The tenant genuinely in this bed right now predates occupancy-period tracking and has
+        // never transferred, so they have no period of their own - the only period on file is an
+        // older, unrelated one (e.g. backfilled for a previous tenant). Its being "closed" and
+        // "last" must not be read as "the bed is empty" - it is occupied, just not by this record.
+        val state = BedGridUiState(bedHistory = listOf(row("p1", 100L, 200L)), selectedBed = occupiedBed())
+
+        val entries = state.pastOccupancyEntries(nowMillis = 900L)
+
+        assertEquals(listOf(BedHistoryEntry.Occupied(row("p1", 100L, 200L))), entries)
+    }
+
+    @Test
+    fun `bedHistoryEntries itself suppresses the trailing entry when currentlyOccupied is true`() {
+        val entries = bedHistoryEntries(listOf(row("p1", 100L, 200L)), nowMillis = 900L, currentlyOccupied = true)
+
+        assertEquals(listOf(BedHistoryEntry.Occupied(row("p1", 100L, 200L))), entries)
     }
 }
