@@ -15,12 +15,12 @@
     "It is recorded that a backfilled stay came from the warden rather than from the app observing it, without implying the warden is less trustworthy than the app",
     "Correct in Hindi as well as English"
   ],
-  "status": "Done",
+  "status": "In Progress",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T12:10:00Z",
-  "updatedAt": "2026-09-17T22:10:00Z",
+  "updatedAt": "2026-09-18T11:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T12:10:00Z",
@@ -57,6 +57,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified the actual StayBackfillScreen on-device (previous verification only exercised the repository via direct SQL). Manual path: tenant picker lists every tenant including VACATED ones; room/bed picker lists every bed including occupied ones (any bed, not just vacant, per design); entered a past stay with a typed date (06/01/2023 -> \"Jun 1, 2023\"), saved, got a plain \"Saved.\" confirmation, and the form reset for the next entry. Overlap refusal verified for real: entering a second stay for the same tenant on the same bed with dates inside the first stay's range was refused with \"Someone else is already recorded on this bed during those dates.\" and confirmed via direct DB read that no second row was written - the overlap check works and is not silently bypassable through the UI. Backfilled stays show up in tenant and bed history exactly like recorded ones (shared verification with LODGY-92/93). CSV bulk path present (\"Or bring in a spreadsheet\") - not re-driven through the UI this pass; relying on StayCsvTest.kt's passing coverage of the parsing logic, which is pure and not the kind of on-device-only defect this session was hunting for."
+    },
+    {
+      "timestamp": "2026-09-18T11:00:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "In Progress",
+      "note": "BOUNCE BACK - AC3 (\"Backfilled stays appear in tenant history and bed history exactly like recorded ones\") does not hold for the most common real case: a tenant with exactly one room before this feature existed. I backfilled Ramesh Kumar's one old room (Room 101 Bed A) and it shows up correctly in BED history (LODGY-93's view, checked and fine) but is completely absent from his TENANT history - the whole \"Room history\" section on his profile doesn't render at all, not just an incomplete one. Same root cause I filed on LODGY-92 (NotesTimelineViewModel.showStays hides the section at exactly one total period, which is exactly what a single backfilled prior room produces): see that ticket for the code-level detail, since the fix belongs there, not in this screen. This ticket's own manual-entry and CSV mechanics are otherwise solid - fast, clear overlap refusal with a real reason, correction/removal available - I have no complaints about the entry flow itself, only that what I enter does not reliably show up where I need it. Please re-verify this AC specifically once LODGY-92 lands its fix."
     }
   ]
 }

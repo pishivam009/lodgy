@@ -1,0 +1,27 @@
+{
+  "id": "LODGY-95",
+  "epic": "Property Setup",
+  "title": "Show how long a bed has been sitting empty since its last tenant, not just gaps between two tenants",
+  "description": "Filed from UAT on LODGY-93. The bed sheet's past-occupants list (built in LODGY-93) shows vacant stretches BETWEEN two recorded tenancies, per that ticket's design - and that part works exactly as intended. But the single most common version of 'why does this bed keep sitting empty' - the case DESIGN.md and LODGY-91/93 both cite as the whole reason this feature exists - is a bed whose LAST occupant checked out some time ago and nobody has moved in since. That trailing stretch, from the last checkout to today, is not shown anywhere on the sheet. A warden sees 'Past occupants: Ramesh Kumar, 1 Jun 2023 - 31 Dec 2023' and has to do the date subtraction themselves against today's date to realize the bed has been empty for two and a half years - the app has all the information needed to say that plainly and doesn't.\n\nThis is not a defect in LODGY-93: its acceptance criteria explicitly scope vacant stretches to 'between occupancies', and a bed with nothing after its last tenant has no 'next occupancy' to bound the gap against. This is a real, additive gap the ticket didn't promise to close.\n\nWorth noting there is already a proactive notification for this (LODGY-59's long-vacant-bed nudge) - this ticket is not about alerting the warden, it's about the bed sheet itself telling the truth plainly when the warden is already looking at it, the same way it already does for gaps between two tenants.",
+  "acceptanceCriteria": [
+    "A bed whose most recent occupancy has ended, with nobody currently in it, shows how long it has been vacant since that checkout - in the same plain style as the existing between-tenancies gap rows, not just the checkout date on its own",
+    "A bed that has never been occupied still says 'Never occupied' as today - this only applies once there is at least one closed period to measure from",
+    "A bed whose most recent period is still open (currently occupied) is unaffected - no vacancy line is shown for it",
+    "Correct for a shop, warehouse or flat, consistent with the rest of LODGY-93's history rows carrying no room/bed label",
+    "Correct in Hindi as well as English"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T11:00:00Z",
+  "updatedAt": "2026-09-18T11:00:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T11:00:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "Filed while doing UAT on LODGY-91/92/93/94. Noticed on Room 101 Bed A, which has been vacant since a backfilled tenant's checkout on 31 Dec 2023 (today is 17 Sep 2026, so nearly three years) - the sheet shows the checkout date but nothing that reads as 'this has been empty a long time', which is exactly the question that ticket set out to answer. Priority Low since LODGY-59 already covers the proactive-alert half of this need; this is the passive, look-it-up-yourself half."
+    }
+  ]
+}

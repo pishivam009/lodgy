@@ -12,12 +12,12 @@
     "A non-revenue tenancy (warden or caretaker room) is recorded the same way - it is real occupancy, it just bills nobody",
     "Periods never overlap for one bed: a bed cannot be occupied by two tenancies at the same instant"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-17T22:10:00Z",
+  "updatedAt": "2026-09-18T11:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -60,6 +60,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified all 7 acceptance criteria on-device against real app-driven data (not just seeded rows), on top of the migration verification already recorded. Onboarded a tenant through the UI and confirmed onboarding opens a period; transferred an app-onboarded tenant a second time and confirmed the SAME tenancyAgreementId now carries two periods - the old bed closed at the move, the new bed opened, tenancy unbroken (AC2, the ticket's central claim). Checked the tenant out and confirmed the period closed. observeByBedId returns a transferred-away tenant's closed period alongside the current one (AC3). Migration + backfilled-vs-recorded distinction already verified (AC4, AC5). Onboarded a warden/caretaker room (non-revenue) through the bed sheet shortcut and confirmed it opens a period exactly like a revenue tenancy and shows in bed history (AC6). AC7 (no overlap) holds structurally: onboarding and transfer only ever offer VACANT beds (BedPickerViewModel.getVacantChoices, TransferViewModel.getVacantBedsByHostel), so the live open()/close() path can't create two tenancies on one bed in normal use, even though OccupancyPeriodRepository.open() itself has no defensive overlap check (only backfill()/editBackfilled() check) - worth knowing if that upstream vacant-only gating is ever relaxed, but not a defect today. No regressions found in existing screens."
+    },
+    {
+      "timestamp": "2026-09-18T11:00:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. This is the foundation - no screen of its own - but I checked what it actually recorded: I onboarded a tenant, transferred him, checked him out, and transferred an existing tenant a second time, and every one of those moments left the right period behind (checked directly, not just through a screen). This is exactly the data I need underneath the two screens (LODGY-92, LODGY-93) that actually answer my questions day to day. No complaints about this ticket on its own terms."
     }
   ]
 }

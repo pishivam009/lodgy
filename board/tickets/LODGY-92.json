@@ -13,12 +13,12 @@
     "Correct for a shop, warehouse or flat, where the stay is of the whole property and there is no bed to name",
     "Correct in Hindi as well as English, including the duration wording"
   ],
-  "status": "Done",
+  "status": "In Progress",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-17T22:10:00Z",
+  "updatedAt": "2026-09-18T11:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -61,6 +61,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - verified on-device. Duration wording correct for both an active tenancy (\"Living here since 1 Sep 2024 - 2 year(s)\") and a closed one (\"Lived here from 17 Sep 2026 - Today\"). Room history hidden for a tenant with only one period (checked before any transfer). After a transfer, tested a genuine returning-tenant scenario (one app-recorded stay + one backfilled stay with no agreement) and the timeline correctly showed two separate stay cards, most recent first, exactly per DESIGN.md 4.6 - not merged, not only-the-latest. A checked-out tenant's profile keeps full contact info and duration wording (nothing hidden by VACATED status). Reuses the existing Notes & Timeline screen, no new nav route added. Hindi string coverage confirmed complete (every new key in values/strings.xml has a values-hi counterpart). Shop/warehouse/flat wording not re-tested live (reuses the existing, already-tested BedLocation.label() utility from LODGY-79/86) - code-reviewed, no new branch introduced for this ticket."
+    },
+    {
+      "timestamp": "2026-09-18T11:00:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "In Progress",
+      "note": "BOUNCE BACK - the room history I actually need is missing for the exact tenant I tried it on. Ramesh Kumar moved from Room 101 Bed A to Room 102 Bed A before this feature existed (his old free-text note still says so on the same screen); I used LODGY-94 to backfill that old stay so his profile would finally tell the true story. It didn't: the whole Room history section is gone, not just short a row. Root cause (verified in code, not just behavior): NotesTimelineViewModel.showStays only turns on when the tenant has MORE THAN ONE occupancy_period total (app/src/main/java/com/lodgy/app/ui/note/NotesTimelineViewModel.kt:49, sumOf periods.size > 1). That rule was written for \"never moved\" but a tenant who moved once before the app existed, and has exactly one backfilled period plus a current tenancy that (correctly, per LODGY-91's decision) has no period of its own, also lands at a period-count of exactly 1 - and gets treated identically to someone who has lived in the same bed since day one. This is not a rare edge case for me: every existing tenant who moved beds even once before I started using this version will hit it the first time I try to backfill just their one prior room, which is the single most common thing I will actually do with LODGY-94. Suggested fix: a lone period should still show if it is backfilled (TenantStayRow doesn't even carry that flag today - the query would need it added), since a backfilled period is itself evidence there is more story than \"never moved,\" unlike a lone app-recorded period. This also directly breaks LODGY-94's own AC3 (\"backfilled stays appear in tenant history... exactly like recorded ones\") - I'm bouncing that one back too for the same root cause, no need to fix it twice."
     }
   ]
 }
