@@ -10,12 +10,12 @@
     "Correct for a shop, warehouse or flat, consistent with the rest of LODGY-93's history rows carrying no room/bed label",
     "Correct in Hindi as well as English"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Low",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-18T11:00:00Z",
-  "updatedAt": "2026-09-18T12:20:00Z",
+  "updatedAt": "2026-09-18T12:35:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T11:00:00Z",
@@ -54,6 +54,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed the regression the Tester found. bedHistoryEntries and pastOccupancyEntries (app/src/main/java/com/lodgy/app/ui/property/BedHistory.kt) now take an explicit currentlyOccupied: Boolean instead of inferring vacancy from whether the last period is closed. pastOccupancyEntries computes it from the authoritative source - selectedBed.bed.status == BedStatus.OCCUPIED - not from the periods list, so a bed occupied by an untracked pre-existing tenancy with an older unrelated closed period on file no longer reads as vacant. New tests: the exact regression case (occupied bed, one closed unrelated period, no trailing entry) at both the pastOccupancyEntries level and the bedHistoryEntries level directly. 636 tests pass (2 new), 0 failures, line coverage 95.72% (gate 0.93), assembleDebug succeeds. Docs: DESIGN.md 4.3 + decision log updated with the corrected reasoning. Please re-verify on Room 102 Bed A specifically (the exact bed that showed the false reading) alongside the two cases already passed (Room 101 Bed A genuinely vacant, and the never-occupied guard)."
+    },
+    {
+      "timestamp": "2026-09-18T12:35:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - re-verified on the exact bed that regressed. Room 102 Bed A (Ramesh Kumar, ACTIVE tenancy with no occupancy_period of its own, plus Test Kumar's older unrelated closed backfilled period) now correctly shows only \"Occupied by Ramesh Kumar\" and \"Past occupants: Test Kumar, 1 Jan 2024 - 1 Feb 2024\" - the false \"Vacant for 2 year(s) 7 month(s)\" line is gone. Re-confirmed the genuinely-vacant case still works: Room 101 Bed A still shows \"Vacant for 2 year(s) 8 month(s)\" above Ramesh's backfilled stay there. The never-occupied guard is a separate, untouched early-return path (bedHistory.isEmpty() check happens before any of the changed logic runs), so not re-driven through the UI this pass. All of LODGY-95's acceptance criteria hold now, including AC3 which is what exposed the regression."
     }
   ]
 }
