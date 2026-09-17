@@ -102,15 +102,24 @@ class BedGridViewModel @Inject constructor(
     fun onFilterChange(filter: BedFilter) = _uiState.update { it.copy(filter = filter) }
 
     fun onBedSelected(bed: Bed) {
+        // Set synchronously, before either coroutine below can run, so neither one's completion
+        // order can clobber the other - each only ever writes the fields it owns (tenant info vs.
+        // bedHistory/bedHistoryLoading). Previously this reset happened inside the tenant-lookup
+        // coroutine itself, so a slow lookup finishing after the history Flow had already emitted
+        // would silently wipe the just-loaded history back to an empty, stuck-loading state.
+        _uiState.update {
+            it.copy(
+                selectedBed = SelectedBed(bed, tenantId = null, tenantName = ""),
+                bedHistory = emptyList(),
+                bedHistoryLoading = true,
+            )
+        }
         viewModelScope.launch {
             val agreement = tenancyAgreementRepository.getActiveByBedId(bed.id)
             val tenant = agreement?.let { tenantRepository.getById(it.tenantId) }
-            _uiState.update {
-                it.copy(
-                    selectedBed = SelectedBed(bed, tenant?.id, tenant?.name.orEmpty()),
-                    bedHistory = emptyList(),
-                    bedHistoryLoading = true,
-                )
+            _uiState.update { state ->
+                if (state.selectedBed?.bed?.id != bed.id) return@update state
+                state.copy(selectedBed = state.selectedBed.copy(tenantId = tenant?.id, tenantName = tenant?.name.orEmpty()))
             }
         }
         historyJob?.cancel()
