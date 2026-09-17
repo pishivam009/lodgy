@@ -13,12 +13,12 @@
     "Correct for a shop, warehouse or flat, where the stay is of the whole property and there is no bed to name",
     "Correct in Hindi as well as English, including the duration wording"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-18T11:30:00Z",
+  "updatedAt": "2026-09-18T12:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -77,6 +77,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed the bounce-back, shared with LODGY-94. Added backfilled to TenantStayRow (app/src/main/java/com/lodgy/app/data/dao/Occupancy.kt) and to the observeStaysByTenantId query it comes from (OccupancyPeriodDao.kt). NotesTimelineViewModel.showStays (line 49) now also lights up when the tenant's one-and-only period is backfilled, not just when there is more than one period total - a lone backfilled period is evidence of a story before the tenant's current, otherwise-untracked stay, unlike a lone app-recorded period which really does mean never-moved. Both cases are covered by new tests in NotesTimelineViewModelTest: a single ordinary period still hides the section (unchanged), a single backfilled one now shows it. Docs: DESIGN.md 4.6 + decision log updated with the exact failure mode from UAT. 634 tests pass (4 new), 0 failures, line coverage 95.72% (gate 0.93), assembleDebug succeeds. Not yet re-verified on device - please re-run the exact scenario that failed: backfill a tenant's single prior room and confirm Room history now shows it, and separately confirm a genuinely never-moved tenant still gets no section."
+    },
+    {
+      "timestamp": "2026-09-18T12:00:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - re-verified the exact original failure and its opposite on-device. Ramesh Kumar's single backfilled stay (Room 101 Bed A, 1 Jun 2023 - 31 Dec 2023) now correctly shows in his Room history section, which was completely absent before this fix. To confirm no overcorrection, onboarded a fresh tenant (\"Clean Check\", non-revenue, Room 104 Bed A) with exactly one ordinary app-recorded period and nothing backfilled - their Notes & Timeline correctly shows no Room history section at all, same as before this fix. Both halves of the fix hold together as intended."
     }
   ]
 }

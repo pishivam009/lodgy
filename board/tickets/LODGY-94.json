@@ -15,12 +15,12 @@
     "It is recorded that a backfilled stay came from the warden rather than from the app observing it, without implying the warden is less trustworthy than the app",
     "Correct in Hindi as well as English"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T12:10:00Z",
-  "updatedAt": "2026-09-18T11:30:00Z",
+  "updatedAt": "2026-09-18T12:00:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T12:10:00Z",
@@ -73,6 +73,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed via the same change as LODGY-92 (see that ticket for the code-level detail - the fix lives in NotesTimelineViewModel/TenantStayRow, not in this screen). AC3 (\"backfilled stays appear in tenant history and bed history exactly like recorded ones\") should now hold: a single backfilled room used to be visible in bed history but invisible in tenant history, which is exactly the disagreement that AC rules out. No changes to this ticket's own screen (StayBackfillScreen/ViewModel) or CSV path - those were never the problem. 634 tests pass, 0 failures, line coverage 95.72% (gate 0.93). Please specifically re-verify AC3 on device: backfill one prior room for a tenant and confirm it now shows on both their bed's sheet and their own profile."
+    },
+    {
+      "timestamp": "2026-09-18T12:00:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - AC3 specifically re-verified: Ramesh Kumar's one backfilled prior room now shows on both his bed's history (already worked) and his own tenant profile (was the gap) - the two views agree, per AC3's literal wording. Shares its fix with LODGY-92 (see that ticket); no changes to this ticket's own screen were needed or made."
     }
   ]
 }
