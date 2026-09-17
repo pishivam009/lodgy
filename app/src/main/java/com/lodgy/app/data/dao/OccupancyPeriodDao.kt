@@ -62,7 +62,7 @@ interface OccupancyPeriodDao {
             "occupancy_periods.tenancyAgreementId AS tenancyAgreementId, " +
             "beds.label AS bedLabel, rooms.roomNumber AS roomNumber, hostels.name AS hostelName, " +
             "hostels.propertyType AS propertyType, occupancy_periods.startDate AS startDate, " +
-            "occupancy_periods.endDate AS endDate " +
+            "occupancy_periods.endDate AS endDate, occupancy_periods.backfilled AS backfilled " +
             "FROM occupancy_periods " +
             "INNER JOIN beds ON beds.id = occupancy_periods.bedId " +
             "INNER JOIN rooms ON rooms.id = beds.roomId " +

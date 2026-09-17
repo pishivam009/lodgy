@@ -122,7 +122,10 @@ The rest of this section is about hostels.
   when a bed comes back damaged and you need to know who had it, or a tenant
   says a fitting was already broken when they moved in. Any real gap between
   tenants is shown too, so you can see at a glance whether a bed keeps
-  sitting empty. A bed that's never had anyone says so plainly.
+  sitting empty — and if nobody has moved in since the last person left, the
+  panel says how long it's been sitting empty right up to today, not just
+  the date the last tenant checked out. A bed that's never had anyone says
+  so plainly.
 
 ## 3. Bringing in a tenant
 
@@ -210,10 +213,12 @@ only future ones stop.
 - **Room history.** If a tenant has ever transferred, or has left and come
   back, a **Room history** section sits above the notes and shows every room
   and bed they've occupied with the dates, grouped so a return shows as a
-  separate stay rather than one merged period. A tenant who's never moved
-  doesn't get this section at all — there's nothing to list. Stays you've
-  added yourself through **Add past stays** (More menu) show here too,
-  exactly like ones Lodgy recorded live.
+  separate stay rather than one merged period. A tenant who's never moved,
+  and has nothing backfilled either, doesn't get this section at all —
+  there's nothing to list. Stays you've added yourself through **Add past
+  stays** (More menu) show here too, exactly like ones Lodgy recorded live —
+  even if it's the only stay you've ever entered for that tenant, since
+  typing it in on purpose is itself worth showing.
 
 ### Notice, transfer and checkout
 

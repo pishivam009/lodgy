@@ -86,7 +86,9 @@ class BedHistoryTest {
             bedHistory = listOf(row("p1", 100L, 200L), row("p2", 500L, 700L)),
         )
 
-        val entries = state.pastOccupancyEntries()
+        // nowMillis pinned to the last checkout itself, so this test stays about the
+        // between-tenancies gap and doesn't also exercise the trailing-vacancy entry below.
+        val entries = state.pastOccupancyEntries(nowMillis = 700L)
 
         assertEquals(
             listOf(
@@ -101,5 +103,34 @@ class BedHistoryTest {
     @Test
     fun `no periods at all means no past-occupancy entries`() {
         assertTrue(BedGridUiState().pastOccupancyEntries().isEmpty())
+    }
+
+    @Test
+    fun `a bed that closed and has stayed vacant since gets a trailing vacant entry`() {
+        val entries = bedHistoryEntries(listOf(row("p1", 100L, 200L)), nowMillis = 900L)
+
+        assertEquals(
+            listOf(BedHistoryEntry.Occupied(row("p1", 100L, 200L)), BedHistoryEntry.Vacant(200L, 900L)),
+            entries,
+        )
+    }
+
+    @Test
+    fun `a still-open period never gets a trailing vacant entry, no matter how much later now is`() {
+        val entries = bedHistoryEntries(listOf(row("p1", 100L, null)), nowMillis = 9_999_999L)
+
+        assertEquals(listOf(BedHistoryEntry.Occupied(row("p1", 100L, null))), entries)
+    }
+
+    @Test
+    fun `a bed vacant since its last checkout shows that stretch first in past occupants`() {
+        val state = BedGridUiState(bedHistory = listOf(row("p1", 100L, 200L)))
+
+        val entries = state.pastOccupancyEntries(nowMillis = 900L)
+
+        assertEquals(
+            listOf(BedHistoryEntry.Vacant(200L, 900L), BedHistoryEntry.Occupied(row("p1", 100L, 200L))),
+            entries,
+        )
     }
 }

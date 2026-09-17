@@ -13,12 +13,12 @@
     "Correct for a shop, warehouse or flat, where the stay is of the whole property and there is no bed to name",
     "Correct in Hindi as well as English, including the duration wording"
   ],
-  "status": "In Progress",
+  "status": "Testing",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-18T11:00:00Z",
+  "updatedAt": "2026-09-18T11:30:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -69,6 +69,14 @@
       "from": "Done",
       "to": "In Progress",
       "note": "BOUNCE BACK - the room history I actually need is missing for the exact tenant I tried it on. Ramesh Kumar moved from Room 101 Bed A to Room 102 Bed A before this feature existed (his old free-text note still says so on the same screen); I used LODGY-94 to backfill that old stay so his profile would finally tell the true story. It didn't: the whole Room history section is gone, not just short a row. Root cause (verified in code, not just behavior): NotesTimelineViewModel.showStays only turns on when the tenant has MORE THAN ONE occupancy_period total (app/src/main/java/com/lodgy/app/ui/note/NotesTimelineViewModel.kt:49, sumOf periods.size > 1). That rule was written for \"never moved\" but a tenant who moved once before the app existed, and has exactly one backfilled period plus a current tenancy that (correctly, per LODGY-91's decision) has no period of its own, also lands at a period-count of exactly 1 - and gets treated identically to someone who has lived in the same bed since day one. This is not a rare edge case for me: every existing tenant who moved beds even once before I started using this version will hit it the first time I try to backfill just their one prior room, which is the single most common thing I will actually do with LODGY-94. Suggested fix: a lone period should still show if it is backfilled (TenantStayRow doesn't even carry that flag today - the query would need it added), since a backfilled period is itself evidence there is more story than \"never moved,\" unlike a lone app-recorded period. This also directly breaks LODGY-94's own AC3 (\"backfilled stays appear in tenant history... exactly like recorded ones\") - I'm bouncing that one back too for the same root cause, no need to fix it twice."
+    },
+    {
+      "timestamp": "2026-09-18T11:30:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Fixed the bounce-back, shared with LODGY-94. Added backfilled to TenantStayRow (app/src/main/java/com/lodgy/app/data/dao/Occupancy.kt) and to the observeStaysByTenantId query it comes from (OccupancyPeriodDao.kt). NotesTimelineViewModel.showStays (line 49) now also lights up when the tenant's one-and-only period is backfilled, not just when there is more than one period total - a lone backfilled period is evidence of a story before the tenant's current, otherwise-untracked stay, unlike a lone app-recorded period which really does mean never-moved. Both cases are covered by new tests in NotesTimelineViewModelTest: a single ordinary period still hides the section (unchanged), a single backfilled one now shows it. Docs: DESIGN.md 4.6 + decision log updated with the exact failure mode from UAT. 634 tests pass (4 new), 0 failures, line coverage 95.72% (gate 0.93), assembleDebug succeeds. Not yet re-verified on device - please re-run the exact scenario that failed: backfill a tenant's single prior room and confirm Room history now shows it, and separately confirm a genuinely never-moved tenant still gets no section."
     }
   ]
 }

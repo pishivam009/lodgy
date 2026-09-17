@@ -28,9 +28,10 @@ class NotesTimelineViewModelTest {
     private val creditRepository: CreditRepository = mockk()
     private val occupancyPeriodRepository: OccupancyPeriodRepository = mockk()
 
-    private fun stay(periodId: String, agreementId: String?, start: Long, end: Long?) = TenantStayRow(
+    private fun stay(periodId: String, agreementId: String?, start: Long, end: Long?, backfilled: Boolean = false) = TenantStayRow(
         periodId = periodId, tenancyAgreementId = agreementId, bedLabel = "A", roomNumber = "101",
         hostelName = "Sunrise Hostel", propertyType = PropertyType.HOSTEL, startDate = start, endDate = end,
+        backfilled = backfilled,
     )
 
     private fun viewModel(
@@ -82,6 +83,13 @@ class NotesTimelineViewModelTest {
         val vm = viewModel()
 
         assertFalse(vm.uiState.value.showStays)
+    }
+
+    @Test
+    fun `a single backfilled period shows a room history section, unlike a single recorded one`() {
+        val vm = viewModel(stays = listOf(stay("p1", null, 100L, 200L, backfilled = true)))
+
+        assertTrue(vm.uiState.value.showStays)
     }
 
     @Test

@@ -10,18 +10,34 @@
     "Correct for a shop, warehouse or flat, consistent with the rest of LODGY-93's history rows carrying no room/bed label",
     "Correct in Hindi as well as English"
   ],
-  "status": "Todo",
+  "status": "Testing",
   "priority": "Low",
   "version": "0.5.0",
-  "assigneeRole": null,
+  "assigneeRole": "Developer",
   "createdAt": "2026-09-18T11:00:00Z",
-  "updatedAt": "2026-09-18T11:00:00Z",
+  "updatedAt": "2026-09-18T11:30:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T11:00:00Z",
       "actor": "User",
       "action": "created",
       "note": "Filed while doing UAT on LODGY-91/92/93/94. Noticed on Room 101 Bed A, which has been vacant since a backfilled tenant's checkout on 31 Dec 2023 (today is 17 Sep 2026, so nearly three years) - the sheet shows the checkout date but nothing that reads as 'this has been empty a long time', which is exactly the question that ticket set out to answer. Priority Low since LODGY-59 already covers the proactive-alert half of this need; this is the passive, look-it-up-yourself half."
+    },
+    {
+      "timestamp": "2026-09-18T11:30:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. bedHistoryEntries() (app/src/main/java/com/lodgy/app/ui/property/BedHistory.kt) only computes gaps BETWEEN two occupied periods; a bed whose most recent period is closed with nothing after it gets no trailing entry at all."
+    },
+    {
+      "timestamp": "2026-09-18T11:30:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built: bedHistoryEntries and pastOccupancyEntries both take a nowMillis parameter (defaulting to System.currentTimeMillis(), overridable in tests for determinism). When the chronologically last period is closed (bed currently vacant) and nowMillis is after its endDate, a trailing Vacant(lastEnd, nowMillis) entry is appended - reusing the exact same BedHistoryEntry.Vacant type and the existing bed_history_vacant string, so BedGridScreen needed zero changes: it already renders any Vacant entry generically. A still-open period (bed currently occupied) never gets one, and a bed with no periods at all is unaffected (still short-circuits to \"Never occupied\" before this code runs). No new strings, so Hindi is free - same string, same DurationLabel. Docs: DESIGN.md 4.3 + decision log. Unit tests: BedHistoryTest extended with the trailing-vacancy case, the still-open guard, and pastOccupancyEntries ordering (the trailing stretch sorts to the top, above older history, since it is the most recent state); one pre-existing test pinned nowMillis to its last endDate so it stays focused on the between-tenancies gap it was already testing. 634 tests pass, 0 failures, line coverage 95.72% (gate 0.93), assembleDebug succeeds. Not yet verified on device."
     }
   ]
 }

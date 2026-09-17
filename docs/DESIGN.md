@@ -316,6 +316,17 @@ Notes:
   says so plainly rather than showing an empty list. Warden/caretaker
   occupancy appears the same as any tenancy - it is real occupancy, per
   LODGY-91.
+- **Vacant since the last checkout** (LODGY-95). The same "why does this bed
+  keep sitting empty" question applies to a bed nobody has moved into since
+  its last tenant left, not just to a gap between two tenants -
+  `bedHistoryEntries` adds a trailing `Vacant` row from the most recent
+  period's `endDate` to now whenever that period is closed and nothing has
+  opened since, reusing the exact same row and wording as a between-tenancies
+  gap rather than inventing a second way to say the same thing. A bed
+  currently occupied gets no such row (there is nothing after the open
+  period to measure yet), and a bed with no periods at all still says "Never
+  occupied" rather than "vacant forever" - the trailing entry only applies
+  once there is a real checkout to measure from.
 - Finishing an agreement **unwinds the whole onboarding chain** back to
   wherever it started — the tenant list via the bed picker, the bed grid via a
   bed tap. Aiming the pop at a fixed destination stranded the second route,
@@ -493,8 +504,17 @@ Notes:
   merged or single stay never hides that they left and came back. A
   backfilled period with no agreement (LODGY-94) stands as its own
   single-period stay, since there's nothing else to group it under. The
-  section is hidden entirely when there is only one period ever recorded -
-  a tenant who has never moved gets no history list to look broken. This
+  section is hidden when there is only one period ever recorded AND it is
+  not backfilled - a tenant who has genuinely never moved (one app-recorded
+  period, nothing else) gets no history list to look broken. A single
+  *backfilled* period does still show, even alone: the warden typed it in
+  specifically because there is a story before the tenant's current,
+  otherwise-untracked stay (LODGY-91's no-auto-backfill decision leaves that
+  current stay with no period of its own to add to the count), and hiding it
+  would bury the one thing they just went to the trouble of recording -
+  caught in UAT on LODGY-94, where backfilling a tenant's single prior room
+  left the section hidden instead of showing exactly what was just entered.
+  `TenantStayRow.backfilled` carries this through from the DAO query. This
   reuses the existing timeline screen rather than adding a second, competing
   history screen that could disagree with it.
 
@@ -892,8 +912,9 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Backfilling a stay writes no invoice, due, payment or notification | A past stay is not a past bill; LODGY-90 already drew that line for catch-up billing, and resurrecting cash the warden already collected would be worse than an empty history | LODGY-94 |
 | Overlapping backfilled stays on one bed are refused, not silently accepted | The bed-uniqueness invariant onboarding/transfer/checkout keep by construction has no such guarantee once a warden is typing in dates from paper; this is where their own typos need to surface | LODGY-94 |
 | Room history lives on the existing notes timeline, not a new screen | A second history view could disagree with the first; the timeline already assembles itself from what the warden does | LODGY-92 |
-| Room history is hidden when a tenant has exactly one period ever | A one-row "history" section for someone who never moved reads as broken, not informative | LODGY-92 |
+| Room history is hidden only when a tenant's one-and-only period is app-recorded, not backfilled | A one-row section for someone who never moved reads as broken; a single *backfilled* period is different - the warden typed it in on purpose, and hiding it buries what they just entered - caught in UAT when it silently ate a tenant's only recorded prior room | LODGY-92, LODGY-94 |
 | The bed sheet's past-occupants list excludes the current tenant and shows vacant gaps | The current occupant is already named above it as "Occupied by X" - repeating them as the newest history row would blur which one is current; the gaps answer "why does this bed keep sitting empty" | LODGY-93 |
+| A bed's vacant-since-last-checkout stretch reuses the same row/wording as a between-tenancies gap | "Why does this bed keep sitting empty" applies just as much to a bed nobody has moved into since the last tenant left; a second wording for the same question would be one more thing to keep consistent for no benefit | LODGY-95 |
 | A PIN reset blanks the warden's hash, it does not delete the row | Hostels foreign-key to `warden.id`; deleting the row fails the constraint and would orphan every property. Setup then updates the same row, so the id — and the FK — survive | LODGY-76 |
 | Bottom nav kept visible on inner screens, over labelling the back chevron | Real older wardens couldn't find the chevron or a way home; a persistent labelled bar makes Home one tap everywhere and spends no top-bar width, which matters for the longer Hindi labels | LODGY-80 |
 | Deleting a payment or credit recomputes the invoice status in the same step | A wrong payment removed on its own would leave the invoice reading PAID with nothing behind it — a wrong number is worse than a missing feature | LODGY-64 |

@@ -174,6 +174,7 @@ class OccupancyPeriodRepositoryTest {
         val row = TenantStayRow(
             periodId = "p1", tenancyAgreementId = "a1", bedLabel = "A", roomNumber = "101",
             hostelName = "Sunrise Hostel", propertyType = PropertyType.HOSTEL, startDate = 100L, endDate = null,
+            backfilled = false,
         )
         every { dao.observeStaysByTenantId("t1") } returns flowOf(listOf(row))
 

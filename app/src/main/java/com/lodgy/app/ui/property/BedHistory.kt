@@ -13,9 +13,13 @@ sealed interface BedHistoryEntry {
 /**
  * Turns a bed's periods (any order) into a chronological list with the gaps between them made
  * explicit. Pulled out of the screen so the gap arithmetic, the part worth getting right, is
- * plain and testable without a Composition.
+ * plain and testable without a Composition. A bed whose most recent period has already closed,
+ * with nothing after it, gets a trailing entry for the stretch from that checkout to [nowMillis] -
+ * "why does this bed keep sitting empty" applies just as much to a bed nobody has moved into since
+ * the last tenant left as it does to a gap between two tenants (LODGY-95). A still-open period
+ * (the bed is currently occupied) never gets one, since there is nothing after it to measure yet.
  */
-internal fun bedHistoryEntries(periods: List<BedOccupancyRow>): List<BedHistoryEntry> {
+internal fun bedHistoryEntries(periods: List<BedOccupancyRow>, nowMillis: Long = System.currentTimeMillis()): List<BedHistoryEntry> {
     val chronological = periods.sortedBy { it.startDate }
     val result = mutableListOf<BedHistoryEntry>()
     chronological.forEachIndexed { index, period ->
@@ -27,12 +31,16 @@ internal fun bedHistoryEntries(periods: List<BedOccupancyRow>): List<BedHistoryE
         }
         result += BedHistoryEntry.Occupied(period)
     }
+    val lastEnd = chronological.lastOrNull()?.endDate
+    if (lastEnd != null && nowMillis > lastEnd) {
+        result += BedHistoryEntry.Vacant(lastEnd, nowMillis)
+    }
     return result
 }
 
 /** The past-occupants list for the sheet: most recent first, the still-open period left out since
  *  the sheet already names the current occupant above this list. */
-internal fun BedGridUiState.pastOccupancyEntries(): List<BedHistoryEntry> =
-    bedHistoryEntries(bedHistory)
+internal fun BedGridUiState.pastOccupancyEntries(nowMillis: Long = System.currentTimeMillis()): List<BedHistoryEntry> =
+    bedHistoryEntries(bedHistory, nowMillis)
         .filterNot { it is BedHistoryEntry.Occupied && it.row.endDate == null }
         .reversed()

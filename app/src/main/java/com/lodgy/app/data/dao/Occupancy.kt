@@ -74,6 +74,7 @@ data class TenantStayRow(
     val propertyType: PropertyType,
     val startDate: Long,
     val endDate: Long?,
+    val backfilled: Boolean,
 )
 
 /** One tenancy that has occupied a bed, named for the bed sheet's past-occupants list (LODGY-93).

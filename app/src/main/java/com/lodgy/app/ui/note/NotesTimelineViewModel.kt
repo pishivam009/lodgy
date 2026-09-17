@@ -44,9 +44,13 @@ data class NotesTimelineUiState(
 ) {
     val notes: List<TenantNote> get() = entries.filterIsInstance<TimelineEntry.NoteEntry>().map { it.note }
 
-    /** A tenant who has never moved has exactly one period ever recorded; showing a one-row
-     *  "history" section for them would read as broken rather than informative. */
-    val showStays: Boolean get() = stayGroups.sumOf { it.periods.size } > 1
+    /** A tenant who has never moved has exactly one, app-recorded period ever; showing a one-row
+     *  "history" section for them would read as broken rather than informative. A backfilled
+     *  period is different even alone: the warden typed it in specifically because there is a
+     *  story before the tenant's current, otherwise-untracked stay (LODGY-91's no-auto-backfill
+     *  decision means that current stay has no period of its own to add to the count) - hiding it
+     *  would bury the one thing they just went to the trouble of recording (LODGY-94's AC3). */
+    val showStays: Boolean get() = stayGroups.sumOf { it.periods.size } > 1 || stayGroups.any { group -> group.periods.any { it.backfilled } }
 }
 
 @HiltViewModel
