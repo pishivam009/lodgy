@@ -12,12 +12,12 @@
     "A non-revenue tenancy (warden or caretaker room) is recorded the same way - it is real occupancy, it just bills nobody",
     "Periods never overlap for one bed: a bed cannot be occupied by two tenancies at the same instant"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "High",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-17T15:50:00Z",
+  "updatedAt": "2026-09-17T22:10:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -52,6 +52,14 @@
       "actor": "Developer",
       "action": "comment",
       "note": "Migration verification requested on LODGY-91/92/93/94 is done. Built the 0.4.0-released code (schema v7) in a separate worktree, installed it on a real emulator, and seeded a populated database directly via the on-device sqlite3 binary (run-as, not the UI) with 1 hostel, 3 rooms, 5 beds, 5 tenants (one closed, one non-revenue) and 5 tenancy agreements. Force-stopped, installed this branch's build over it (adb install -r, same as a warden updating in place), and opened the app: MIGRATION_7_8 and MIGRATION_8_9 both ran, PRAGMA user_version reads 9, occupancy_periods exists with exactly the migration's columns including backfilled, and every pre-existing row survived untouched (counts unchanged) with occupancy_periods correctly empty - no backfill, as decided. Then exercised the app on the upgraded data: bed history correctly said \"Never occupied\" rather than fabricating a period for the pre-migration tenant, tenant profile duration rendered correctly, and a live transfer through the UI wrote a real occupancy_period (open() fired; close() was a documented no-op since no prior period existed for a tenancy seeded outside the app). No crash in the Lodgy process at any point. This clears the flag raised when LODGY-91/92/93/94 moved to Testing."
+    },
+    {
+      "timestamp": "2026-09-17T22:10:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - verified all 7 acceptance criteria on-device against real app-driven data (not just seeded rows), on top of the migration verification already recorded. Onboarded a tenant through the UI and confirmed onboarding opens a period; transferred an app-onboarded tenant a second time and confirmed the SAME tenancyAgreementId now carries two periods - the old bed closed at the move, the new bed opened, tenancy unbroken (AC2, the ticket's central claim). Checked the tenant out and confirmed the period closed. observeByBedId returns a transferred-away tenant's closed period alongside the current one (AC3). Migration + backfilled-vs-recorded distinction already verified (AC4, AC5). Onboarded a warden/caretaker room (non-revenue) through the bed sheet shortcut and confirmed it opens a period exactly like a revenue tenancy and shows in bed history (AC6). AC7 (no overlap) holds structurally: onboarding and transfer only ever offer VACANT beds (BedPickerViewModel.getVacantChoices, TransferViewModel.getVacantBedsByHostel), so the live open()/close() path can't create two tenancies on one bed in normal use, even though OccupancyPeriodRepository.open() itself has no defensive overlap check (only backfill()/editBackfilled() check) - worth knowing if that upstream vacant-only gating is ever relaxed, but not a defect today. No regressions found in existing screens."
     }
   ]
 }

@@ -13,12 +13,12 @@
     "Correct for a shop, warehouse or flat, where the stay is of the whole property and there is no bed to name",
     "Correct in Hindi as well as English, including the duration wording"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-17T15:50:00Z",
+  "updatedAt": "2026-09-17T22:10:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -53,6 +53,14 @@
       "actor": "Developer",
       "action": "comment",
       "note": "See LODGY-91's comment at 2026-09-17T15:50:00Z - the device migration verification flagged on all four of LODGY-91/92/93/94 is done, on a populated database, with no data loss and no crash."
+    },
+    {
+      "timestamp": "2026-09-17T22:10:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - verified on-device. Duration wording correct for both an active tenancy (\"Living here since 1 Sep 2024 - 2 year(s)\") and a closed one (\"Lived here from 17 Sep 2026 - Today\"). Room history hidden for a tenant with only one period (checked before any transfer). After a transfer, tested a genuine returning-tenant scenario (one app-recorded stay + one backfilled stay with no agreement) and the timeline correctly showed two separate stay cards, most recent first, exactly per DESIGN.md 4.6 - not merged, not only-the-latest. A checked-out tenant's profile keeps full contact info and duration wording (nothing hidden by VACATED status). Reuses the existing Notes & Timeline screen, no new nav route added. Hindi string coverage confirmed complete (every new key in values/strings.xml has a values-hi counterpart). Shop/warehouse/flat wording not re-tested live (reuses the existing, already-tested BedLocation.label() utility from LODGY-79/86) - code-reviewed, no new branch introduced for this ticket."
     }
   ]
 }

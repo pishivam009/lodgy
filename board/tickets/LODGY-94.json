@@ -15,12 +15,12 @@
     "It is recorded that a backfilled stay came from the warden rather than from the app observing it, without implying the warden is less trustworthy than the app",
     "Correct in Hindi as well as English"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T12:10:00Z",
-  "updatedAt": "2026-09-17T15:50:00Z",
+  "updatedAt": "2026-09-17T22:10:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T12:10:00Z",
@@ -49,6 +49,14 @@
       "actor": "Developer",
       "action": "comment",
       "note": "See LODGY-91's comment at 2026-09-17T15:50:00Z - the device migration verification flagged on all four of LODGY-91/92/93/94 is done, on a populated database, with no data loss and no crash."
+    },
+    {
+      "timestamp": "2026-09-17T22:10:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - verified the actual StayBackfillScreen on-device (previous verification only exercised the repository via direct SQL). Manual path: tenant picker lists every tenant including VACATED ones; room/bed picker lists every bed including occupied ones (any bed, not just vacant, per design); entered a past stay with a typed date (06/01/2023 -> \"Jun 1, 2023\"), saved, got a plain \"Saved.\" confirmation, and the form reset for the next entry. Overlap refusal verified for real: entering a second stay for the same tenant on the same bed with dates inside the first stay's range was refused with \"Someone else is already recorded on this bed during those dates.\" and confirmed via direct DB read that no second row was written - the overlap check works and is not silently bypassable through the UI. Backfilled stays show up in tenant and bed history exactly like recorded ones (shared verification with LODGY-92/93). CSV bulk path present (\"Or bring in a spreadsheet\") - not re-driven through the UI this pass; relying on StayCsvTest.kt's passing coverage of the parsing logic, which is pure and not the kind of on-device-only defect this session was hunting for."
     }
   ]
 }

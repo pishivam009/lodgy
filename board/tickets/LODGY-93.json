@@ -13,12 +13,12 @@
     "Warden and caretaker occupancy appears in the history like any other, since the room was genuinely occupied",
     "Correct in Hindi as well as English"
   ],
-  "status": "Testing",
+  "status": "In Progress",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-17T15:50:00Z",
+  "updatedAt": "2026-09-17T22:10:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -53,6 +53,14 @@
       "actor": "Developer",
       "action": "comment",
       "note": "See LODGY-91's comment at 2026-09-17T15:50:00Z - the device migration verification flagged on all four of LODGY-91/92/93/94 is done, on a populated database, with no data loss and no crash."
+    },
+    {
+      "timestamp": "2026-09-17T22:10:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - race condition in BedGridViewModel.onBedSelected (app/src/main/java/com/lodgy/app/ui/property/BedGridViewModel.kt:104-122) intermittently hides the whole \"Past occupants\" section, including the \"Never occupied\" plain-text fallback, on a bed that genuinely has history. Reproduced on-device: opened the same bed's sheet 5 times in a row with confirmed, unchanged data underneath (one closed backfilled period) - it rendered nothing 1 time out of 5 and the correct \"Past occupants: Ramesh Kumar 1 Jun 2023 - 31 Dec 2023\" the other 4. Root cause: onBedSelected launches two independent coroutines against the same _uiState - one does two suspend DB calls (getActiveByBedId, then getById) before writing bedHistory = emptyList()/bedHistoryLoading = true; the other collects occupancyPeriodRepository.observeByBedId(bed.id) and writes the real rows with bedHistoryLoading = false as soon as the Flow emits. When the first coroutine's suspend calls happen to finish after the Flow has already delivered (e.g. a warm Room query), its stale \"start loading\" write lands last and clobbers the real data back to an empty, loading=true state that never recovers until the sheet is dismissed and reopened (and can race again then). BedGridScreen.BedHistorySection returns early on bedHistoryLoading with no visible spinner, so a warden just sees the section silently vanish - it looks like the bed was never occupied, or like the app is broken, either of which is exactly the \"confidently incomplete answer\" LODGY-91/93 were filed to avoid. Fix: sequence these two updates against the same state (e.g. drop the separate loading reset once the bed changes, or gate it so the reset can't apply after a newer bedId's data has already landed - a simple approach is to fold both into one coroutine/collector, matching the pattern NotesTimelineViewModel already uses correctly for LODGY-92's room history with a single combine(...).collect{}). Everything else in this ticket checked out: AC1 (most recent first, with dates), AC2 (transferred-away tenant still listed), AC3 (current occupant shown separately, never in the list), AC5 (\"Never occupied\" wording, when the race doesn't eat it), AC6 (no room/bed label printed in rows, confirmed by reading BedHistorySection - correct for shop/warehouse/flat with no code branch), AC7 (warden/caretaker occupancy appears like any other tenancy) - all verified on real, on-device data. Please fix the race and hand back to Testing; no need to re-verify the rest unless the fix touches shared state."
     }
   ]
 }
