@@ -13,12 +13,12 @@
     "Warden and caretaker occupancy appears in the history like any other, since the room was genuinely occupied",
     "Correct in Hindi as well as English"
   ],
-  "status": "Testing",
+  "status": "Done",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-07T11:30:00Z",
-  "updatedAt": "2026-09-18T09:15:00Z",
+  "updatedAt": "2026-09-18T10:30:00Z",
   "history": [
     {
       "timestamp": "2026-09-07T11:30:00Z",
@@ -69,6 +69,14 @@
       "from": "In Progress",
       "to": "Testing",
       "note": "Fixed the race the Tester found. app/src/main/java/com/lodgy/app/ui/property/BedGridViewModel.kt:onBedSelected - the reset (selectedBed placeholder, bedHistory = emptyList(), bedHistoryLoading = true) now happens synchronously before either coroutine is launched, instead of inside the tenant-lookup coroutine. The tenant-lookup coroutine now only ever writes selectedBed.tenantId/tenantName (via a targeted copy, guarded so a stale lookup from a since-deselected or since-switched bed cannot land on the wrong SelectedBed); the history collector only ever writes bedHistory/bedHistoryLoading. Neither can clobber the other regardless of completion order, since they no longer share a single combined update. Did not restructure into a single combine(...).collect{} like NotesTimelineViewModel, since the two lookups here are genuinely independent (a one-shot tenant lookup vs. a live history Flow) and forcing them into one collector would mean re-running the tenant lookup on every history emission for no reason - narrower fix, same guarantee. 630 tests pass, 0 failures, line coverage 95.71% (gate 0.93), assembleDebug succeeds. Existing BedGridViewModelTest assertions on selectedBed/bedHistory needed no changes - they check settled state after the test dispatcher runs both coroutines to completion, which is unchanged."
+    },
+    {
+      "timestamp": "2026-09-18T10:30:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - the race is gone. Re-ran the exact repro from the original fail: opened the same bed sheet (Room 101 Bed A, one closed backfilled period) 9 times in a row - correct \"Past occupants: Ramesh Kumar 1 Jun 2023 - 31 Dec 2023\" every single time, 9/9, versus 4/5 before the fix. Also stress-tested rapid cross-bed switching (B -> A -> B within ~0.5s) to exercise the stale-coroutine guard specifically: the sheet settled on Bed B correctly showing Bed B's own history (Priya Sharma), not a stale write from Bed A's in-flight lookup. Checked the hardest case too - a currently OCCUPIED bed with its own history (Room 102 Bed A: Ramesh Kumar occupied + Test Kumar past-occupant) - both the tenant-info coroutine and the history-Flow coroutine's writes landed correctly together in the same open, confirming the fix holds when both coroutines have real (non-trivial) work to do, not just the vacant-bed fast-path. All of LODGY-93's other acceptance criteria (already verified last pass - most-recent-first with dates, transferred-away tenant retained, current occupant shown separately, plain \"Never occupied\" wording, no room/bed label in rows, warden/caretaker occupancy included) still hold; nothing else regressed. LODGY-91/92/94 spot-checked unaffected: LODGY-92's NotesTimelineViewModel is a separate ViewModel this fix never touched, already verified thoroughly in the prior pass."
     }
   ]
 }
