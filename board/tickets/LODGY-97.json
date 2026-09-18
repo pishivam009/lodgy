@@ -1,0 +1,75 @@
+{
+  "id": "LODGY-97",
+  "epic": "Usability",
+  "title": "18 screens across the app have no scroll - growable content can be unreachable on smaller phones",
+  "description": "LODGY-96 fixed AgreementFormScreen's missing scroll, but it turned out to be one instance of a much wider pattern. A full audit of all 39 screen Composables (`find app/src/main/java/com/lodgy/app/ui -name \"*Screen.kt\"`) for a `verticalScroll`/`LazyColumn`/`LazyRow`/`LazyVerticalGrid` marker found 18 more screens with a plain `Column(...fillMaxSize())` and no scroll mechanism at all:\n\nBackupScreen, DataPacketScreen, HistoryImportScreen, ExpenseFormScreen, NotificationSettingsScreen, NoteFormScreen, AcknowledgementScreen, CreditFormScreen, ManualInvoiceFormScreen, MultiPeriodPaymentScreen, RecordPaymentScreen, ReminderScreen, BulkRoomFormScreen, FloorFormScreen, HostelFormScreen, RoomFormScreen, CheckoutScreen, PinSetupScreen.\n\nMost of these are forms that grow with the number of fields shown (conditional fields, error text, optional sections) or lists that grow with data (AcknowledgementScreen's payment/credit rows, MultiPeriodPaymentScreen's open-invoice rows) - exactly DESIGN.md 4.12's 'Screen content scrolls' invariant, just not yet applied here. On a short enough phone screen, Save/submit or list items past the fold become unreachable, the same failure mode as LODGY-34, LODGY-35, and LODGY-96.\n\nPinSetupScreen was structurally different: its two content composables (PinEntryContent, BiometricOptInContent) used a `Box` with the keypad/button absolutely positioned at `Alignment.BottomCenter` over the top content, rather than a plain Column. On a short screen this overlay could clip or overlap the top content instead of just being unreachable. Restructured both into a `Column` with the top content in a `Modifier.weight(1f).verticalScroll(rememberScrollState())` region and the keypad/button as a fixed footer below it, so the content scrolls within its own space instead of overlapping the fixed controls.",
+  "acceptanceCriteria": [
+    "All 18 identified screens have a scroll mechanism on their main content container, using the established `.verticalScroll(rememberScrollState())` pattern (or already-scrollable Lazy* containers where applicable)",
+    "PinSetupScreen's keypad/button no longer sits in an absolutely-positioned overlay that could clip or overlap the scrollable content above it",
+    "No field, validation, save, or navigation behavior changes on any of the 18 screens - this is a layout-only fix",
+    "Full test+coverage gate passes (`testDebugUnitTest jacocoTestReport jacocoCoverageVerification`)",
+    "At least a representative sample is confirmed to still render and function correctly on-device after the change, since this exact class of bug is invisible to unit tests (semantics-tree queries find nodes regardless of scroll position)"
+  ],
+  "status": "Delivered",
+  "priority": "High",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T14:10:00Z",
+  "updatedAt": "2026-09-18T14:40:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T14:10:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "\"I want all screens to be scrollable so that they work properly on all size smartphone.\" Generalizes LODGY-96 - that ticket fixed one screen; this is the full-app audit and fix."
+    },
+    {
+      "timestamp": "2026-09-18T14:10:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Audited all 39 *Screen.kt files via grep for verticalScroll/LazyColumn/LazyRow/LazyVerticalGrid markers, then read each of the 18 unmarked files to confirm the bug is real (not a false positive like a short fixed-content dialog) before touching any code. All 18 shared the exact same broken pattern as LODGY-96 (Column with .padding(padding).padding(16.dp).fillMaxSize(), no scroll), except PinSetupScreen which used an absolutely-positioned Box overlay instead."
+    },
+    {
+      "timestamp": "2026-09-18T14:22:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Applied the standard fix (.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), matching TenantProfileScreen.kt/AgreementFormScreen.kt's established pattern) to all 17 Column-based screens. Restructured PinSetupScreen.kt's two content composables from Box-overlay to Column-with-weight(1f)-scrollable-region-plus-fixed-footer, removing the risk of the keypad overlapping content on short screens. Build: 636 tests passed, 0 failures, line coverage 95.7% (gate 0.93). assembleDebug succeeded. On-device: installed the fresh APK on emulator-5554, and specifically stress-tested the state-handling risk of this change - backed up files/datastore/auth_prefs.preferences_pb, deleted it, resized the emulator to 720x1000 (a short/small phone), and restarted the app to reach the PIN screen. This exposed a real overlap bug, but in PinLockScreen (unrelated file, not part of this audit's 18) reached only by an impossible real-world combination (Room DB already has a hostel but no PIN hash) that only existed because of the manual prefs deletion - filed separately as LODGY-102, not fixed here. Restored the auth_prefs backup byte-for-byte (43 bytes, confirmed via ls) and reset the emulator resolution; confirmed the PIN screen renders normally afterward. Did not unlock the app further (no known PIN for this session, and guessing risks the wrong-PIN backoff from LODGY-76/77), so the other 17 fixes were verified by code review against the now-proven LODGY-96 pattern plus the full green build, not individually clicked through on-device. Flagging this gap explicitly for the Tester rather than claiming full on-device coverage."
+    },
+    {
+      "timestamp": "2026-09-18T14:32:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL - not a code defect, but docs/DESIGN.md was not updated. Spot-checked the diff for BackupScreen, ExpenseFormScreen, NoteFormScreen, AcknowledgementScreen, RoomFormScreen, and CheckoutScreen: all six apply the exact TenantProfileScreen/AgreementFormScreen pattern correctly, touch only the modifier chain, and change nothing else. Read the full PinSetupScreen.kt diff: both Box-to-Column conversions are correct (weight(1f) is only used inside the new ColumnScope, both stray .align(Alignment.BottomCenter) calls were removed since there's no Box left to align within, the decorative icon Box usages are untouched and still valid). Re-ran the original NO-SCROLL audit grep against the working tree - zero screens remain unmarked, confirming all 18 were actually fixed and none were missed. git diff confirms exactly 18 screen files touched, matching the ticket's list precisely. However: DESIGN.md's decision log row for 'Growable screens scroll' (line 906) and the 4.12 'Screen content scrolls' bullet (line 725-736) still only cite LODGY-34/35/96 - LODGY-97 is not mentioned anywhere in DESIGN.md. CLAUDE.md's standing constraint is explicit that docs go in the same commit as the work, not as a follow-up - this ticket cannot pass without that update, the same way LODGY-96 added its own citation before being marked Done. On the on-device verification gap the developer flagged: accepting the code review + 636/636 green tests + 95.7% coverage as sufficient for the 17 mechanical Column fixes (this is the exact same pattern already proven live on-device twice, under LODGY-96 and TenantProfileScreen's original implementation) - but PinSetupScreen's more substantial Box-to-Column restructuring has not been confirmed live on any real render, only by code reading. Will re-verify PinSetupScreen on-device once DESIGN.md is updated and re-handed to Testing."
+    },
+    {
+      "timestamp": "2026-09-18T14:36:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Added LODGY-97 to DESIGN.md's decision log row for 'Growable screens scroll' and extended the 4.12 bullet with the PinSetupScreen detail (Box-overlay -> scrollable-region-with-fixed-footer, not just the same modifier as the other 17). Then actually rendered PinSetupScreen live, properly this time: backed up the full app state (databases/lodgy.db + -wal/-shm and all three datastore prefs files, verified byte sizes), ran `pm clear com.lodgy.app` to reach a genuinely fresh install (the only way to legitimately hit NeedsPinSetup rather than the corrupted state from LODGY-102), resized to 720x1000, allowed the notification permission prompt, and reached 'Set up your PIN'. Screenshot confirms the title and full 3x4 keypad render cleanly with no overlap and no clipped content at this short resolution - the weight(1f)+verticalScroll region correctly gives way to the fixed keypad/button footer. Restored the full backup byte-for-byte afterward (all 6 files re-verified via `ls -la` sizes matching the originals) and confirmed the emulator is back to its normal seeded PIN-lock state. All 18 screens are now covered by either direct on-device verification (PinSetupScreen here, AgreementFormScreen/TenantProfileScreen previously establishing the Column pattern) or code review against that proven pattern plus the green build."
+    },
+    {
+      "timestamp": "2026-09-18T14:38:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. DESIGN.md decision log row and 4.12 bullet now cite LODGY-97 alongside LODGY-96, and correctly distinguish the PinSetupScreen restructuring from the other 17's mechanical modifier change. PinSetupScreen's live screenshot at 720x1000 (a genuinely fresh install, not the corrupted LODGY-102 state) shows 'Set up your PIN' and the full keypad rendering cleanly with no overlap - confirms the Box-to-Column restructuring works as intended, closing the one gap this ticket was bounced for. Confirmed the developer's restore was clean: re-ran `adb shell run-as com.lodgy.app ls -la databases files/datastore` myself and the file sizes match what was there before the pm clear (lodgy.db 212992 bytes, auth_prefs.preferences_pb 43 bytes, etc.) - no data loss from the verification process. All 4 acceptance criteria hold: all 18 screens scroll, PinSetupScreen no longer overlaps, no field/save/nav behavior changed anywhere in the diff, and the full gate is green (636 tests, 0 failures, 95.7% line coverage against the 0.93 requirement)."
+    },
+    {
+      "timestamp": "2026-09-18T14:40:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, with one honest limitation disclosed: emulator-5554 is sitting at the PIN lock screen and nobody in this session knows the PIN, so I could not personally click through RecordPaymentScreen/CheckoutScreen/HostelFormScreen myself this pass the way I normally would. Judging on what's actually available instead: this is the exact same .verticalScroll(rememberScrollState()) pattern that I already personally onboarded a real tenant through under LODGY-96 and that TenantProfileScreen has used since before this session started - it's not a new or unproven technique, just applied to 17 more screens that had the identical gap. The one screen that WAS structurally different (PinSetupScreen) has an actual screenshot proving it renders cleanly on a short 720x1000 screen, which is the whole point of this ticket. That, plus the Tester's careful diff review and a fully green build, is enough for me to trust this the way I'd trust any of the other scroll fixes this session - this is what I asked for (\"I want all screens to be scrollable so that they work properly on all size smartphone\"), and nothing here suggests otherwise. If a real click-through later turns up a screen that still doesn't scroll right, that's a new, specific bug report, not a reason to hold this back on a hypothetical."
+    }
+  ]
+}
