@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-99",
+  "epic": "Reporting & Dashboard",
+  "title": "Monthly exported report should show rent recovery percentage, not just raw collected/dues numbers",
+  "description": "MonthlyReportViewModel already tracks totalCollected and totalDues, and the CSV export (buildReportCsv in MonthlyReportScreen.kt) already includes both as separate rows - but there's no computed recovery percentage (collected / expected billed for the period), which is the number a warden actually wants when reconciling a month, not two raw totals they have to do the division on themselves. Depends on LODGY-100 settling what 'expected income' means for the month (total billed vs. total collected + outstanding) since recovery % needs that denominator to be unambiguous.",
+  "acceptanceCriteria": [
+    "The exported monthly report (CSV, buildReportCsv) includes a recovery percentage row, computed the same way as wherever LODGY-100 lands on 'expected income' for consistency",
+    "Recovery percentage is also shown on the Monthly Report screen itself, not just in the export",
+    "Handles a month with zero expected income (e.g. no active tenancies yet) without a divide-by-zero or a misleading 0%/100%"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T14:27:00Z",
+  "updatedAt": "2026-09-18T14:27:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T14:27:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "\"this recovery info should also be shown in monthly exported report.\" Follows from LODGY-100 (recovery % on the overview screen) - the same figure belongs in the export too. Confirmed buildReportCsv already has totalCollected/totalDues rows but no recovery percentage."
+    }
+  ]
+}

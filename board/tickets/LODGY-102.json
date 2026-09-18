@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-102",
+  "epic": "Auth",
+  "title": "PinLockScreen overlaps its keypad with the hostel name/title on a very short screen",
+  "description": "Found incidentally while verifying LODGY-97's PinSetupScreen fix on-device: resized the emulator to 720x1000 (short screen) to check PinSetupScreen's new scroll behavior, and observed PinLockScreen (the unlock screen shown to a returning warden, not the first-time setup screen fixed under LODGY-97) rendering with the numeric keypad overlapping the hostel name and 'Enter your PIN' text - digits and title text drawn on top of each other, both partially readable.\n\nThe state that produced this was contrived (files/datastore/auth_prefs.preferences_pb deleted while Room already had a hostel - not reachable through any normal user flow, since PIN setup always precedes hostel setup) - it is NOT confirmed to reproduce on a normal PIN unlock in normal use, only that PinLockScreen's layout doesn't scroll/reflow either. Needs a clean repro (short screen + normal unlock flow, no manual state tampering) before treating this as confirmed - filed so it isn't lost, not confirmed as user-reachable yet.",
+  "acceptanceCriteria": [
+    "Reproduce (or rule out) the overlap on a normal PIN unlock flow at a small/short screen size, without deleting or corrupting any app state manually",
+    "If reproducible: PinLockScreen's content no longer overlaps on short screens - apply the same scroll/layout treatment used for PinSetupScreen under LODGY-97 if it applies",
+    "If not reproducible under any normal flow: close as not-a-bug with the finding documented, since the only way to trigger it required an impossible combination of stored state"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T14:24:00Z",
+  "updatedAt": "2026-09-18T14:24:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T14:24:00Z",
+      "actor": "Developer",
+      "action": "created",
+      "note": "Surfaced during LODGY-97's on-device verification, not from user report. Deliberately low priority pending a clean repro - the observed state required manually deleting auth_prefs while a hostel already existed in Room, which normal onboarding order (PIN before hostel) cannot produce."
+    }
+  ]
+}

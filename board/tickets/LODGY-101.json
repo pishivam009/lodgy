@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-101",
+  "epic": "Tenant Onboarding",
+  "title": "New use case: a tenant who occupies two beds in different rooms",
+  "description": "New real-world case surfaced by the warden: some tenants take two beds in different rooms (e.g. a family, or someone renting extra storage/space), not just one bed each. TenancyAgreement currently has a single `bedId` - one agreement is one tenant on one bed. A tenant with two beds today would need two separate TenancyAgreement rows, which is likely fine at the raw data level but needs checking against everywhere the app currently assumes 'a tenant has at most one active tenancy/bed': tenant profile screen, dashboard occupancy counts, invoice generation (is there one invoice per agreement, or would this tenant now get two separate invoices for two beds - and is that the right billing shape or should it consolidate?), checkout flow (checking out of one bed shouldn't silently end the other), and any 'find this tenant's current room/bed' lookup that assumes a single result.\n\nNeeds Product Owner scoping before implementation: is two-invoices-per-tenant the right behavior, or should multi-bed tenants get one consolidated invoice? Does the tenant profile screen need to show multiple active tenancies side by side? This ticket is filed to capture the use case, not to prescribe the fix.",
+  "acceptanceCriteria": [
+    "Decision recorded (DESIGN.md) on whether a multi-bed tenant gets one TenancyAgreement per bed or a new data shape, and how billing/invoicing should work across their beds",
+    "Tenant profile screen correctly shows all of a tenant's active bed(s), not just one",
+    "Checking a tenant out of one bed does not affect their tenancy on another bed",
+    "Dashboard/occupancy counts and invoice generation handle a tenant with more than one active bed without double-counting or under-counting"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T14:28:00Z",
+  "updatedAt": "2026-09-18T14:28:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T14:28:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "\"a new use case came: some tenants take two beds in different rooms.\" Filed to capture the use case for Product Owner triage - confirmed TenancyAgreement.bedId is currently single-valued (one bed per agreement), so this needs scoping across onboarding, billing, checkout, and occupancy counting before implementation."
+    }
+  ]
+}

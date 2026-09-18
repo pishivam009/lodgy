@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-98",
+  "epic": "Notifications",
+  "title": "Dues reminder only fires after an invoice is already overdue - add a configurable advance warning",
+  "description": "DuesReminderWorker.kt currently only notifies about invoices where `dueDate < today` - i.e. it tells the warden after rent is already late, never before. Vacancy reminders (NotificationSettingsScreen/NotificationPreferences) already have exactly this shape of control - a configurable threshold (`vacancyThresholdDays`, picked from a FilterChipRow of options) for how many days in advance to warn. Dues reminders have no equivalent: the Notifications section only has an on/off toggle (`duesEnabled`), no 'X days before' setting.\n\nAdd a configurable X (days before the monthly billing cycle date) so the warden can be nudged ahead of time rather than only after the fact, surfaced in the Notifications section the same way the vacancy threshold is.",
+  "acceptanceCriteria": [
+    "Notifications section has a new configurable setting for how many days before the billing cycle date to send a dues warning, following the existing vacancyThresholdDays UI pattern (FilterChipRow of options)",
+    "DuesReminderWorker fires an advance warning notification at the configured X-days-before point, distinct from (or in addition to) the existing after-the-fact overdue notification",
+    "Setting persists via NotificationPreferences (DataStore), same as the existing dues/vacancy toggles",
+    "Default value preserves today's behavior for anyone who upgrades without touching the setting (no surprise new notifications the warden didn't ask for)"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T14:26:00Z",
+  "updatedAt": "2026-09-18T14:26:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T14:26:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "\"notify for payment dues on x days before monthly cycle - add this x to be configurable in Notifications section.\" Confirmed in code: DuesReminderWorker only checks dueDate < today (after the fact); no advance-warning path exists today, unlike vacancy reminders which already have a configurable threshold."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "LODGY-103",
+  "epic": "Backup & Restore",
+  "title": "Retest export/import thoroughly - user has observed not all data being exported",
+  "description": "User reports the backup export doesn't carry everything across. Needs a thorough, deliberate re-test of BackupManager.export/stageImport/applyStaged (app/src/main/java/com/lodgy/app/backup/BackupManager.kt), not just a spot check - go table by table against DESIGN.md's data model, not just the tenants/rooms a quick glance would catch.\n\nOne concrete, confirmed gap from reading the code this session: BackupManager.export() zips the Room database file (lodgy.db, via PRAGMA wal_checkpoint(FULL) then copying the file) plus the photos/ directory - but nothing else under app-private storage. In particular it does NOT include the DataStore preference files (files/datastore/auth_prefs.preferences_pb, hostel_prefs.preferences_pb, notification_prefs.preferences_pb) - so a restore onto a new phone would silently lose the PIN, biometric opt-in, currently-selected hostel, and notification settings (vacancy/dues toggles and thresholds), even though every tenant/room/payment/invoice in the SQLite DB comes across intact. Whether losing the PIN/biometric state is actually desired (a new phone plausibly should get a fresh PIN) needs a product decision either way, but it should be a decision, not an unnoticed gap - and the hostel-selection/notification prefs loss is more clearly unintended.\n\nThis needs the user's specific 'not all data is exported' observation matched against this and any other gap found - don't assume the DataStore gap above is the whole story without checking.",
+  "acceptanceCriteria": [
+    "Every table in the Room schema (per DESIGN.md/DATA-MODEL.md) is confirmed present after a restore, compared field-by-field against the pre-export state, not just 'the app opens and shows some data'",
+    "Photos referenced by tenant/expense records are confirmed to survive a restore, including the case where a photo was added after the last backup",
+    "DataStore preference files (auth_prefs, hostel_prefs, notification_prefs) - confirmed in scope or explicitly out of scope with a documented product decision, not silently dropped without anyone deciding",
+    "Test on a populated database pulled from a real device/emulator (per CLAUDE.md's 'never build a synthetic one' rule for migration-adjacent testing), not a fresh empty install",
+    "Findings written up specifically enough that a Developer can act on them without re-deriving the same investigation"
+  ],
+  "status": "Todo",
+  "priority": "High",
+  "version": "0.5.0",
+  "assigneeRole": "Tester",
+  "createdAt": "2026-09-18T14:29:00Z",
+  "updatedAt": "2026-09-18T14:29:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T14:29:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "\"retest the export import feature thoroughly, I see not all data is exported.\" Raised High - this is the warden's only path to move data to a new phone (offline-first, no backend), so a silent gap here means real data loss on migration. One gap already confirmed by reading BackupManager.kt: DataStore preference files (PIN, hostel selection, notification settings) aren't included in the export zip, only the Room DB and photos - flagged in the description for whoever picks this up, but the user's own observation needs to be matched against the code, not assumed to be only this."
+    }
+  ]
+}

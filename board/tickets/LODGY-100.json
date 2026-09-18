@@ -1,0 +1,26 @@
+{
+  "id": "LODGY-100",
+  "epic": "Reporting & Dashboard",
+  "title": "Overview/Dashboard screen should show monthly expected income vs. actual collected (recovery %)",
+  "description": "DashboardScreen currently only shows 'today's collections' (todaysCollections stat tile) - there's no monthly expected-income-vs-collected figure on the Overview screen at all. That comparison only exists one level deeper, on the separate Monthly Report screen (MonthlyReportViewModel already has totalCollected and totalDues). A warden checking in for the day wants the recovery picture at a glance on Overview, not only after navigating into Monthly Report.\n\nNeeds a clear definition of 'expected income' for the month first: total billed across active tenancies for the period (rent due regardless of payment status), which is a different number from totalDues (which reads as outstanding/unpaid, not total billed) - this should be nailed down before implementing, and the same definition should drive LODGY-99's recovery percentage in the exported report.",
+  "acceptanceCriteria": [
+    "Overview/Dashboard screen shows monthly expected income and actual collected for the current month, scoped consistently with the screen's existing property/hostel scoping",
+    "Recovery percentage (collected / expected) is shown, not just the two raw numbers",
+    "Definition of 'expected income' is documented in DESIGN.md and reused by LODGY-99's export",
+    "Handles zero expected income (no active tenancies) without a divide-by-zero or misleading percentage"
+  ],
+  "status": "Todo",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T14:27:30Z",
+  "updatedAt": "2026-09-18T14:27:30Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T14:27:30Z",
+      "actor": "User",
+      "action": "created",
+      "note": "\"overview screen should also have monthly expected income and actual collected in the month to get recovery percentage.\" Confirmed DashboardScreen currently has no monthly income/collection figures at all, only a today's-collections tile; the closest existing data (totalCollected/totalDues) lives on the separate Monthly Report screen."
+    }
+  ]
+}
