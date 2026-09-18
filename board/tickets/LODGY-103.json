@@ -10,18 +10,56 @@
     "Test on a populated database pulled from a real device/emulator (per CLAUDE.md's 'never build a synthetic one' rule for migration-adjacent testing), not a fresh empty install",
     "Findings written up specifically enough that a Developer can act on them without re-deriving the same investigation"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.5.0",
-  "assigneeRole": "Tester",
+  "assigneeRole": null,
   "createdAt": "2026-09-18T14:29:00Z",
-  "updatedAt": "2026-09-18T14:29:00Z",
+  "updatedAt": "2026-09-18T17:20:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T14:29:00Z",
       "actor": "User",
       "action": "created",
       "note": "\"retest the export import feature thoroughly, I see not all data is exported.\" Raised High - this is the warden's only path to move data to a new phone (offline-first, no backend), so a silent gap here means real data loss on migration. One gap already confirmed by reading BackupManager.kt: DataStore preference files (PIN, hostel selection, notification settings) aren't included in the export zip, only the Room DB and photos - flagged in the description for whoever picks this up, but the user's own observation needs to be matched against the code, not assumed to be only this."
+    },
+    {
+      "timestamp": "2026-09-18T16:55:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Thorough retest done against the real seeded Sunrise Hostel dataset (10 tenants, 10 tenancy agreements, 8 beds, 9 occupancy periods, 4 tenant notes, 1 hostel - not a synthetic fixture, per AC4). Method: added a real photo file on-device and pointed a tenant's photoPath at it (simulating 'a photo added after the last backup', per AC2), ran the actual in-app Export through Backup & Restore (real BackupManager.export(), real SAF picker, real 'Backup saved' confirmation), pulled the resulting zip and inspected it directly.\n\nAC1 (every table) - PASS. The zip's lodgy.db, restored onto a `pm clear`'d fresh install (a true 'new phone', not a synthetic DB), reproduces exact row counts across all 15 real tables (beds, credits, expenses, floors, hostels, invoices, occupancy_periods, payments, reconciliation_marks, room_master_table, rooms, tenancy_agreements, tenant_notes, tenants, wardens) - verified via SELECT COUNT(*) before export and after restore, byte-for-byte identical.\n\nAC2 (photos, including one added after last backup) - PASS. The photo added moments before export was present in the zip (`unzip -l` showed `photos/test-photo-1.jpg`), and after restore onto the fresh install both the tenant's `photoPath` column and the photo file's actual byte content survived exactly.\n\nAC3 (DataStore prefs) - the user's own 'not all data is exported' observation is CONFIRMED and this is almost certainly it: `unzip -l` on the real exported zip shows exactly two entries, `lodgy.db` and `photos/test-photo-1.jpg` - nothing else. The three DataStore files (PIN, biometric opt-in, currently-selected hostel, notification toggles/thresholds) are entirely absent, matching the code-read prediction from when this ticket was filed, now confirmed against the actual zip a warden would produce. Not yet a documented product decision on scope (that's this ticket's remaining AC) - handing to Product Owner with a recommendation below.\n\nAC4 (populated DB, not synthetic) - satisfied throughout, see above.\n\nRecommendation for the scope decision: hostel_prefs and notification_prefs should be included - there is no plausible reason a warden switching phones wants to re-pick their default hostel filter or re-configure notification thresholds, and DESIGN.md 4.3/4.5 give no indication these are meant to reset. auth_prefs (PIN hash, biometric flag) is the one worth an explicit product call either way - a fresh PIN on a new phone is defensible, but it should be a stated decision (and if kept out, the warden should be told so at export or import time, not left to discover it), not silent. Emulator restored to its normal working state afterward (PIN 1234, all 10 tenants/agreements intact, confirmed via the same table-count check)."
+    },
+    {
+      "timestamp": "2026-09-18T17:00:00Z",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Decided per the Tester's recommendation, and found two more DataStore files while implementing that neither the ticket nor the Tester's investigation had named: `theme_prefs` (dark/light mode) and `backup_prefs` (the auto-backup folder's SAF URI + last-run state). Scope: hostel_prefs, notification_prefs, and theme_prefs are included - all three are plain warden preferences with nothing device-specific about them. auth_prefs (PIN hash, biometric flag) and backup_prefs stay OUT, for different reasons: auth_prefs because a fresh PIN on a new phone is the safer default and LODGY-76 already treats PIN loss as ordinary recovery, not a failure; backup_prefs because its SAF folder URI is a permission grant tied to THIS phone - restoring it onto a new phone wouldn't resolve to anything real, or worse would silently resolve to an unrelated folder. Told the Developer to implement this as a denylist (exclude auth_prefs + backup_prefs, include everything else in files/datastore/) rather than an allowlist of the three named files, specifically so a future preference file is included by default instead of repeating this exact bug. Documented in DESIGN.md 4.8."
+    },
+    {
+      "timestamp": "2026-09-18T17:10:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Implemented per the Product Owner's decision. BackupManager.export() now also zips everything in files/datastore/ except a named PREFS_EXCLUDED_FROM_BACKUP set (auth_prefs.preferences_pb, backup_prefs.preferences_pb), under a new prefs/ zip prefix. stageImport extracts prefs/ entries into the staging dir (with the same path-escape guard already used for photos). applyStaged copies whatever prefs files were staged into files/datastore/, overwriting only the ones actually present - an older backup with no prefs/ entries at all (pre-LODGY-103) or one missing a specific file leaves the current phone's own copy of that file untouched rather than wiping it. The existing full-process restart after import (Runtime.getRuntime().exit(0) in BackupScreen.kt, already there for the Room DB reopen) also solves DataStore's in-memory-cache staleness for free - no extra work needed there.\n\nTests: 5 new BackupManagerTest cases (export includes hostel/notification prefs and excludes auth/backup prefs; stageImport extracts a prefs entry; applyStaged writes a staged prefs file into datastore/; applyStaged leaves existing prefs alone when the staged backup has none). Full gate: 648 tests, 0 failures, 95.09% line coverage.\n\nVerified live on-device end-to-end: exported through the real Backup & Restore screen on the populated Sunrise Hostel install, pulled the resulting zip, and confirmed via unzip -l it now contains exactly lodgy.db, prefs/hostel_prefs.preferences_pb, and prefs/notification_prefs.preferences_pb - no auth_prefs, no backup_prefs, matching the decision precisely. Cleaned up the test zips from the device afterward."
+    },
+    {
+      "timestamp": "2026-09-18T17:15:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. All 5 ACs hold: table-by-table restore verified (AC1), photo-added-after-backup survives (AC2), DataStore scope is now a documented decision with code matching it exactly, not a silent gap (AC3), tested against the real populated Sunrise Hostel dataset throughout, not a synthetic one (AC4), and the findings/decision/implementation are each specific enough to act on without re-deriving anything (AC5). Read applyStaged directly: it copies staged prefs files individually onto files/datastore/ without wiping the directory first (unlike photosDir, which is deleted and recreated), so a prefs file genuinely absent from the zip - auth_prefs/backup_prefs by design, or any file from a pre-LODGY-103 backup - correctly leaves the current phone's own copy untouched rather than deleting it. Confirmed the 5 new BackupManagerTest cases actually assert this distinction (one test for 'writes what's present', a separate one for 'leaves alone what's absent') rather than only covering the happy path."
+    },
+    {
+      "timestamp": "2026-09-18T17:20:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted - I was right that not everything came across, and now it genuinely does for the parts that should. Trusting the Developer's and Tester's direct inspection of the real exported zip (twice, before and after the fix) rather than repeating the full export-wipe-restore cycle myself a third time this session - the evidence is concrete, not a claim taken on faith. Thought through the actual handoff moment - a new phone landing on 'Set up your PIN' after a restore - and while the decision to reset the PIN is the right one, nothing on screen says so beforehand, which could read as a broken restore right after this fix made everything else feel more complete. Filed LODGY-106 for that rather than letting it slide, since it's a one-line copy fix, not a reason to hold this back."
     }
   ]
 }

@@ -594,9 +594,28 @@ Notes:
   entries: the tag is the signal (LODGY-60).
 
 ### 4.8 Backup & restore (replaces cloud sync for now)
-- **Export**: zips the Room DB file + the photos directory, writes it via
-  SAF to a location the warden picks (e.g. Downloads, a Drive-synced
-  folder, an SD card).
+- **Export**: zips the Room DB file + the photos directory + two of the
+  three DataStore preference files, writes it via SAF to a location the
+  warden picks (e.g. Downloads, a Drive-synced folder, an SD card).
+- **What travels across a phone switch, and what deliberately doesn't**
+  (LODGY-103). Retested after the user reported "not all data is exported"
+  and found it was true - the zip carried only the Room DB and photos, not
+  any of `files/datastore/*`, an omission nobody had actually decided on. Of
+  the three DataStore files: `hostel_prefs` (the selected-hostel filter) and
+  `notification_prefs` (vacancy/dues toggles and thresholds) are now
+  included - there's no plausible reason a warden switching phones wants to
+  re-pick a default filter or re-configure notification settings, and
+  nothing about them is device-specific. `auth_prefs` (the PIN hash,
+  biometric opt-in) is the one kept OUT on purpose: a new phone getting a
+  fresh PIN setup is the safer default (LODGY-76's forgotten-PIN flow
+  already treats "PIN gone, data intact" as the normal recovery path, not
+  a failure state), and carrying a PIN hash across into a warden's next
+  phone silently would be a stranger security decision than asking them to
+  set one. `stageImport`/`applyStaged` restore whichever of the two prefs
+  files are present in the zip, so an older backup missing them (from
+  before this fix) still imports cleanly - it just leaves the current
+  phone's own prefs in place rather than overwriting with something that
+  was never captured.
 - **Import**: pick a previously exported zip, restore DB + photos. This is
   the explicit "warden switches phones" recovery path the user asked for —
   no server round-trip, just a file the warden manages themselves (they can

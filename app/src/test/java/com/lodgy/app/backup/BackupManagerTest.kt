@@ -32,6 +32,7 @@ class BackupManagerTest {
     private lateinit var cacheDir: File
     private lateinit var dbFile: File
     private lateinit var photosDir: File
+    private lateinit var datastoreDir: File
     private val context: Context = mockk()
     private val contentResolver: ContentResolver = mockk()
     private val database: LodgyDatabase = mockk(relaxed = true)
@@ -43,6 +44,7 @@ class BackupManagerTest {
         filesDir = tempFolder.newFolder("files")
         cacheDir = tempFolder.newFolder("cache")
         photosDir = File(filesDir, "photos").apply { mkdirs() }
+        datastoreDir = File(filesDir, "datastore").apply { mkdirs() }
         dbFile = File(tempFolder.newFolder("db"), LodgyDatabase.DATABASE_NAME)
         dbFile.writeBytes(byteArrayOf(1, 2, 3, 4))
 
@@ -75,6 +77,31 @@ class BackupManagerTest {
         assertArrayEquals(byteArrayOf(1, 2, 3, 4), entries["lodgy.db"])
         assertArrayEquals(byteArrayOf(10, 20), entries["photos/a.jpg"])
         assertArrayEquals(byteArrayOf(30, 40, 50), entries["photos/b.jpg"])
+    }
+
+    /** LODGY-103: the user's own "not all data is exported" turned out to be true - hostel and
+     *  notification prefs weren't in the zip at all. auth_prefs (PIN) and backup_prefs (a
+     *  device-specific SAF URI) stay out on purpose. */
+    @Test
+    fun `export includes hostel and notification prefs but excludes auth and backup prefs`() = runTest {
+        File(datastoreDir, "hostel_prefs.preferences_pb").writeBytes(byteArrayOf(1))
+        File(datastoreDir, "notification_prefs.preferences_pb").writeBytes(byteArrayOf(2))
+        File(datastoreDir, "auth_prefs.preferences_pb").writeBytes(byteArrayOf(3))
+        File(datastoreDir, "backup_prefs.preferences_pb").writeBytes(byteArrayOf(4))
+        val destinationFile = File(tempFolder.root, "prefs.zip")
+        val destinationUri: Uri = mockk()
+        every { contentResolver.openOutputStream(destinationUri) } returns destinationFile.outputStream()
+
+        assertTrue(backupManager.export(destinationUri))
+
+        val entries = mutableSetOf<String>()
+        ZipInputStream(destinationFile.inputStream()).use { zip ->
+            generateSequence { zip.nextEntry }.forEach { entries += it.name }
+        }
+        assertTrue(entries.contains("prefs/hostel_prefs.preferences_pb"))
+        assertTrue(entries.contains("prefs/notification_prefs.preferences_pb"))
+        assertFalse(entries.contains("prefs/auth_prefs.preferences_pb"))
+        assertFalse(entries.contains("prefs/backup_prefs.preferences_pb"))
     }
 
     @Test
@@ -136,6 +163,25 @@ class BackupManagerTest {
     }
 
     @Test
+    fun `stageImport extracts prefs entries`() = runTest {
+        val zip = zipFile {
+            putNextEntry(ZipEntry("lodgy.db"))
+            write(byteArrayOf(9))
+            closeEntry()
+            putNextEntry(ZipEntry("prefs/hostel_prefs.preferences_pb"))
+            write(byteArrayOf(4, 2))
+            closeEntry()
+        }
+        val sourceUri: Uri = mockk()
+        every { contentResolver.openInputStream(sourceUri) } returns zip.inputStream()
+
+        val (result, stagingDir) = backupManager.stageImport(sourceUri)
+
+        assertEquals(ImportResult.Success, result)
+        assertArrayEquals(byteArrayOf(4, 2), File(stagingDir, "prefs/hostel_prefs.preferences_pb").readBytes())
+    }
+
+    @Test
     fun `stageImport reports NotALodgyBackup when there is no db entry`() = runTest {
         val zip = zipFile {
             putNextEntry(ZipEntry("photos/a.jpg"))
@@ -177,6 +223,31 @@ class BackupManagerTest {
         assertFalse(File(photosDir, "stale.jpg").exists())
         assertArrayEquals(byteArrayOf(7, 7), File(photosDir, "fresh.jpg").readBytes())
         assertFalse(stagingDir.exists())
+    }
+
+    @Test
+    fun `applyStaged writes prefs into the datastore directory`() = runTest {
+        val stagingDir = tempFolder.newFolder("staging-prefs")
+        File(stagingDir, "lodgy.db").writeBytes(byteArrayOf(5))
+        val stagedPrefs = File(stagingDir, "prefs").apply { mkdirs() }
+        File(stagedPrefs, "hostel_prefs.preferences_pb").writeBytes(byteArrayOf(9, 9))
+
+        backupManager.applyStaged(stagingDir)
+
+        assertArrayEquals(byteArrayOf(9, 9), File(datastoreDir, "hostel_prefs.preferences_pb").readBytes())
+    }
+
+    /** A backup taken before LODGY-103 (or one where a category was never present) has no prefs/
+     *  entries at all - restoring it must not wipe whatever prefs already exist on this phone. */
+    @Test
+    fun `applyStaged leaves existing prefs alone when the staged backup has none`() = runTest {
+        File(datastoreDir, "hostel_prefs.preferences_pb").writeBytes(byteArrayOf(7, 7))
+        val stagingDir = tempFolder.newFolder("staging-noprefs")
+        File(stagingDir, "lodgy.db").writeBytes(byteArrayOf(5))
+
+        backupManager.applyStaged(stagingDir)
+
+        assertArrayEquals(byteArrayOf(7, 7), File(datastoreDir, "hostel_prefs.preferences_pb").readBytes())
     }
 
     /** The regression guard for LODGY-78. Every other export test creates photosDir in setUp, which

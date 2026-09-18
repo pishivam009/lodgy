@@ -16,6 +16,22 @@ import kotlinx.coroutines.withContext
 
 private const val DB_ENTRY_NAME = "lodgy.db"
 private const val PHOTOS_ENTRY_PREFIX = "photos/"
+private const val PREFS_ENTRY_PREFIX = "prefs/"
+
+/**
+ * DataStore files deliberately left out of a backup, named rather than filtered by an allowlist
+ * so a preference file added later is included by default - an allowlist here would silently
+ * repeat the exact gap this ticket was filed over (LODGY-103).
+ *
+ * - `auth_prefs`: the PIN hash and biometric opt-in. A new phone getting a fresh PIN setup is the
+ *   safer default (LODGY-76 already treats "PIN gone, data intact" as ordinary recovery, not a
+ *   failure state) - carrying a PIN hash across silently would be the stranger choice.
+ * - `backup_prefs`: the auto-backup folder's SAF URI and last-run state are tied to a permission
+ *   grant on THIS phone. Restoring them onto a new phone wouldn't resolve to anything real, or
+ *   worse would resolve to an unrelated folder that happens to share a URI - actively wrong to
+ *   carry over, not merely omittable.
+ */
+private val PREFS_EXCLUDED_FROM_BACKUP = setOf("auth_prefs.preferences_pb", "backup_prefs.preferences_pb")
 
 sealed interface ImportResult {
     data object Success : ImportResult
@@ -30,6 +46,7 @@ class BackupManager @Inject constructor(
 ) {
     private val photosDir: File get() = File(context.filesDir, "photos")
     private val dbFile: File get() = context.getDatabasePath(LodgyDatabase.DATABASE_NAME)
+    private val datastoreDir: File get() = File(context.filesDir, "datastore")
 
     suspend fun export(destination: Uri): Boolean = withContext(Dispatchers.IO) {
         runCatching {
@@ -54,6 +71,16 @@ class BackupManager @Inject constructor(
                         photo.inputStream().use { image -> image.copyTo(zip) }
                         zip.closeEntry()
                     }
+
+                    // hostel_prefs, notification_prefs, theme_prefs and any future addition -
+                    // everything except the two named exclusions above (LODGY-103).
+                    datastoreDir.listFiles().orEmpty()
+                        .filter { it.name !in PREFS_EXCLUDED_FROM_BACKUP }
+                        .forEach { prefs ->
+                            zip.putNextEntry(ZipEntry(PREFS_ENTRY_PREFIX + prefs.name))
+                            prefs.inputStream().use { data -> data.copyTo(zip) }
+                            zip.closeEntry()
+                        }
                 }
             }
             true
@@ -113,6 +140,16 @@ class BackupManager @Inject constructor(
                                     File(stagedPhotosDir, name).outputStream().use { zip.copyTo(it) }
                                 }
                             }
+                            entry.name.startsWith(PREFS_ENTRY_PREFIX) && !entry.isDirectory -> {
+                                val name = entry.name.removePrefix(PREFS_ENTRY_PREFIX)
+                                // Absent from a backup taken before LODGY-103, or from one where the
+                                // warden had turned that category off - stageImport just won't find
+                                // the entry, and applyStaged leaves the current phone's own file alone.
+                                if (name.isNotBlank() && !name.contains("..") && !name.contains('/')) {
+                                    val stagedPrefsDir = File(stagingDir, "prefs").apply { mkdirs() }
+                                    File(stagedPrefsDir, name).outputStream().use { zip.copyTo(it) }
+                                }
+                            }
                         }
                         zip.closeEntry()
                     }
@@ -142,6 +179,15 @@ class BackupManager @Inject constructor(
         photosDir.mkdirs()
         File(stagingDir, "photos").takeIf { it.isDirectory }?.listFiles()?.forEach { photo ->
             photo.copyTo(File(photosDir, photo.name), overwrite = true)
+        }
+
+        // Only overwrites a prefs file the backup actually captured - auth_prefs/backup_prefs were
+        // never in the zip by design, and an older backup predating LODGY-103 has no prefs/ entries
+        // at all, so either way the current phone's own settings for anything not present are left
+        // untouched rather than wiped.
+        File(stagingDir, "prefs").takeIf { it.isDirectory }?.listFiles()?.forEach { prefs ->
+            File(datastoreDir, prefs.name).also { it.parentFile?.mkdirs() }
+                .let { dest -> prefs.copyTo(dest, overwrite = true) }
         }
 
         stagingDir.deleteRecursively()

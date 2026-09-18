@@ -1,0 +1,24 @@
+{
+  "id": "LODGY-106",
+  "epic": "Backup & Restore",
+  "title": "Import screen doesn't warn that the PIN won't come back after a restore",
+  "description": "Surfaced during UAT of LODGY-103. That ticket fixed the actual data gap (hostel/notification/theme prefs now travel with a backup) and made a deliberate, documented decision that the PIN (auth_prefs) does NOT travel - a new phone gets a fresh PIN setup, which is the safer default. That's the right call, but nothing on the Backup & Restore screen tells the warden this before they hit it.\n\nToday's copy (`backup_import_description`): \"Pick a previously exported backup file to restore your data - from Google Drive, Downloads, or wherever you saved it. Useful when moving to a new phone.\" A warden who restores everything and then lands on 'Set up your PIN' with no warning may reasonably wonder if the restore actually worked, right after LODGY-103 specifically improved how complete a restore feels. A one-line note fixes this cheaply.",
+  "acceptanceCriteria": [
+    "Import screen's description (or a note shown right after a successful restore) tells the warden they'll set up a new PIN, before or immediately after they hit that screen - not left to discover it silently",
+    "Copy makes clear this is expected/normal, not a sign the restore partially failed"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T17:20:00Z",
+  "updatedAt": "2026-09-18T17:20:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T17:20:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "Found while accepting LODGY-103 - checked backup_import_description in strings.xml and confirmed it says nothing about the PIN reset, even though that's now a documented, deliberate behavior. Low priority - a copy-only fix, not a data or logic gap."
+    }
+  ]
+}
