@@ -727,7 +727,13 @@ and each is invisible on the screen that introduces it.
   content past the fold is unreachable rather than merely off-screen. The
   tenant profile clipped Record a credit, Move to another bed and Checkout on
   an ordinary phone, which read as three separate missing features
-  (LODGY-34, LODGY-35, and a regression against LODGY-14).
+  (LODGY-34, LODGY-35, and a regression against LODGY-14). The Agreement
+  Terms form never had this in the first place: with the non-revenue switch
+  off, its seven fields overflow an ordinary phone screen and Save was
+  completely unreachable, blocking onboarding any paying tenant on-device —
+  unnoticed for as long as it was because a semantics-tree unit test can
+  find and tap a node whether or not it is actually scrolled into view
+  (LODGY-96).
 - **"Overdue" has one definition, in `isOverdue()`.** Past the due date and not
   settled — not merely UNPAID, which would drop a part-paid invoice that is still
   late and pick up one not due until next month. The Home tile counts with it and
@@ -897,7 +903,7 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Soft delete declined; delete stays permanent | Filtering every read across 15 DAOs to buy an undo a backup already provides — see 4.13 | LODGY-66 |
 | Confirmations on destructive actions and invisible-change updates only | A dialog on every edit trains wardens to dismiss dialogs unread | LODGY-65 |
 | Theme wraps content in a `Surface` | Without it no themed background is painted, so Scaffold-less screens break in dark mode only — see 4.12 | LODGY-32 |
-| Growable screens scroll | Clipped content reads as a missing feature, not a layout fault — see 4.12 | LODGY-34, LODGY-35 |
+| Growable screens scroll | Clipped content reads as a missing feature, not a layout fault — see 4.12 | LODGY-34, LODGY-35, LODGY-96 |
 | UI state comes from observed queries | A one-shot read in `init` cannot see later writes, so labels went stale — see 4.12 | LODGY-33 |
 | Reconciliation marks match on hostel *and* period | The invoice list spans every property; period alone would flag the wrong hostel's invoices | LODGY-43 |
 | `moveOutDate` is read together with agreement status | The field means notice on an ACTIVE agreement and departure on a CLOSED one (3); the printable packet read it without the status and told the warden a current resident had left | LODGY-45 |

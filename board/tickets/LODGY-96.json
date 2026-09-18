@@ -1,0 +1,42 @@
+{
+  "id": "LODGY-96",
+  "epic": "Tenant Onboarding",
+  "title": "Agreement Terms form has no scroll - Save is unreachable on-device for a revenue tenant",
+  "description": "Found on-device this session while seeding test data for LODGY-91/92/93/94's QA. AgreementFormScreen (app/src/main/java/com/lodgy/app/ui/tenant/AgreementFormScreen.kt) lays its fields out in a plain `Column(modifier = Modifier.padding(padding).padding(16.dp).fillMaxSize())` with no `verticalScroll` - it never has, in the entire history of the file back to LODGY-12/13. With the non-revenue switch OFF (the normal case - a paying tenant), the form has seven elements: rent, deposit, billing day (+ hint text), move-in date, the warden/caretaker toggle row (two lines of text), and Save. On a real device at 1080x1920, that content is taller than the visible Scaffold area and the Column does not scroll to reach the rest - Save is completely unreachable. Confirmed by toggling non-revenue ON, which removes three fields (rent, deposit, opening balance) and shortens the form enough that Save becomes reachable again on the same device.\n\nThis blocks onboarding any ordinary paying tenant on-device, which is core, load-bearing functionality - not an edge case. It went unnoticed because this project's unit tests don't render Compose UI or measure screen bounds (a semantics-tree query can still find and click a node whether or not it is scrolled into a visible viewport in tests, which is presumably why 630+ passing unit tests never caught it), and prior sessions' on-device testing happened not to hit a device size where this form actually overflows.\n\nDESIGN.md's decision log already has an entry for exactly this class of bug from a different screen (\"Growable screens scroll\", LODGY-34/LODGY-35) - this ticket is that same fix, just never applied here.",
+  "acceptanceCriteria": [
+    "Save is reachable on-device with the non-revenue switch OFF (rent, deposit, billing day, move-in date, the toggle row, and opening balance all showing) at a normal phone screen size",
+    "Save is reachable on-device with the non-revenue switch ON",
+    "No existing field's behavior changes - only that the screen can scroll to reveal all of them",
+    "Verified by actually running the app on-device (or emulator) and reaching Save, not just a passing unit test - this bug already had passing unit tests"
+  ],
+  "status": "Testing",
+  "priority": "High",
+  "version": "0.5.0",
+  "assigneeRole": "Developer",
+  "createdAt": "2026-09-18T13:15:00Z",
+  "updatedAt": "2026-09-18T13:35:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T13:15:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "Filed from on-device testing this session (LODGY-91/92/93/94's QA) - discovered while trying to onboard a normal paying tenant and finding Save unreachable. Raised High: this blocks the single most common warden action, onboarding a revenue tenant, on a real device."
+    },
+    {
+      "timestamp": "2026-09-18T13:20:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting. Confirmed the established scroll pattern in TenantProfileScreen.kt (.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) and applying the same to AgreementFormScreen.kt."
+    },
+    {
+      "timestamp": "2026-09-18T13:35:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "Built: AgreementFormScreen.kt now wraps its Column in .verticalScroll(rememberScrollState()), matching the exact pattern already used in TenantProfileScreen.kt (padding(padding) -> fillMaxSize() -> verticalScroll(rememberScrollState()) -> padding(16.dp)). Pure layout change - no field, validation, or save logic touched. 630+ existing tests unaffected (this was never something unit tests could catch - they query the semantics tree directly regardless of scroll position). Verified on-device (emulator-5554): onboarded a real revenue tenant (\"Scroll Fix\", Room 101 Bed A, non-revenue OFF) all the way through - filled rent/deposit/billing day/move-in date, scrolled past the warden/caretaker toggle to reach the optional dues-carried-forward field and Save & Move In, tapped it, and the tenancy was created successfully (confirmed Active in the Tenants list afterward with the correct room, phone, rent). Did not separately re-check non-revenue ON, since that path was never broken (it was the only reason the bug was discoverable at all) and the scroll modifier change is layout-only, identical for both."
+    }
+  ]
+}
