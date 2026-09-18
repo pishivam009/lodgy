@@ -233,6 +233,9 @@
     <string name="notify_overdue_title">Rent overdue</string>
     <string name="notify_overdue_text">%1$s still owes ₹%4$.0f for %2$d/%3$d.</string>
     <string name="notify_overdue_text_many">%1$d tenants owe rent, ₹%2$.0f in total.</string>
+    <string name="notify_due_soon_title">Rent due soon</string>
+    <string name="notify_due_soon_text">%1$s owes ₹%4$.0f for %2$d/%3$d, due soon.</string>
+    <string name="notify_due_soon_text_many">%1$d tenants have rent due soon, ₹%2$.0f in total.</string>
     <string name="notify_expense_title">Recurring expense coming up</string>
     <string name="notify_expense_text">%1$s (about ₹%2$.0f) is due around this time of month.</string>
     <string name="more_notifications">Notifications</string>
@@ -242,10 +245,16 @@
     <string name="notify_settings_threshold">Tell me after this many days</string>
     <string name="notify_settings_dues">Payments and expenses</string>
     <string name="notify_settings_dues_sub">Overdue rent, and recurring expenses coming round again.</string>
+    <string name="notify_settings_dues_advance">Also warn me before rent is due</string>
+    <string name="notify_settings_dues_advance_off">Off</string>
     <string name="notify_settings_permission">Android is blocking notifications for Lodgy. Turn them on in system settings to receive these.</string>
     <plurals name="notify_threshold_days">
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="notify_dues_advance_days">
+        <item quantity="one">%1$d day before</item>
+        <item quantity="other">%1$d days before</item>
     </plurals>
     <string name="packet_title">Printable records</string>
     <string name="packet_action">Printable records (PDF)</string>
@@ -363,6 +372,8 @@
     <string name="tenant_detail_emergency">Emergency contact</string>
     <string name="tenant_form_title_add">Tenant Profile</string>
     <string name="tenant_form_title_edit">Edit Tenant</string>
+    <string name="tenant_form_pick_existing">This is an existing tenant</string>
+    <string name="tenant_pick_existing_none">No active tenants to choose from.</string>
     <string name="tenant_field_photo">Photo</string>
     <string name="tenant_field_id_proof">ID Proof</string>
     <string name="tenant_field_name">Full name</string>
@@ -480,6 +491,11 @@
     <string name="dashboard_overdue_invoices">Overdue invoices</string>
     <string name="dashboard_vacant_beds">Vacant</string>
     <string name="dashboard_upcoming_move_outs">Upcoming move-outs</string>
+    <string name="dashboard_recovery_title">This month\'s recovery</string>
+    <string name="dashboard_recovery_expected">Expected</string>
+    <string name="dashboard_recovery_collected">Collected</string>
+    <string name="dashboard_recovery_percent">%1$d%% recovered</string>
+    <string name="dashboard_recovery_no_data">Nothing billed yet this month</string>
 
 
     <string name="more_title">More</string>
@@ -567,6 +583,10 @@
     <string name="monthly_report_dues">Total dues</string>
     <string name="monthly_report_occupancy">Occupancy</string>
     <string name="monthly_report_net_income">Income − expense</string>
+    <string name="monthly_report_expected_income">Expected income</string>
+    <string name="monthly_report_recovery_percent">Recovery</string>
+    <string name="monthly_report_recovery_value">%1$d%%</string>
+    <string name="monthly_report_recovery_no_data">Nothing expected this period</string>
     <string name="monthly_report_expense_line">Total expenses this period: ₹%1$.0f</string>
     <string name="dashboard_view_report">Monthly Report</string>
     <string name="monthly_report_export_action">Export CSV</string>

@@ -42,13 +42,16 @@ class CreditFormViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tenantId: String = checkNotNull(savedStateHandle["tenantId"])
+    private val bedId: String = checkNotNull(savedStateHandle["bedId"])
 
     private val _uiState = MutableStateFlow(CreditFormUiState())
     val uiState: StateFlow<CreditFormUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            val agreement = tenancyAgreementRepository.getLatestByTenantId(tenantId)
+            // Resolved by bed, not tenant - a tenant with several active tenancies must credit the
+            // one whose invoice this actually is (LODGY-101).
+            val agreement = tenancyAgreementRepository.getActiveByBedId(bedId)
             val openInvoices = agreement
                 ?.let { invoiceRepository.getByTenancyAgreementId(it.id).first() }
                 .orEmpty()

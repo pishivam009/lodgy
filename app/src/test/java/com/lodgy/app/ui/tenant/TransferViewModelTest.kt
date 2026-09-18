@@ -44,12 +44,15 @@ class TransferViewModelTest {
         active: TenancyAgreement? = agreement,
         options: List<VacantBedRow> = listOf(target),
     ): TransferViewModel {
-        coEvery { agreementRepository.getActiveByTenantId("t1") } returns active
+        coEvery { agreementRepository.getActiveByBedId("old-bed") } returns active
         coEvery { tenantRepository.getById("t1") } returns Tenant(id = "t1", name = "Ravi", phone = "1", photoPath = null, idProofPhotoPath = null, emergencyContactName = "", emergencyContactPhone = "", status = TenantStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
         coEvery { bedRepository.getLocation("old-bed") } returns BedLocation("101", "A")
         coEvery { bedRepository.getVacantBedsByHostel("h1") } returns options
         every { hostelPreferences.selectedHostelId } returns flowOf("h1")
-        return TransferViewModel(agreementRepository, tenantRepository, bedRepository, noteRepository, hostelPreferences, SavedStateHandle(mapOf("tenantId" to "t1")))
+        return TransferViewModel(
+            agreementRepository, tenantRepository, bedRepository, noteRepository, hostelPreferences,
+            SavedStateHandle(mapOf("tenantId" to "t1", "bedId" to "old-bed")),
+        )
     }
 
     private fun stubWrites() {

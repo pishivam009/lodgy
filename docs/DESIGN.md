@@ -305,6 +305,46 @@ Notes:
   gone missing falls back to the vacant behaviour rather than opening a
   profile that isn't there. The Tenants-tab route through the bed picker keeps
   working unchanged (LODGY-69).
+- **A tenant can hold more than one active agreement — genuinely, not just as
+  LODGY-87's workaround** (LODGY-101). A tenant renting two beds in different
+  rooms (a family, or extra storage) is a real case, and the schema already
+  allows it: `TenancyAgreement` is deliberately a separate table from `Tenant`
+  so a returning tenant gets a second row rather than overwriting the first
+  (`docs/DATA-MODEL.md`), and invoice generation already iterates every active
+  agreement independently rather than per tenant, so two beds under one tenant
+  bill correctly with no change. The gap was entirely in the read path:
+  `getActiveByTenantId` returns whichever ACTIVE row it finds first, which is
+  exactly the ambiguity LODGY-87 sidestepped by giving each marked room its
+  own tenant row instead of fixing the query. The real fix is to resolve by
+  bed, not tenant, wherever the action is inherently about one specific
+  tenancy — Checkout, Transfer, the manual invoice form and the forgone-rent
+  screen are all launched from a specific bed already, so they now carry
+  `bedId` through the nav route and resolve with the already-unambiguous
+  `getActiveByBedId`. The tenant profile screen is the one place genuinely
+  about the tenant rather than one bed, so it now lists every currently
+  active tenancy as its own section — bed, stay duration, and actions, scoped
+  to that tenancy — rather than collapsing to a single `.latest()` pick.
+  Onboarding a second bed for an existing tenant needed a real entry point:
+  the tenant form gained a search-and-pick step so the warden can attach a
+  new agreement to a tenant who already has one, instead of always creating a
+  new `Tenant` row. LODGY-87's workaround is left as-is — it already does the
+  right thing and touching working code to prove a point isn't worth the
+  risk — but the constraint that forced it no longer holds.
+- **"Growable screens scroll" needs checking per composable, not per file**
+  (LODGY-102). LODGY-97's audit grepped whole files for `verticalScroll` and
+  missed `PinLockScreen.kt` because that string appeared elsewhere in the
+  same file (`ForgotPinFlow`, further down) while the actual lock-screen
+  composable had the identical unreserved `Box`-overlay defect PinSetupScreen
+  was fixed for — "Forgot PIN?" sat directly under the keypad's first row and
+  was untappable by a normal touch, on any screen size, from a fresh install.
+  A first attempt at the fix (wrapping the informational content in
+  `weight(1f)` + `verticalScroll`, matching PinSetupScreen) was not enough on
+  its own: the content still overflowed the available space on an ordinary
+  screen and scrolled the link below the fold instead of covering it — the
+  actual fix moves any control that must always be reachable (here, "Forgot
+  PIN?") out of the scrollable informational region entirely and into a
+  fixed footer, the same principle as PinSetupScreen's Submit button never
+  being part of what scrolls.
 - **Past occupants** (LODGY-93). The same sheet lists everyone who has
   occupied the bed, current tenant excluded (already shown above as
   "Occupied by X"), most recent first, built live from `OccupancyPeriod` so a
@@ -472,8 +512,28 @@ Notes:
 - Home dashboard: today's collections, count of overdue invoices, vacant
   bed count, upcoming move-outs.
 - Vacant rooms/beds view, filterable by hostel/floor.
-- Monthly report per hostel: total collected, total dues, occupancy %,
-  income vs expense, expenses and credits for the period.
+- Monthly report per hostel: expected income, total collected, recovery %,
+  total dues, occupancy %, income vs expense, expenses and credits for the
+  period.
+- **"Expected income" for a period is `totalCollected + totalDues`, not a
+  separate query** (LODGY-99, LODGY-100). Both figures are already computed
+  per invoice for the period — `totalCollected` sums every payment against
+  those invoices regardless of status, `totalDues` sums what's still
+  outstanding on the non-PAID ones, net of credits — so together they equal
+  the period's full effective-amount-due with no new repository call needed.
+  **Recovery %** is `totalCollected / expectedIncome`, surfaced as `Int?`
+  rather than a raw `Int` so a period with nothing billed yet reads as
+  "nothing expected this period" instead of a misleading 0%. The dashboard's
+  "This month's recovery" tile computes the same figures scoped to the
+  current calendar month and whatever hostel filter is active, reusing this
+  definition rather than inventing a second one; the monthly report's export
+  and on-screen tiles are the other consumer. The identity holds exactly
+  absent overpayment — a status flips to `PAID` once `totalPaid >= due`
+  (nothing clamps or refunds the excess), so a warden who overpays an
+  invoice sees `expectedIncome` read slightly higher than what was actually
+  billed, by the overpaid amount. Not worth a separate query to close; caught
+  in LODGY-99's Tester pass and left as a known, bounded, self-correcting
+  edge case.
 - **Occupancy is a current-state figure, and the report says so** whenever
   the period being viewed has already closed. The schema keeps current bed
   rows and agreement history, not bed-state snapshots, so a past month's
@@ -910,7 +970,7 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Soft delete declined; delete stays permanent | Filtering every read across 15 DAOs to buy an undo a backup already provides — see 4.13 | LODGY-66 |
 | Confirmations on destructive actions and invisible-change updates only | A dialog on every edit trains wardens to dismiss dialogs unread | LODGY-65 |
 | Theme wraps content in a `Surface` | Without it no themed background is painted, so Scaffold-less screens break in dark mode only — see 4.12 | LODGY-32 |
-| Growable screens scroll | Clipped content reads as a missing feature, not a layout fault — see 4.12 | LODGY-34, LODGY-35, LODGY-96, LODGY-97 |
+| Growable screens scroll | Clipped content reads as a missing feature, not a layout fault — see 4.12 | LODGY-34, LODGY-35, LODGY-96, LODGY-97, LODGY-102 |
 | UI state comes from observed queries | A one-shot read in `init` cannot see later writes, so labels went stale — see 4.12 | LODGY-33 |
 | Reconciliation marks match on hostel *and* period | The invoice list spans every property; period alone would flag the wrong hostel's invoices | LODGY-43 |
 | `moveOutDate` is read together with agreement status | The field means notice on an ACTIVE agreement and departure on a CLOSED one (3); the printable packet read it without the status and told the warden a current resident had left | LODGY-45 |

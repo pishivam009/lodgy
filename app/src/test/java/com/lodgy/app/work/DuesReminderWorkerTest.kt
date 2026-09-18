@@ -58,6 +58,7 @@ class DuesReminderWorkerTest {
     @Before
     fun setUp() {
         every { preferences.duesEnabled } returns flowOf(true)
+        every { preferences.duesAdvanceThresholdDays } returns flowOf(0)
         every { invoiceRepository.getAll() } returns flowOf(emptyList())
         coEvery { expenseRepository.getAll() } returns emptyList()
         coEvery { paymentRepository.getTotalPaid(any()) } returns 0.0
@@ -154,5 +155,48 @@ class DuesReminderWorkerTest {
         worker().doWork()
 
         verify(exactly = 1) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    /** LODGY-98: off by default (stubbed to 0 in setUp), so this behavior only fires once a
+     *  warden opts in, and never as a surprise on upgrade. */
+    @Test
+    fun `advance threshold at 0 (the default) never posts a due-soon nudge`() = runTest {
+        every { invoiceRepository.getAll() } returns flowOf(listOf(invoice("inv-1", tomorrow)))
+
+        worker().doWork()
+
+        coVerify(exactly = 0) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `an invoice due within the configured advance window is nudged ahead of time`() = runTest {
+        every { preferences.duesAdvanceThresholdDays } returns flowOf(2)
+        every { invoiceRepository.getAll() } returns flowOf(listOf(invoice("inv-1", tomorrow)))
+
+        worker().doWork()
+
+        coVerify { notifications.post(CHANNEL_DUES, any(), any(), any(), routeToRecordPayment("inv-1")) }
+    }
+
+    @Test
+    fun `an already-overdue invoice is not double-counted as due-soon`() = runTest {
+        every { preferences.duesAdvanceThresholdDays } returns flowOf(2)
+        every { invoiceRepository.getAll() } returns flowOf(listOf(invoice("inv-1", yesterday)))
+
+        worker().doWork()
+
+        // One post for the overdue path, none for the due-soon path re-flagging the same invoice.
+        verify(exactly = 1) { notifications.post(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `an invoice due further out than the configured window is left alone`() = runTest {
+        every { preferences.duesAdvanceThresholdDays } returns flowOf(1)
+        val farOut = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(5)
+        every { invoiceRepository.getAll() } returns flowOf(listOf(invoice("inv-1", farOut)))
+
+        worker().doWork()
+
+        coVerify(exactly = 0) { notifications.post(any(), any(), any(), any(), any()) }
     }
 }

@@ -45,7 +45,7 @@ class MultiPeriodPaymentViewModelTest {
 
     @Before
     fun setUp() {
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns agreement
+        coEvery { agreementRepository.getActiveByBedId("b1") } returns agreement
         coEvery { tenantRepository.getById("t1") } returns Tenant(id = "t1", name = "Ravi", phone = "1", photoPath = null, idProofPhotoPath = null, emergencyContactName = "", emergencyContactPhone = "", status = TenantStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
         coEvery { creditRepository.getByInvoiceId(any()) } returns emptyList()
         coEvery { paymentRepository.getTotalPaid(any()) } returns 0.0
@@ -57,7 +57,7 @@ class MultiPeriodPaymentViewModelTest {
         every { invoiceRepository.getByTenancyAgreementId("a1") } returns flowOf(invoices)
         return MultiPeriodPaymentViewModel(
             invoiceRepository, paymentRepository, creditRepository, agreementRepository, tenantRepository,
-            SavedStateHandle(mapOf("tenantId" to "t1")),
+            SavedStateHandle(mapOf("tenantId" to "t1", "bedId" to "b1")),
         )
     }
 

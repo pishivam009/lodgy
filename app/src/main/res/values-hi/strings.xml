@@ -229,6 +229,9 @@
     <string name="notify_overdue_title">किराया बकाया</string>
     <string name="notify_overdue_text">%1$s पर %2$d/%3$d का ₹%4$.0f बाकी है।</string>
     <string name="notify_overdue_text_many">%1$d किरायेदारों पर किराया बकाया है, कुल ₹%2$.0f।</string>
+    <string name="notify_due_soon_title">किराया जल्द देय है</string>
+    <string name="notify_due_soon_text">%1$s पर %2$d/%3$d के लिए ₹%4$.0f जल्द देय है।</string>
+    <string name="notify_due_soon_text_many">%1$d किरायेदारों का किराया जल्द देय है, कुल ₹%2$.0f।</string>
     <string name="notify_expense_title">हर महीने का ख़र्च आने वाला है</string>
     <string name="notify_expense_text">%1$s (लगभग ₹%2$.0f) महीने के इसी समय आता है।</string>
     <string name="more_notifications">सूचनाएँ</string>
@@ -238,10 +241,16 @@
     <string name="notify_settings_threshold">इतने दिन बाद बताएँ</string>
     <string name="notify_settings_dues">भुगतान और ख़र्च</string>
     <string name="notify_settings_dues_sub">बकाया किराया, और हर महीने आने वाले ख़र्च।</string>
+    <string name="notify_settings_dues_advance">किराया देय होने से पहले भी बताएँ</string>
+    <string name="notify_settings_dues_advance_off">बंद</string>
     <string name="notify_settings_permission">Android ने Lodgy की सूचनाएँ रोकी हुई हैं। इन्हें पाने के लिए सिस्टम सेटिंग्स में चालू करें।</string>
     <plurals name="notify_threshold_days">
         <item quantity="one">%1$d दिन</item>
         <item quantity="other">%1$d दिन</item>
+    </plurals>
+    <plurals name="notify_dues_advance_days">
+        <item quantity="one">%1$d दिन पहले</item>
+        <item quantity="other">%1$d दिन पहले</item>
     </plurals>
     <string name="packet_title">छपाई योग्य रिकॉर्ड</string>
     <string name="packet_action">छपाई योग्य रिकॉर्ड (PDF)</string>
@@ -359,6 +368,8 @@
     <string name="tenant_detail_emergency">आपातकालीन संपर्क</string>
     <string name="tenant_form_title_add">किरायेदार प्रोफ़ाइल</string>
     <string name="tenant_form_title_edit">किरायेदार बदलें</string>
+    <string name="tenant_form_pick_existing">यह पहले से मौजूद किरायेदार है</string>
+    <string name="tenant_pick_existing_none">चुनने के लिए कोई सक्रिय किरायेदार नहीं है।</string>
     <string name="tenant_field_photo">फोटो</string>
     <string name="tenant_field_id_proof">पहचान प्रमाण</string>
     <string name="tenant_field_name">पूरा नाम</string>
@@ -472,6 +483,11 @@
     <string name="dashboard_overdue_invoices">बकाया इनवॉइस</string>
     <string name="dashboard_vacant_beds">खाली</string>
     <string name="dashboard_upcoming_move_outs">आने वाले मूव-आउट</string>
+    <string name="dashboard_recovery_title">इस माह की वसूली</string>
+    <string name="dashboard_recovery_expected">अपेक्षित</string>
+    <string name="dashboard_recovery_collected">वसूल हुआ</string>
+    <string name="dashboard_recovery_percent">%1$d%% वसूल हुआ</string>
+    <string name="dashboard_recovery_no_data">इस माह अभी तक कोई बिल नहीं बना</string>
 
 
     <string name="more_title">और</string>
@@ -556,6 +572,10 @@
     <string name="monthly_report_dues">कुल बकाया</string>
     <string name="monthly_report_occupancy">ऑक्यूपेंसी</string>
     <string name="monthly_report_net_income">आय − खर्च</string>
+    <string name="monthly_report_expected_income">अपेक्षित आय</string>
+    <string name="monthly_report_recovery_percent">वसूली</string>
+    <string name="monthly_report_recovery_value">%1$d%%</string>
+    <string name="monthly_report_recovery_no_data">इस अवधि में कुछ भी अपेक्षित नहीं</string>
     <string name="monthly_report_expense_line">इस अवधि का कुल खर्च: ₹%1$.0f</string>
     <string name="dashboard_view_report">मासिक रिपोर्ट</string>
     <string name="monthly_report_export_action">CSV एक्सपोर्ट करें</string>

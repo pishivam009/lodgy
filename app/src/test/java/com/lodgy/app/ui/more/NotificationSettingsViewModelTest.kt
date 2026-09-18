@@ -26,11 +26,13 @@ class NotificationSettingsViewModelTest {
         vacancy: Boolean = true,
         dues: Boolean = true,
         threshold: Int = 7,
+        duesAdvanceThreshold: Int = 0,
         canPost: Boolean = true,
     ): NotificationSettingsViewModel {
         every { preferences.vacancyEnabled } returns flowOf(vacancy)
         every { preferences.duesEnabled } returns flowOf(dues)
         every { preferences.vacancyThresholdDays } returns flowOf(threshold)
+        every { preferences.duesAdvanceThresholdDays } returns flowOf(duesAdvanceThreshold)
         every { notifications.canPost() } returns canPost
         return NotificationSettingsViewModel(preferences, notifications)
     }
@@ -73,5 +75,23 @@ class NotificationSettingsViewModelTest {
 
         viewModel.onThresholdChange(2)
         coVerify { preferences.setVacancyThresholdDays(2) }
+    }
+
+    /** LODGY-98: off (0) is a real option alongside 1-3 days, not a separate switch. */
+    @Test
+    fun `dues advance threshold defaults to off and includes it as an option`() {
+        val viewModel = viewModel(duesAdvanceThreshold = 0)
+
+        assertEquals(listOf(0, 1, 2, 3), viewModel.uiState.value.duesAdvanceOptions)
+        assertEquals(0, viewModel.uiState.value.duesAdvanceThresholdDays)
+    }
+
+    @Test
+    fun `changing the dues advance threshold persists it`() {
+        coEvery { preferences.setDuesAdvanceThresholdDays(any()) } returns Unit
+
+        viewModel().onDuesAdvanceThresholdChange(2)
+
+        coVerify { preferences.setDuesAdvanceThresholdDays(2) }
     }
 }

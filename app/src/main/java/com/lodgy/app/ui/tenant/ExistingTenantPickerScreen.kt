@@ -1,4 +1,4 @@
-package com.lodgy.app.ui.payment
+package com.lodgy.app.ui.tenant
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,32 +24,32 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
-import com.lodgy.app.ui.common.label
+import com.lodgy.app.data.entity.Tenant
 import com.lodgy.app.ui.icons.CommonIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ManualInvoiceTenantPickerScreen(
+fun ExistingTenantPickerScreen(
     onBack: () -> Unit,
-    onTenancySelected: (ManualInvoiceTenantRow) -> Unit,
-    viewModel: ManualInvoiceTenantPickerViewModel = hiltViewModel(),
+    onTenantSelected: (Tenant) -> Unit,
+    viewModel: ExistingTenantPickerViewModel = hiltViewModel(),
 ) {
-    val rows by viewModel.rows.collectAsStateWithLifecycle()
+    val tenants by viewModel.activeTenants.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.manual_invoice_pick_tenant_title)) },
+                title = { Text(stringResource(R.string.tenant_form_pick_existing)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(CommonIcons.Back, contentDescription = null) }
                 },
             )
         },
     ) { padding ->
-        if (rows.isEmpty()) {
+        if (tenants.isEmpty()) {
             Box(modifier = Modifier.padding(padding).fillMaxWidth().padding(32.dp)) {
                 Text(
-                    stringResource(R.string.manual_invoice_no_active_tenants),
+                    stringResource(R.string.tenant_pick_existing_none),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -60,14 +60,12 @@ fun ManualInvoiceTenantPickerScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.padding(padding),
             ) {
-                items(rows, key = { it.bedId }) { row ->
-                    Card(onClick = { onTenancySelected(row) }, modifier = Modifier.fillMaxWidth()) {
+                items(tenants, key = Tenant::id) { tenant ->
+                    Card(onClick = { onTenantSelected(tenant) }, modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(14.dp)) {
-                            Text(row.tenantName, style = MaterialTheme.typography.titleMedium)
-                            // Shown even for a tenant with only one bed - free, and consistent
-                            // rather than appearing only once it starts mattering (LODGY-101).
+                            Text(tenant.name, style = MaterialTheme.typography.titleMedium)
                             Text(
-                                row.location?.label().orEmpty(),
+                                tenant.phone,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

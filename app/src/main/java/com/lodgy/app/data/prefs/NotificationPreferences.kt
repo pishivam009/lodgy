@@ -17,6 +17,7 @@ class NotificationPreferences @Inject constructor(@ApplicationContext private va
     private val vacancyEnabledKey = booleanPreferencesKey("vacancy_enabled")
     private val duesEnabledKey = booleanPreferencesKey("dues_enabled")
     private val vacancyThresholdKey = intPreferencesKey("vacancy_threshold_days")
+    private val duesAdvanceThresholdKey = intPreferencesKey("dues_advance_threshold_days")
     private val notifiedBedIdsKey = stringSetPreferencesKey("notified_bed_ids")
 
     val vacancyEnabled: Flow<Boolean> =
@@ -29,6 +30,14 @@ class NotificationPreferences @Inject constructor(@ApplicationContext private va
     /** Warden-set, not a constant. Clamped so a stray value can never disable or spam the check. */
     val vacancyThresholdDays: Flow<Int> = context.notificationDataStore.data.map {
         (it[vacancyThresholdKey] ?: DEFAULT_VACANCY_THRESHOLD_DAYS).coerceIn(MIN_THRESHOLD_DAYS, MAX_THRESHOLD_DAYS)
+    }
+
+    /** 0 (the default) means off - only the existing after-the-fact overdue check runs, so
+     *  upgrading changes nothing until the warden opts in (LODGY-98). Clamped for the same reason
+     *  as [vacancyThresholdDays]. */
+    val duesAdvanceThresholdDays: Flow<Int> = context.notificationDataStore.data.map {
+        (it[duesAdvanceThresholdKey] ?: DEFAULT_DUES_ADVANCE_THRESHOLD_DAYS)
+            .coerceIn(MIN_DUES_ADVANCE_THRESHOLD_DAYS, MAX_THRESHOLD_DAYS)
     }
 
     /** Beds already nudged about, so a still-vacant bed is reported once rather than daily. */
@@ -49,6 +58,12 @@ class NotificationPreferences @Inject constructor(@ApplicationContext private va
         }
     }
 
+    suspend fun setDuesAdvanceThresholdDays(days: Int) {
+        context.notificationDataStore.edit {
+            it[duesAdvanceThresholdKey] = days.coerceIn(MIN_DUES_ADVANCE_THRESHOLD_DAYS, MAX_THRESHOLD_DAYS)
+        }
+    }
+
     suspend fun setNotifiedBedIds(ids: Set<String>) {
         context.notificationDataStore.edit { it[notifiedBedIdsKey] = ids }
     }
@@ -60,5 +75,10 @@ class NotificationPreferences @Inject constructor(@ApplicationContext private va
         const val DEFAULT_VACANCY_THRESHOLD_DAYS = 3
         const val MIN_THRESHOLD_DAYS = 1
         const val MAX_THRESHOLD_DAYS = 3
+
+        // 0 is a valid, distinct option from vacancy's threshold - "off", matching the existing
+        // after-the-fact-only behavior so nobody gets a new notification they didn't ask for.
+        const val DEFAULT_DUES_ADVANCE_THRESHOLD_DAYS = 0
+        const val MIN_DUES_ADVANCE_THRESHOLD_DAYS = 0
     }
 }

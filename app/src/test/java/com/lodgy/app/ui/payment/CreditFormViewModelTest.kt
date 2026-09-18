@@ -40,9 +40,12 @@ class CreditFormViewModelTest {
 
     private fun viewModel(invoices: List<Invoice> = emptyList()): CreditFormViewModel {
         coEvery { tenantRepository.getById("t1") } returns Tenant(id = "t1", name = "Ravi", phone = "1", photoPath = null, idProofPhotoPath = null, emergencyContactName = "", emergencyContactPhone = "", status = TenantStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
-        coEvery { agreementRepository.getLatestByTenantId("t1") } returns agreement
+        coEvery { agreementRepository.getActiveByBedId("b1") } returns agreement
         every { invoiceRepository.getByTenancyAgreementId("a1") } returns flowOf(invoices)
-        return CreditFormViewModel(creditRepository, tenantRepository, agreementRepository, invoiceRepository, SavedStateHandle(mapOf("tenantId" to "t1")))
+        return CreditFormViewModel(
+            creditRepository, tenantRepository, agreementRepository, invoiceRepository,
+            SavedStateHandle(mapOf("tenantId" to "t1", "bedId" to "b1")),
+        )
     }
 
     @Test

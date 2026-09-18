@@ -24,6 +24,7 @@ import com.lodgy.app.notify.startOfDay
 import com.lodgy.app.ui.common.labelRes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.first
 
 /** Daily check for invoices that have gone overdue and recurring expenses coming round again. */
@@ -46,6 +47,7 @@ class DuesReminderWorker @AssistedInject constructor(
 
         val now = System.currentTimeMillis()
         notifyOverdueInvoices(now)
+        notifyDueSoonInvoices(now)
         notifyRecurringExpenses(now)
         return Result.success()
     }
@@ -104,6 +106,61 @@ class DuesReminderWorker @AssistedInject constructor(
         }
     }
 
+    /** LODGY-98: the warden-configured advance warning, separate from [notifyOverdueInvoices]'s
+     *  after-the-fact check. 0 (the default) means off - nobody gets a new notification they
+     *  didn't ask for just by upgrading. */
+    private suspend fun notifyDueSoonInvoices(now: Long) {
+        val advanceDays = notificationPreferences.duesAdvanceThresholdDays.first()
+        if (advanceDays <= 0) return
+
+        val context = applicationContext
+        val today = startOfDay(now)
+        val windowEnd = today + TimeUnit.DAYS.toMillis(advanceDays.toLong())
+
+        val dueSoon = invoiceRepository.getAll().first()
+            .filter { it.status != InvoiceStatus.PAID && it.dueDate >= today && it.dueDate <= windowEnd }
+            .mapNotNull { invoice ->
+                val credits = creditRepository.getByInvoiceId(invoice.id).sumOf { it.amount }
+                val outstanding = effectiveAmountDue(invoice.amountDue, credits) -
+                    paymentRepository.getTotalPaid(invoice.id)
+                if (outstanding <= 0.0) return@mapNotNull null
+                invoice to outstanding
+            }
+
+        if (dueSoon.isEmpty()) return
+
+        if (dueSoon.size == 1) {
+            val (invoice, outstanding) = dueSoon.first()
+            val agreement = tenancyAgreementRepository.getById(invoice.tenancyAgreementId)
+            val tenantName = agreement?.let { tenantRepository.getById(it.tenantId)?.name }.orEmpty()
+            notifications.post(
+                channelId = CHANNEL_DUES,
+                notificationId = DUE_SOON_SUMMARY_NOTIFICATION_ID,
+                title = context.getString(R.string.notify_due_soon_title),
+                text = context.getString(
+                    R.string.notify_due_soon_text,
+                    tenantName,
+                    invoice.periodMonth,
+                    invoice.periodYear,
+                    outstanding,
+                ),
+                route = routeToRecordPayment(invoice.id),
+            )
+        } else {
+            notifications.post(
+                channelId = CHANNEL_DUES,
+                notificationId = DUE_SOON_SUMMARY_NOTIFICATION_ID,
+                title = context.getString(R.string.notify_due_soon_title),
+                text = context.getString(
+                    R.string.notify_due_soon_text_many,
+                    dueSoon.size,
+                    dueSoon.sumOf { it.second },
+                ),
+                route = ROUTE_INVOICE_LIST,
+            )
+        }
+    }
+
     private suspend fun notifyRecurringExpenses(now: Long) {
         val context = applicationContext
 
@@ -128,3 +185,7 @@ class DuesReminderWorker @AssistedInject constructor(
 /** Fixed id so a later run replaces the previous summary rather than stacking another one.
  *  A literal rather than a hash so it cannot collide with a per-record id derived from a UUID. */
 private const val OVERDUE_SUMMARY_NOTIFICATION_ID = 1_000_103
+
+/** Separate from [OVERDUE_SUMMARY_NOTIFICATION_ID] so a due-soon nudge and an overdue nudge never
+ *  overwrite each other - a tenant can be in both lists across different invoices in one run. */
+private const val DUE_SOON_SUMMARY_NOTIFICATION_ID = 1_000_104

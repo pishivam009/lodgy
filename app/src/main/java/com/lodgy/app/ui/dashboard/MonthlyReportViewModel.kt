@@ -42,6 +42,16 @@ data class MonthlyReportUiState(
 ) {
     val netIncome: Double get() = totalCollected - totalExpense
 
+    /** The period's billed total net of credits: totalCollected (already-paid) plus totalDues
+     *  (still-outstanding) sums to exactly the effective amount due across every invoice for the
+     *  period, with no separate query needed - see LODGY-99/100's DESIGN.md note. */
+    val expectedIncome: Double get() = totalCollected + totalDues
+
+    /** Null rather than 0%/100% when nothing was billed this period - a real 0% reads as "nobody
+     *  paid", which is a different, misleading claim (LODGY-99). */
+    val recoveryPercent: Int?
+        get() = if (expectedIncome <= 0.0) null else ((totalCollected / expectedIncome) * 100).toInt()
+
     /** Occupancy is measured off the hostel's beds as they stand right now - the schema keeps no
      *  bed-state history to reconstruct a past month from (LODGY-52). Say so when the warden is
      *  looking at a period that has already closed, rather than letting the figure read as

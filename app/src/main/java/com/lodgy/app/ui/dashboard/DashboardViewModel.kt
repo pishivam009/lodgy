@@ -6,12 +6,14 @@ import com.lodgy.app.backup.AutoBackup
 import com.lodgy.app.backup.BackupHealth
 import com.lodgy.app.backup.backupHealth
 import com.lodgy.app.data.isOverdue
+import com.lodgy.app.data.effectiveAmountDue
 import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.BedStatus
 import com.lodgy.app.data.entity.InvoiceStatus
 import com.lodgy.app.data.prefs.BackupPreferences
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.data.repository.InvoiceRepository
@@ -49,6 +51,10 @@ data class DashboardUiState(
     val filterHostelId: String? = null,
     val hostels: List<HostelOption> = emptyList(),
     val todaysCollections: Double = 0.0,
+    /** This calendar month's billed total, net of credits, across every invoice raised for it -
+     *  the denominator for [recoveryPercent]. Not the same figure as [todaysCollections]. */
+    val monthlyExpectedIncome: Double = 0.0,
+    val monthlyCollected: Double = 0.0,
     val overdueInvoiceCount: Int = 0,
     val vacantBedCount: Int = 0,
     val upcomingMoveOuts: List<UpcomingMoveOut> = emptyList(),
@@ -63,6 +69,11 @@ data class DashboardUiState(
 
     /** A configured folder is what turns the one-tap icon into "back up now" rather than "set up". */
     val backupConfigured: Boolean get() = backupHealth != BackupHealth.NOT_CONFIGURED
+
+    /** Null rather than 0 or 100 when nothing was expected this month (e.g. no active tenancies
+     *  yet) - a real 0% reads as "nobody paid", which is a different, misleading claim. */
+    val recoveryPercent: Int?
+        get() = if (monthlyExpectedIncome <= 0.0) null else ((monthlyCollected / monthlyExpectedIncome) * 100).toInt()
 }
 
 @HiltViewModel
@@ -75,6 +86,7 @@ class DashboardViewModel @Inject constructor(
     private val tenancyAgreementRepository: TenancyAgreementRepository,
     private val invoiceRepository: InvoiceRepository,
     private val paymentRepository: PaymentRepository,
+    private val creditRepository: CreditRepository,
     private val tenantRepository: TenantRepository,
     private val backupPreferences: BackupPreferences,
     private val autoBackup: AutoBackup,
@@ -171,6 +183,21 @@ class DashboardViewModel @Inject constructor(
             .filter { it.invoiceId in invoiceIdsInHostel && isSameDay(it.paidOn, now) }
             .sumOf { it.amount }
 
+        val currentMonth = now.get(Calendar.MONTH) + 1
+        val currentYear = now.get(Calendar.YEAR)
+        val invoicesThisMonth = invoicesInHostel
+            .filter { it.periodMonth == currentMonth && it.periodYear == currentYear }
+        val invoiceIdsThisMonth = invoicesThisMonth.map { it.id }.toSet()
+        val creditsByInvoiceThisMonth = creditRepository.getAllOnce()
+            .filter { it.invoiceId in invoiceIdsThisMonth }
+            .groupBy { it.invoiceId }
+        val monthlyExpectedIncome = invoicesThisMonth.sumOf { invoice ->
+            effectiveAmountDue(invoice.amountDue, creditsByInvoiceThisMonth[invoice.id].orEmpty().sumOf { it.amount })
+        }
+        val monthlyCollected = allPayments
+            .filter { it.invoiceId in invoiceIdsThisMonth }
+            .sumOf { it.amount }
+
         val upcomingMoveOuts = agreementsInHostel
             .filter { it.status == AgreementStatus.ACTIVE && it.moveOutDate != null && it.moveOutDate > now.timeInMillis }
             .sortedBy { it.moveOutDate }
@@ -188,6 +215,8 @@ class DashboardViewModel @Inject constructor(
                 hasActiveHostel = allHostels.isNotEmpty(),
                 hostels = hostelOptions,
                 todaysCollections = todaysCollections,
+                monthlyExpectedIncome = monthlyExpectedIncome,
+                monthlyCollected = monthlyCollected,
                 overdueInvoiceCount = overdueCount,
                 vacantBedCount = vacantBedCount,
                 upcomingMoveOuts = upcomingMoveOuts,

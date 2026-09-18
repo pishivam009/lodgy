@@ -127,6 +127,12 @@ fun DashboardScreen(
                 items(tiles) { tile -> StatCard(tile) }
             }
 
+            RecoveryTile(
+                expected = uiState.monthlyExpectedIncome,
+                collected = uiState.monthlyCollected,
+                recoveryPercent = uiState.recoveryPercent,
+            )
+
             BackupTile(
                 health = uiState.backupHealth,
                 lastBackupTime = uiState.lastBackupTime,
@@ -246,6 +252,53 @@ private fun BackupTile(
                         ),
                         tint = palette.onContainer,
                     )
+                }
+            }
+        }
+    }
+}
+
+/** Expected vs. collected for the current calendar month, with the recovery percentage that's the
+ *  actual number a warden reconciling the month wants - not two totals they have to divide
+ *  themselves (LODGY-100). */
+@Composable
+private fun RecoveryTile(expected: Double, collected: Double, recoveryPercent: Int?) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(R.string.dashboard_recovery_title), style = MaterialTheme.typography.titleSmall)
+                if (recoveryPercent != null) {
+                    Text(
+                        stringResource(R.string.dashboard_recovery_percent, recoveryPercent),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            if (recoveryPercent == null) {
+                Text(
+                    stringResource(R.string.dashboard_recovery_no_data),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column {
+                        Text(
+                            stringResource(R.string.dashboard_recovery_expected),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(stringResource(R.string.currency_amount, expected), style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Column {
+                        Text(
+                            stringResource(R.string.dashboard_recovery_collected),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(stringResource(R.string.currency_amount, collected), style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
         }

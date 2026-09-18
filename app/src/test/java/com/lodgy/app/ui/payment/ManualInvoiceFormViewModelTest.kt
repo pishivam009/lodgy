@@ -31,13 +31,13 @@ class ManualInvoiceFormViewModelTest {
     private val agreement = TenancyAgreement(id = "a1", tenantId = "t1", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = null, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
 
     private fun viewModel() = ManualInvoiceFormViewModel(
-        invoiceRepository, tenancyAgreementRepository, tenantRepository, SavedStateHandle(mapOf("tenantId" to "t1")),
+        invoiceRepository, tenancyAgreementRepository, tenantRepository, SavedStateHandle(mapOf("tenantId" to "t1", "bedId" to "b1")),
     )
 
     @Test
     fun `no active agreement disables saving and shows an empty amount`() {
         coEvery { tenantRepository.getById("t1") } returns tenant
-        coEvery { tenancyAgreementRepository.getActiveByTenantId("t1") } returns null
+        coEvery { tenancyAgreementRepository.getActiveByBedId("b1") } returns null
 
         val state = viewModel().uiState.value
 
@@ -50,7 +50,7 @@ class ManualInvoiceFormViewModelTest {
     @Test
     fun `an active agreement prefills the agreed rent as the amount due`() {
         coEvery { tenantRepository.getById("t1") } returns tenant
-        coEvery { tenancyAgreementRepository.getActiveByTenantId("t1") } returns agreement
+        coEvery { tenancyAgreementRepository.getActiveByBedId("b1") } returns agreement
 
         val state = viewModel().uiState.value
 
@@ -61,7 +61,7 @@ class ManualInvoiceFormViewModelTest {
     @Test
     fun `canSave requires a month between 1 and 12, a year, and a numeric amount`() {
         coEvery { tenantRepository.getById("t1") } returns tenant
-        coEvery { tenancyAgreementRepository.getActiveByTenantId("t1") } returns agreement
+        coEvery { tenancyAgreementRepository.getActiveByBedId("b1") } returns agreement
         val viewModel = viewModel()
 
         viewModel.onPeriodMonthChange("13")
@@ -76,7 +76,7 @@ class ManualInvoiceFormViewModelTest {
     @Test
     fun `save flags a duplicate error instead of creating a second invoice for the same period`() {
         coEvery { tenantRepository.getById("t1") } returns tenant
-        coEvery { tenancyAgreementRepository.getActiveByTenantId("t1") } returns agreement
+        coEvery { tenancyAgreementRepository.getActiveByBedId("b1") } returns agreement
         coEvery { invoiceRepository.existsForPeriod("a1", 9, 2026) } returns true
 
         val viewModel = viewModel()
@@ -92,7 +92,7 @@ class ManualInvoiceFormViewModelTest {
     @Test
     fun `save creates the invoice when the period isn't already billed`() {
         coEvery { tenantRepository.getById("t1") } returns tenant
-        coEvery { tenancyAgreementRepository.getActiveByTenantId("t1") } returns agreement
+        coEvery { tenancyAgreementRepository.getActiveByBedId("b1") } returns agreement
         coEvery { invoiceRepository.existsForPeriod("a1", 9, 2026) } returns false
         coEvery { invoiceRepository.create("a1", 9, 2026, 5000.0, any()) } returns mockk()
 
@@ -109,7 +109,7 @@ class ManualInvoiceFormViewModelTest {
     @Test
     fun `save does nothing without an active agreement`() {
         coEvery { tenantRepository.getById("t1") } returns tenant
-        coEvery { tenancyAgreementRepository.getActiveByTenantId("t1") } returns null
+        coEvery { tenancyAgreementRepository.getActiveByBedId("b1") } returns null
 
         val viewModel = viewModel()
         viewModel.onPeriodMonthChange("9")
@@ -123,7 +123,7 @@ class ManualInvoiceFormViewModelTest {
     @Test
     fun `changing the period clears any prior duplicate error`() {
         coEvery { tenantRepository.getById("t1") } returns tenant
-        coEvery { tenancyAgreementRepository.getActiveByTenantId("t1") } returns agreement
+        coEvery { tenancyAgreementRepository.getActiveByBedId("b1") } returns agreement
         coEvery { invoiceRepository.existsForPeriod("a1", 9, 2026) } returns true
 
         val viewModel = viewModel()

@@ -46,10 +46,10 @@ class ForgoneRentViewModelTest {
     )
 
     private fun viewModel(active: TenancyAgreement? = agreement()): ForgoneRentViewModel {
-        coEvery { agreementRepository.getActiveByTenantId("t1") } returns active
+        coEvery { agreementRepository.getActiveByBedId("b1") } returns active
         coEvery { bedRepository.getRoomPrice("b1") } returns 6000.0
         return ForgoneRentViewModel(
-            agreementRepository, bedRepository, SavedStateHandle(mapOf("tenantId" to "t1")),
+            agreementRepository, bedRepository, SavedStateHandle(mapOf("tenantId" to "t1", "bedId" to "b1")),
         )
     }
 

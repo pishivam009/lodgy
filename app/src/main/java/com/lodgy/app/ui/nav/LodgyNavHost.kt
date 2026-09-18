@@ -55,6 +55,7 @@ import com.lodgy.app.ui.payment.ReminderScreen
 import com.lodgy.app.ui.tenant.AgreementFormScreen
 import com.lodgy.app.ui.tenant.BedPickerScreen
 import com.lodgy.app.ui.tenant.CheckoutScreen
+import com.lodgy.app.ui.tenant.ExistingTenantPickerScreen
 import com.lodgy.app.ui.tenant.ForgoneRentScreen
 import com.lodgy.app.ui.tenant.TenantDirectoryScreen
 import com.lodgy.app.ui.tenant.TenantFormScreen
@@ -74,6 +75,7 @@ private const val TENANT_FORM_ROUTE = "tenant_form"
 private const val TENANT_FORM_ROUTE_PATTERN =
     "$TENANT_FORM_ROUTE?tenantId={tenantId}&bedId={bedId}"
 private const val TENANT_PROFILE_ROUTE = "tenant_profile"
+private const val EXISTING_TENANT_PICKER_ROUTE = "existing_tenant_picker"
 private const val AGREEMENT_FORM_ROUTE = "agreement_form"
 private const val CHECKOUT_ROUTE = "checkout"
 private const val TRANSFER_ROUTE = "transfer"
@@ -324,6 +326,24 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                         }
                     },
                     onBack = { navController.popBackStack() },
+                    onPickExisting = {
+                        if (bedId != null) navController.navigate("$EXISTING_TENANT_PICKER_ROUTE/$bedId")
+                    },
+                )
+            }
+
+            composable(
+                route = "$EXISTING_TENANT_PICKER_ROUTE/{bedId}",
+                arguments = listOf(navArgument("bedId") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val bedId = checkNotNull(backStackEntry.arguments?.getString("bedId"))
+                ExistingTenantPickerScreen(
+                    onBack = { navController.popBackStack() },
+                    // Same unwind as a brand-new tenant's onDone above - skip straight to Agreement
+                    // Terms for this bed, no need to re-collect a profile that already exists.
+                    onTenantSelected = { tenant ->
+                        navController.navigate("$AGREEMENT_FORM_ROUTE/$bedId/${tenant.id}")
+                    },
                 )
             }
 
@@ -334,11 +354,13 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                 TenantProfileScreen(
                     onBack = { navController.popBackStack() },
                     onEdit = { tenantId -> navController.navigate("$TENANT_FORM_ROUTE?tenantId=$tenantId") },
-                    onCheckout = { tenantId -> navController.navigate("$CHECKOUT_ROUTE/$tenantId") },
-                    onTransfer = { tenantId -> navController.navigate("$TRANSFER_ROUTE/$tenantId") },
-                    onForgoneRent = { tenantId -> navController.navigate("$FORGONE_RENT_ROUTE/$tenantId") },
-                    onRecordCredit = { tenantId -> navController.navigate("$CREDIT_FORM_ROUTE/$tenantId") },
-                    onPaySeveralMonths = { tenantId -> navController.navigate("$MULTI_PERIOD_PAYMENT_ROUTE/$tenantId") },
+                    onCheckout = { tenantId, bedId -> navController.navigate("$CHECKOUT_ROUTE/$tenantId/$bedId") },
+                    onTransfer = { tenantId, bedId -> navController.navigate("$TRANSFER_ROUTE/$tenantId/$bedId") },
+                    onForgoneRent = { tenantId, bedId -> navController.navigate("$FORGONE_RENT_ROUTE/$tenantId/$bedId") },
+                    onRecordCredit = { tenantId, bedId -> navController.navigate("$CREDIT_FORM_ROUTE/$tenantId/$bedId") },
+                    onPaySeveralMonths = { tenantId, bedId ->
+                        navController.navigate("$MULTI_PERIOD_PAYMENT_ROUTE/$tenantId/$bedId")
+                    },
                     onOpenNotes = { tenantId -> navController.navigate("$NOTES_TIMELINE_ROUTE/$tenantId") },
                 )
             }
@@ -369,8 +391,11 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             }
 
             composable(
-                route = "$MULTI_PERIOD_PAYMENT_ROUTE/{tenantId}",
-                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+                route = "$MULTI_PERIOD_PAYMENT_ROUTE/{tenantId}/{bedId}",
+                arguments = listOf(
+                    navArgument("tenantId") { type = NavType.StringType },
+                    navArgument("bedId") { type = NavType.StringType },
+                ),
             ) {
                 MultiPeriodPaymentScreen(
                     onBack = { navController.popBackStack() },
@@ -386,8 +411,11 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             }
 
             composable(
-                route = "$CREDIT_FORM_ROUTE/{tenantId}",
-                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+                route = "$CREDIT_FORM_ROUTE/{tenantId}/{bedId}",
+                arguments = listOf(
+                    navArgument("tenantId") { type = NavType.StringType },
+                    navArgument("bedId") { type = NavType.StringType },
+                ),
             ) {
                 CreditFormScreen(
                     onBack = { navController.popBackStack() },
@@ -396,8 +424,11 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             }
 
             composable(
-                route = "$TRANSFER_ROUTE/{tenantId}",
-                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+                route = "$TRANSFER_ROUTE/{tenantId}/{bedId}",
+                arguments = listOf(
+                    navArgument("tenantId") { type = NavType.StringType },
+                    navArgument("bedId") { type = NavType.StringType },
+                ),
             ) {
                 TransferScreen(
                     onBack = { navController.popBackStack() },
@@ -406,8 +437,11 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             }
 
             composable(
-                route = "$FORGONE_RENT_ROUTE/{tenantId}",
-                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+                route = "$FORGONE_RENT_ROUTE/{tenantId}/{bedId}",
+                arguments = listOf(
+                    navArgument("tenantId") { type = NavType.StringType },
+                    navArgument("bedId") { type = NavType.StringType },
+                ),
             ) {
                 ForgoneRentScreen(
                     onBack = { navController.popBackStack() },
@@ -416,8 +450,11 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             }
 
             composable(
-                route = "$CHECKOUT_ROUTE/{tenantId}",
-                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+                route = "$CHECKOUT_ROUTE/{tenantId}/{bedId}",
+                arguments = listOf(
+                    navArgument("tenantId") { type = NavType.StringType },
+                    navArgument("bedId") { type = NavType.StringType },
+                ),
             ) {
                 CheckoutScreen(
                     onDone = { navController.popBackStack(LodgyDestination.Tenants.route, false) },
@@ -467,13 +504,18 @@ fun LodgyNavHost(pendingRoute: String? = null) {
             composable(MANUAL_INVOICE_TENANT_PICKER_ROUTE) {
                 ManualInvoiceTenantPickerScreen(
                     onBack = { navController.popBackStack() },
-                    onTenantSelected = { tenant -> navController.navigate("$MANUAL_INVOICE_FORM_ROUTE/${tenant.id}") },
+                    onTenancySelected = { row ->
+                        navController.navigate("$MANUAL_INVOICE_FORM_ROUTE/${row.tenantId}/${row.bedId}")
+                    },
                 )
             }
 
             composable(
-                route = "$MANUAL_INVOICE_FORM_ROUTE/{tenantId}",
-                arguments = listOf(navArgument("tenantId") { type = NavType.StringType }),
+                route = "$MANUAL_INVOICE_FORM_ROUTE/{tenantId}/{bedId}",
+                arguments = listOf(
+                    navArgument("tenantId") { type = NavType.StringType },
+                    navArgument("bedId") { type = NavType.StringType },
+                ),
             ) {
                 ManualInvoiceFormScreen(
                     onDone = { navController.popBackStack(LodgyDestination.Payments.route, false) },

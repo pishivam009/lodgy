@@ -17,10 +17,14 @@ data class NotificationSettingsUiState(
     val vacancyEnabled: Boolean = true,
     val duesEnabled: Boolean = true,
     val vacancyThresholdDays: Int = NotificationPreferences.DEFAULT_VACANCY_THRESHOLD_DAYS,
+    val duesAdvanceThresholdDays: Int = NotificationPreferences.DEFAULT_DUES_ADVANCE_THRESHOLD_DAYS,
     /** False when Android itself is blocking notifications, whatever these switches say. */
     val systemPermissionGranted: Boolean = true,
 ) {
     val thresholdOptions: List<Int> get() = listOf(1, 2, 3)
+
+    /** 0 means "off" - the existing after-the-fact-only behavior, not a fourth day option. */
+    val duesAdvanceOptions: List<Int> get() = listOf(0, 1, 2, 3)
 }
 
 @HiltViewModel
@@ -38,11 +42,13 @@ class NotificationSettingsViewModel @Inject constructor(
                 preferences.vacancyEnabled,
                 preferences.duesEnabled,
                 preferences.vacancyThresholdDays,
-            ) { vacancy, dues, threshold ->
+                preferences.duesAdvanceThresholdDays,
+            ) { vacancy, dues, threshold, duesAdvance ->
                 NotificationSettingsUiState(
                     vacancyEnabled = vacancy,
                     duesEnabled = dues,
                     vacancyThresholdDays = threshold,
+                    duesAdvanceThresholdDays = duesAdvance,
                     systemPermissionGranted = notifications.canPost(),
                 )
             }.collect { state -> _uiState.value = state }
@@ -63,5 +69,9 @@ class NotificationSettingsViewModel @Inject constructor(
 
     fun onThresholdChange(days: Int) {
         viewModelScope.launch { preferences.setVacancyThresholdDays(days) }
+    }
+
+    fun onDuesAdvanceThresholdChange(days: Int) {
+        viewModelScope.launch { preferences.setDuesAdvanceThresholdDays(days) }
     }
 }

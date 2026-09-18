@@ -3,6 +3,7 @@ package com.lodgy.app.ui.tenant
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.TenancyAgreement
 import com.lodgy.app.data.repository.BedRepository
 import com.lodgy.app.data.repository.TenancyAgreementRepository
@@ -12,6 +13,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -37,6 +39,7 @@ class CheckoutViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tenantId: String = checkNotNull(savedStateHandle["tenantId"])
+    private val bedId: String = checkNotNull(savedStateHandle["bedId"])
     private var agreement: TenancyAgreement? = null
 
     private val _uiState = MutableStateFlow(CheckoutUiState())
@@ -45,7 +48,10 @@ class CheckoutViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val tenant = tenantRepository.getById(tenantId)
-            val active = tenancyAgreementRepository.getActiveByTenantId(tenantId)
+            // Resolved by the bed the warden actually tapped, not the tenant alone - a tenant
+            // holding several active beds would otherwise checkout whichever getActiveByTenantId
+            // found first, not necessarily this one (LODGY-101).
+            val active = tenancyAgreementRepository.getActiveByBedId(bedId)
             agreement = active
             _uiState.update {
                 it.copy(
@@ -67,7 +73,14 @@ class CheckoutViewModel @Inject constructor(
         viewModelScope.launch {
             tenancyAgreementRepository.close(current, state.moveOutDateMillis, state.refundAmount)
             bedRepository.setVacant(current.bedId)
-            tenantRepository.getById(tenantId)?.let { tenantRepository.setVacated(it) }
+            // Only marks the tenant themself vacated once this was their last active bed - a
+            // multi-bed tenant checking out of one should still show as active everywhere else
+            // (LODGY-101).
+            val stillHasOtherActiveBed = tenancyAgreementRepository.observeByTenantId(tenantId).first()
+                .any { it.id != current.id && it.status == AgreementStatus.ACTIVE }
+            if (!stillHasOtherActiveBed) {
+                tenantRepository.getById(tenantId)?.let { tenantRepository.setVacated(it) }
+            }
             _uiState.update { it.copy(saved = true) }
         }
     }

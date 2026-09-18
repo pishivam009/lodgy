@@ -1,0 +1,25 @@
+{
+  "id": "LODGY-105",
+  "epic": "Tenant Onboarding",
+  "title": "Tenants directory list shows only one bed for a multi-bed tenant",
+  "description": "Surfaced during UAT of LODGY-101 (multi-bed tenants). That ticket fixed the profile screen and the bed-scoped action screens (checkout, transfer, credits, etc.) to correctly handle a tenant with more than one active bed, but explicitly scoped itself to six named call sites - TenantDirectoryViewModel wasn't one of them and has the same underlying pattern: `agreements.groupBy { it.tenantId }.mapValues { ... .latest() }` picks a single agreement per tenant (the one with the latest moveInDate among actives, via the same `List<TenancyAgreement>.latest()` extension LODGY-101 also uses on the profile screen). A tenant holding two active beds shows up once in the Tenants list, with only one room/bed label - the other bed is invisible from this screen, and sorting by 'Room' is ambiguous for that tenant since only one of their two rooms is what gets sorted on.\n\nNot a regression - this call site was never touched, and the behavior predates LODGY-101. But now that a real multi-bed tenant is a supported case (per LODGY-101), the one screen a warden is most likely to search from should not silently hide half of what that tenant is renting.",
+  "acceptanceCriteria": [
+    "A tenant with two or more active beds is either shown once with all their rooms/beds listed together, or shown as one row per active tenancy (bed) - product decision needed on which reads better in the list UI, not prescribed here",
+    "Search by name/phone still finds the tenant regardless of which bed's row (if split) matches",
+    "Sorting by Room behaves sensibly for a multi-bed tenant under whichever display choice is made"
+  ],
+  "status": "Todo",
+  "priority": "Low",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-18T16:40:00Z",
+  "updatedAt": "2026-09-18T16:40:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-18T16:40:00Z",
+      "actor": "User",
+      "action": "created",
+      "note": "Found while doing UAT on LODGY-101 (accepted separately - its own stated scope holds). Checked TenantDirectoryViewModel.kt directly: it uses the same tenant-collapses-to-one-agreement pattern LODGY-101 fixed elsewhere, just at a call site that ticket's audit didn't name. Low priority since it's a display gap, not a data-correctness one - the underlying agreements are all still correct and reachable from the profile screen, just not all visible from the list."
+    }
+  ]
+}

@@ -41,7 +41,7 @@ class ForgoneRentViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val tenantId: String = checkNotNull(savedStateHandle["tenantId"])
+    private val bedId: String = checkNotNull(savedStateHandle["bedId"])
     private var agreement: TenancyAgreement? = null
 
     private val _uiState = MutableStateFlow(ForgoneRentUiState())
@@ -49,7 +49,9 @@ class ForgoneRentViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val active = tenancyAgreementRepository.getActiveByTenantId(tenantId)
+            // Resolved by the specific bed, not the tenant alone - a tenant with several active
+            // agreements must edit exactly the one whose room this is (LODGY-101).
+            val active = tenancyAgreementRepository.getActiveByBedId(bedId)
             agreement = active
             if (active == null || !active.nonRevenue) {
                 _uiState.update { it.copy(loading = false, hasNonRevenueTenancy = false) }

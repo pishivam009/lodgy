@@ -52,8 +52,16 @@ private fun buildReportCsv(context: Context, uiState: MonthlyReportUiState): Str
         append(row(context.getString(R.string.monthly_report_csv_hostel), uiState.hostelName))
         append(row(context.getString(R.string.manual_invoice_field_month), uiState.month.toString()))
         append(row(context.getString(R.string.manual_invoice_field_year), uiState.year.toString()))
+        append(row(context.getString(R.string.monthly_report_expected_income), amount(uiState.expectedIncome)))
         append(row(context.getString(R.string.monthly_report_collected), amount(uiState.totalCollected)))
         append(row(context.getString(R.string.monthly_report_dues), amount(uiState.totalDues)))
+        append(
+            row(
+                context.getString(R.string.monthly_report_recovery_percent),
+                uiState.recoveryPercent?.let { context.getString(R.string.monthly_report_recovery_value, it) }
+                    ?: context.getString(R.string.monthly_report_recovery_no_data),
+            ),
+        )
         append(row(context.getString(R.string.monthly_report_credits), amount(uiState.totalCredits)))
         append(
             row(
@@ -147,7 +155,14 @@ fun MonthlyReportScreen(onBack: () -> Unit, viewModel: MonthlyReportViewModel = 
             }
 
             val tiles = listOf(
+                ReportTile(stringResource(R.string.currency_amount, uiState.expectedIncome), R.string.monthly_report_expected_income, null),
                 ReportTile(stringResource(R.string.currency_amount, uiState.totalCollected), R.string.monthly_report_collected, true),
+                ReportTile(
+                    uiState.recoveryPercent?.let { stringResource(R.string.monthly_report_recovery_value, it) }
+                        ?: stringResource(R.string.monthly_report_recovery_no_data),
+                    R.string.monthly_report_recovery_percent,
+                    null,
+                ),
                 ReportTile(stringResource(R.string.currency_amount, uiState.totalDues), R.string.monthly_report_dues, false),
                 ReportTile(stringResource(R.string.currency_amount, uiState.totalCredits), R.string.monthly_report_credits, null),
                 ReportTile(

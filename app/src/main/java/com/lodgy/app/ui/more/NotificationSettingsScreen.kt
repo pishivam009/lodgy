@@ -86,13 +86,32 @@ fun NotificationSettingsScreen(
             }
 
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     ToggleRow(
                         title = stringResource(R.string.notify_settings_dues),
                         subtitle = stringResource(R.string.notify_settings_dues_sub),
                         checked = uiState.duesEnabled,
                         onCheckedChange = viewModel::onDuesEnabledChange,
                     )
+                    if (uiState.duesEnabled) {
+                        Text(
+                            stringResource(R.string.notify_settings_dues_advance),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        FilterChipRow(
+                            options = uiState.duesAdvanceOptions,
+                            selected = uiState.duesAdvanceThresholdDays,
+                            onSelect = viewModel::onDuesAdvanceThresholdChange,
+                            label = {
+                                if (it == 0) {
+                                    stringResource(R.string.notify_settings_dues_advance_off)
+                                } else {
+                                    pluralStringResource(R.plurals.notify_dues_advance_days, it, it)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             }
         }

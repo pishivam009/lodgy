@@ -17,15 +17,27 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** How long a tenant has been living here, from their latest tenancy - "living here since" while
+/** How long a tenant has been living here, from a tenancy - "living here since" while
  *  [active], "lived here for" once it has closed (LODGY-92). */
 data class StayDuration(val fromMillis: Long, val toMillis: Long, val active: Boolean)
+
+/** One tenancy's worth of what the profile screen shows and acts on - a tenant with beds in two
+ *  rooms has two of these, each independently checked out, transferred or notified (LODGY-101).
+ *  bedId rather than the agreement id is what nav routes carry, since getActiveByBedId is the
+ *  already-unambiguous lookup every action screen resolves against. */
+data class TenancyEntry(
+    val bedId: String,
+    val location: BedLocation?,
+    val plannedMoveOut: Long?,
+    val nonRevenue: Boolean,
+    val stayDuration: StayDuration,
+)
 
 @HiltViewModel
 class TenantProfileViewModel @Inject constructor(
     tenantRepository: TenantRepository,
     private val tenancyAgreementRepository: TenancyAgreementRepository,
-    bedRepository: BedRepository,
+    private val bedRepository: BedRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -34,18 +46,15 @@ class TenantProfileViewModel @Inject constructor(
     private val _tenant = MutableStateFlow<Tenant?>(null)
     val tenant: StateFlow<Tenant?> = _tenant.asStateFlow()
 
-    private val _location = MutableStateFlow<BedLocation?>(null)
-    val location: StateFlow<BedLocation?> = _location.asStateFlow()
+    /** Every currently active tenancy for this tenant - normally one, but genuinely more for a
+     *  tenant holding several beds. Empty once every tenancy has closed. */
+    private val _activeTenancies = MutableStateFlow<List<TenancyEntry>>(emptyList())
+    val activeTenancies: StateFlow<List<TenancyEntry>> = _activeTenancies.asStateFlow()
 
-    private val _plannedMoveOut = MutableStateFlow<Long?>(null)
-    val plannedMoveOut: StateFlow<Long?> = _plannedMoveOut.asStateFlow()
-
-    /** Gates the forgone-rent action, which is meaningless on a paying tenancy (LODGY-84). */
-    private val _nonRevenue = MutableStateFlow(false)
-    val nonRevenue: StateFlow<Boolean> = _nonRevenue.asStateFlow()
-
-    private val _stayDuration = MutableStateFlow<StayDuration?>(null)
-    val stayDuration: StateFlow<StayDuration?> = _stayDuration.asStateFlow()
+    /** Shown only when [activeTenancies] is empty, so a checked-out tenant still resolves to the
+     *  room/bed and dates they last had, same as before this ticket for the common case. */
+    private val _lastClosedTenancy = MutableStateFlow<TenancyEntry?>(null)
+    val lastClosedTenancy: StateFlow<TenancyEntry?> = _lastClosedTenancy.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -56,25 +65,35 @@ class TenantProfileViewModel @Inject constructor(
         // label blank on onboarding and stale after a move.
         viewModelScope.launch {
             tenancyAgreementRepository.observeByTenantId(tenantId).collect { agreements ->
-                val agreement = agreements.latest()
-                _location.value = agreement?.let { bedRepository.getLocation(it.bedId) }
-                val active = agreement?.takeIf { it.status == AgreementStatus.ACTIVE }
-                _plannedMoveOut.value = active?.moveOutDate
-                _nonRevenue.value = active?.nonRevenue == true
-                _stayDuration.value = agreement?.let {
-                    if (it.status == AgreementStatus.ACTIVE) {
-                        StayDuration(it.moveInDate, System.currentTimeMillis(), active = true)
-                    } else {
-                        StayDuration(it.moveInDate, it.moveOutDate ?: it.moveInDate, active = false)
-                    }
+                val active = agreements.filter { it.status == AgreementStatus.ACTIVE }
+                if (active.isNotEmpty()) {
+                    _activeTenancies.value = active
+                        .sortedByDescending { it.moveInDate }
+                        .map { it.toEntry(active = true) }
+                    _lastClosedTenancy.value = null
+                } else {
+                    _activeTenancies.value = emptyList()
+                    _lastClosedTenancy.value = agreements.latest()?.toEntry(active = false)
                 }
             }
         }
     }
 
-    fun setPlannedMoveOut(millis: Long?) {
+    private suspend fun TenancyAgreement.toEntry(active: Boolean): TenancyEntry = TenancyEntry(
+        bedId = bedId,
+        location = bedRepository.getLocation(bedId),
+        plannedMoveOut = if (active) moveOutDate else null,
+        nonRevenue = nonRevenue,
+        stayDuration = if (active) {
+            StayDuration(moveInDate, System.currentTimeMillis(), active = true)
+        } else {
+            StayDuration(moveInDate, moveOutDate ?: moveInDate, active = false)
+        },
+    )
+
+    fun setPlannedMoveOut(bedId: String, millis: Long?) {
         viewModelScope.launch {
-            val agreement = tenancyAgreementRepository.getActiveByTenantId(tenantId) ?: return@launch
+            val agreement = tenancyAgreementRepository.getActiveByBedId(bedId) ?: return@launch
             tenancyAgreementRepository.setPlannedMoveOut(agreement, millis)
         }
     }

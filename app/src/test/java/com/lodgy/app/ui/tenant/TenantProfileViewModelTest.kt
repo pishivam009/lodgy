@@ -58,7 +58,8 @@ class TenantProfileViewModelTest {
         every { agreementRepository.observeByTenantId("t1") } returns flowOf(listOf(TenancyAgreement(tenantId = "t1", bedId = "b1", agreedRent = 0.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = 5L, depositRefundAmount = null, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
 
-        assertEquals(BedLocation("101", "A"), viewModel().location.value)
+        assertEquals(BedLocation("101", "A"), viewModel().lastClosedTenancy.value?.location)
+        assertTrue(viewModel().activeTenancies.value.isEmpty())
     }
 
     @Test
@@ -66,7 +67,8 @@ class TenantProfileViewModelTest {
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
         every { agreementRepository.observeByTenantId("t1") } returns flowOf(emptyList())
 
-        assertNull(viewModel().location.value)
+        assertNull(viewModel().lastClosedTenancy.value)
+        assertTrue(viewModel().activeTenancies.value.isEmpty())
     }
 
     @Test
@@ -75,7 +77,7 @@ class TenantProfileViewModelTest {
         every { agreementRepository.observeByTenantId("t1") } returns flowOf(listOf(activeAgreement(moveOutDate = 5_000L)))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
 
-        assertEquals(5_000L, viewModel().plannedMoveOut.value)
+        assertEquals(5_000L, viewModel().activeTenancies.value.single().plannedMoveOut)
     }
 
     @Test
@@ -84,7 +86,7 @@ class TenantProfileViewModelTest {
         every { agreementRepository.observeByTenantId("t1") } returns flowOf(listOf(TenancyAgreement(tenantId = "t1", bedId = "b1", agreedRent = 0.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = 5_000L, depositRefundAmount = null, status = AgreementStatus.CLOSED, createdAt = 0L, updatedAt = 0L)))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
 
-        assertNull(viewModel().plannedMoveOut.value)
+        assertNull(viewModel().lastClosedTenancy.value?.plannedMoveOut)
     }
 
     @Test
@@ -94,18 +96,18 @@ class TenantProfileViewModelTest {
         val agreements = MutableStateFlow(listOf(agreement))
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
         every { agreementRepository.observeByTenantId("t1") } returns agreements
-        coEvery { agreementRepository.getActiveByTenantId("t1") } returns agreement
+        coEvery { agreementRepository.getActiveByBedId("b1") } returns agreement
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
         coEvery { agreementRepository.setPlannedMoveOut(any(), any()) } answers {
             agreements.value = listOf(agreement.copy(moveOutDate = secondArg()))
         }
 
         val viewModel = viewModel()
-        viewModel.setPlannedMoveOut(9_000L)
+        viewModel.setPlannedMoveOut("b1", 9_000L)
 
         coVerify { agreementRepository.setPlannedMoveOut(agreement, 9_000L) }
         coVerify(exactly = 0) { agreementRepository.close(any(), any(), any()) }
-        assertEquals(9_000L, viewModel.plannedMoveOut.value)
+        assertEquals(9_000L, viewModel.activeTenancies.value.single().plannedMoveOut)
     }
 
     @Test
@@ -114,23 +116,23 @@ class TenantProfileViewModelTest {
         val agreements = MutableStateFlow(listOf(agreement))
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
         every { agreementRepository.observeByTenantId("t1") } returns agreements
-        coEvery { agreementRepository.getActiveByTenantId("t1") } returns agreement
+        coEvery { agreementRepository.getActiveByBedId("b1") } returns agreement
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
         coEvery { agreementRepository.setPlannedMoveOut(any(), any()) } answers {
             agreements.value = listOf(agreement.copy(moveOutDate = secondArg()))
         }
 
         val viewModel = viewModel()
-        viewModel.setPlannedMoveOut(null)
+        viewModel.setPlannedMoveOut("b1", null)
 
         coVerify { agreementRepository.setPlannedMoveOut(agreement, null) }
-        assertNull(viewModel.plannedMoveOut.value)
+        assertNull(viewModel.activeTenancies.value.single().plannedMoveOut)
     }
 
-    private fun activeAgreement(moveOutDate: Long? = null, nonRevenue: Boolean = false) = TenancyAgreement(
+    private fun activeAgreement(moveOutDate: Long? = null, nonRevenue: Boolean = false, bedId: String = "b1") = TenancyAgreement(
         nonRevenue = nonRevenue,
         tenantId = "t1",
-        bedId = "b1",
+        bedId = bedId,
         agreedRent = 0.0,
         advanceDeposit = 0.0,
         billingCycleDay = 1,
@@ -150,11 +152,11 @@ class TenantProfileViewModelTest {
 
         every { agreementRepository.observeByTenantId("t1") } returns
             flowOf(listOf(activeAgreement(nonRevenue = true)))
-        assertTrue(viewModel().nonRevenue.value)
+        assertTrue(viewModel().activeTenancies.value.single().nonRevenue)
 
         every { agreementRepository.observeByTenantId("t1") } returns
             flowOf(listOf(activeAgreement()))
-        assertFalse(viewModel().nonRevenue.value)
+        assertFalse(viewModel().activeTenancies.value.single().nonRevenue)
     }
 
     @Test
@@ -164,9 +166,9 @@ class TenantProfileViewModelTest {
             flowOf(listOf(activeAgreement().copy(moveInDate = 1_000L)))
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
 
-        val duration = viewModel().stayDuration.value
-        assertEquals(1_000L, duration?.fromMillis)
-        assertTrue(duration?.active == true)
+        val duration = viewModel().activeTenancies.value.single().stayDuration
+        assertEquals(1_000L, duration.fromMillis)
+        assertTrue(duration.active)
     }
 
     @Test
@@ -184,7 +186,7 @@ class TenantProfileViewModelTest {
         )
         coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
 
-        val duration = viewModel().stayDuration.value
+        val duration = viewModel().lastClosedTenancy.value?.stayDuration
         assertEquals(1_000L, duration?.fromMillis)
         assertEquals(5_000L, duration?.toMillis)
         assertFalse(duration?.active == true)
@@ -195,6 +197,26 @@ class TenantProfileViewModelTest {
         every { tenantRepository.observeById("t1") } returns flowOf(tenant)
         every { agreementRepository.observeByTenantId("t1") } returns flowOf(emptyList())
 
-        assertNull(viewModel().stayDuration.value)
+        assertNull(viewModel().lastClosedTenancy.value)
+        assertTrue(viewModel().activeTenancies.value.isEmpty())
+    }
+
+    /** The actual point of LODGY-101: a tenant holding two beds gets two independent entries,
+     *  not one picked arbitrarily. */
+    @Test
+    fun `a tenant with two active beds gets two tenancy entries`() {
+        every { tenantRepository.observeById("t1") } returns flowOf(tenant)
+        every { agreementRepository.observeByTenantId("t1") } returns flowOf(
+            listOf(
+                activeAgreement(bedId = "b1").copy(moveInDate = 1_000L),
+                activeAgreement(bedId = "b2").copy(moveInDate = 2_000L),
+            ),
+        )
+        coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
+        coEvery { bedRepository.getLocation("b2") } returns BedLocation("102", "A")
+
+        val entries = viewModel().activeTenancies.value
+        assertEquals(2, entries.size)
+        assertEquals(setOf("b1", "b2"), entries.map { it.bedId }.toSet())
     }
 }

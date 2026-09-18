@@ -20,6 +20,7 @@ import com.lodgy.app.backup.BackupHealth
 import com.lodgy.app.data.prefs.BackupPreferences
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.BedRepository
+import com.lodgy.app.data.repository.CreditRepository
 import com.lodgy.app.data.repository.FloorRepository
 import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.data.repository.InvoiceRepository
@@ -55,6 +56,7 @@ class DashboardViewModelTest {
     private val tenancyAgreementRepository: TenancyAgreementRepository = mockk()
     private val invoiceRepository: InvoiceRepository = mockk()
     private val paymentRepository: PaymentRepository = mockk()
+    private val creditRepository: CreditRepository = mockk()
     private val tenantRepository: TenantRepository = mockk()
     private val backupPreferences: BackupPreferences = mockk(relaxed = true)
     private val autoBackup: AutoBackup = mockk()
@@ -65,12 +67,13 @@ class DashboardViewModelTest {
         every { backupPreferences.folderUri } returns flowOf(null)
         every { backupPreferences.lastSuccessTime } returns flowOf(null)
         every { backupPreferences.lastAttemptFailed } returns flowOf(false)
+        coEvery { creditRepository.getAllOnce() } returns emptyList()
     }
 
     private fun viewModel() = DashboardViewModel(
         hostelPreferences, hostelRepository, floorRepository, roomRepository, bedRepository,
-        tenancyAgreementRepository, invoiceRepository, paymentRepository, tenantRepository,
-        backupPreferences, autoBackup,
+        tenancyAgreementRepository, invoiceRepository, paymentRepository, creditRepository,
+        tenantRepository, backupPreferences, autoBackup,
     )
 
     @Test

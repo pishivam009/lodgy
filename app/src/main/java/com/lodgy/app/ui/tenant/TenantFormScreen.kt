@@ -35,6 +35,7 @@ import com.lodgy.app.ui.icons.CommonIcons
 fun TenantFormScreen(
     onDone: (tenantId: String) -> Unit,
     onBack: () -> Unit,
+    onPickExisting: () -> Unit = {},
     viewModel: TenantFormViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -72,6 +73,16 @@ fun TenantFormScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            // Onboarding a bed for a tenant who already lives here - a family or someone renting
+            // extra space in another room - reuses their existing record instead of duplicating it
+            // (LODGY-101). Only offered when creating a fresh tenant for a bed, never while editing
+            // one that already exists.
+            if (!uiState.isEditing) {
+                TextButton(onClick = onPickExisting) {
+                    Text(stringResource(R.string.tenant_form_pick_existing))
+                }
+            }
+
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 PhotoPickerField(
                     label = stringResource(R.string.tenant_field_photo),

@@ -60,20 +60,18 @@ import java.util.Locale
 fun TenantProfileScreen(
     onBack: () -> Unit,
     onEdit: (String) -> Unit,
-    onCheckout: (String) -> Unit,
-    onTransfer: (String) -> Unit,
-    onForgoneRent: (String) -> Unit,
-    onRecordCredit: (String) -> Unit,
-    onPaySeveralMonths: (String) -> Unit,
+    onCheckout: (String, String) -> Unit,
+    onTransfer: (String, String) -> Unit,
+    onForgoneRent: (String, String) -> Unit,
+    onRecordCredit: (String, String) -> Unit,
+    onPaySeveralMonths: (String, String) -> Unit,
     onOpenNotes: (String) -> Unit,
     viewModel: TenantProfileViewModel = hiltViewModel(),
 ) {
     val tenant by viewModel.tenant.collectAsStateWithLifecycle()
-    val location by viewModel.location.collectAsStateWithLifecycle()
-    val plannedMoveOut by viewModel.plannedMoveOut.collectAsStateWithLifecycle()
-    val nonRevenue by viewModel.nonRevenue.collectAsStateWithLifecycle()
-    val stayDuration by viewModel.stayDuration.collectAsStateWithLifecycle()
-    var showNoticePicker by remember { mutableStateOf(false) }
+    val activeTenancies by viewModel.activeTenancies.collectAsStateWithLifecycle()
+    val lastClosedTenancy by viewModel.lastClosedTenancy.collectAsStateWithLifecycle()
+    var noticePickerForBedId by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -119,25 +117,15 @@ fun TenantProfileScreen(
                 }
             }
             Text(current.name, style = MaterialTheme.typography.titleLarge)
-            location?.let {
-                Text(
-                    it.label(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+            // A single active tenancy keeps the same compact header as before this ticket; two or
+            // more beds skip straight to the per-tenancy cards below instead of picking one to
+            // feature here, which would misrepresent the others as secondary.
+            if (activeTenancies.size <= 1) {
+                (activeTenancies.firstOrNull() ?: lastClosedTenancy)?.let { entry ->
+                    TenancyHeaderLine(entry)
+                }
             }
             StatusBadge(current.status.level, current.status.icon, current.status.label())
-            stayDuration?.let {
-                Text(
-                    stringResource(
-                        if (it.active) R.string.tenant_duration_active else R.string.tenant_duration_past,
-                        noticeDateFormat.format(Date(it.fromMillis)),
-                        durationLabel(it.fromMillis, it.toMillis),
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
 
             ContactButtonsRow(phone = current.phone)
 
@@ -167,135 +155,136 @@ fun TenantProfileScreen(
             }
 
             if (current.status == TenantStatus.ACTIVE) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(stringResource(R.string.tenant_notice_title), style = MaterialTheme.typography.titleMedium)
+                activeTenancies.forEach { entry ->
+                    // Two or more beds each get their own labelled block, since every action below
+                    // acts on this specific tenancy, not "the tenant" (LODGY-101).
+                    if (activeTenancies.size > 1) {
                         Text(
-                            plannedMoveOut?.let { noticeDateFormat.format(Date(it)) }
-                                ?: stringResource(R.string.tenant_notice_none),
-                            style = MaterialTheme.typography.bodyMedium,
+                            entry.location?.label().orEmpty(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                         )
-                        Text(
-                            stringResource(R.string.tenant_notice_hint),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(onClick = { showNoticePicker = true }) {
-                                Text(stringResource(R.string.tenant_notice_set))
-                            }
-                            if (plannedMoveOut != null) {
-                                TextButton(onClick = { viewModel.setPlannedMoveOut(null) }) {
-                                    Text(stringResource(R.string.tenant_notice_clear))
-                                }
-                            }
-                        }
                     }
-                }
-
-                Card(
-                    onClick = { onPaySeveralMonths(current.id) },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(stringResource(R.string.multi_period_action), style = MaterialTheme.typography.titleMedium)
-                        Icon(CommonIcons.ChevronRight, contentDescription = null)
-                    }
-                }
-
-                Card(
-                    onClick = { onRecordCredit(current.id) },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(stringResource(R.string.credit_action), style = MaterialTheme.typography.titleMedium)
-                        Icon(CommonIcons.ChevronRight, contentDescription = null)
-                    }
-                }
-
-                // Only a warden's or caretaker's room has a rent to forgo, so a paying tenant is
-                // never offered this (LODGY-84).
-                if (nonRevenue) {
-                    Card(
-                        onClick = { onForgoneRent(current.id) },
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                        shape = RoundedCornerShape(14.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                stringResource(R.string.forgone_rent_action),
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                            Icon(CommonIcons.ChevronRight, contentDescription = null)
-                        }
-                    }
-                }
-
-                Card(
-                    onClick = { onTransfer(current.id) },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(stringResource(R.string.transfer_action), style = MaterialTheme.typography.titleMedium)
-                        Icon(CommonIcons.ChevronRight, contentDescription = null)
-                    }
-                }
-
-                Card(
-                    onClick = { onCheckout(current.id) },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Text(
-                        stringResource(R.string.tenant_checkout_action),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(16.dp),
+                    TenancyActionsCard(
+                        tenantId = current.id,
+                        entry = entry,
+                        onSetNotice = { noticePickerForBedId = entry.bedId },
+                        onClearNotice = { viewModel.setPlannedMoveOut(entry.bedId, null) },
+                        onPaySeveralMonths = { onPaySeveralMonths(current.id, entry.bedId) },
+                        onRecordCredit = { onRecordCredit(current.id, entry.bedId) },
+                        onForgoneRent = { onForgoneRent(current.id, entry.bedId) },
+                        onTransfer = { onTransfer(current.id, entry.bedId) },
+                        onCheckout = { onCheckout(current.id, entry.bedId) },
                     )
                 }
             }
         }
     }
 
-    if (showNoticePicker) {
+    noticePickerForBedId?.let { bedId ->
+        val plannedMoveOut = activeTenancies.firstOrNull { it.bedId == bedId }?.plannedMoveOut
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = plannedMoveOut ?: System.currentTimeMillis(),
         )
         DatePickerDialog(
-            onDismissRequest = { showNoticePicker = false },
+            onDismissRequest = { noticePickerForBedId = null },
             confirmButton = {
                 TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let(viewModel::setPlannedMoveOut)
-                    showNoticePicker = false
+                    datePickerState.selectedDateMillis?.let { viewModel.setPlannedMoveOut(bedId, it) }
+                    noticePickerForBedId = null
                 }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showNoticePicker = false }) { Text(stringResource(R.string.cancel)) }
+                TextButton(onClick = { noticePickerForBedId = null }) { Text(stringResource(R.string.cancel)) }
             },
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+}
+
+@Composable
+private fun TenancyHeaderLine(entry: TenancyEntry) {
+    entry.location?.let {
+        Text(it.label(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+    }
+    Text(
+        stringResource(
+            if (entry.stayDuration.active) R.string.tenant_duration_active else R.string.tenant_duration_past,
+            noticeDateFormat.format(Date(entry.stayDuration.fromMillis)),
+            durationLabel(entry.stayDuration.fromMillis, entry.stayDuration.toMillis),
+        ),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun TenancyActionsCard(
+    tenantId: String,
+    entry: TenancyEntry,
+    onSetNotice: () -> Unit,
+    onClearNotice: () -> Unit,
+    onPaySeveralMonths: () -> Unit,
+    onRecordCredit: () -> Unit,
+    onForgoneRent: () -> Unit,
+    onTransfer: () -> Unit,
+    onCheckout: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), shape = RoundedCornerShape(14.dp)) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(stringResource(R.string.tenant_notice_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                entry.plannedMoveOut?.let { noticeDateFormat.format(Date(it)) }
+                    ?: stringResource(R.string.tenant_notice_none),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                stringResource(R.string.tenant_notice_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = onSetNotice) { Text(stringResource(R.string.tenant_notice_set)) }
+                if (entry.plannedMoveOut != null) {
+                    TextButton(onClick = onClearNotice) { Text(stringResource(R.string.tenant_notice_clear)) }
+                }
+            }
+        }
+    }
+
+    ActionRowCard(stringResource(R.string.multi_period_action), onClick = onPaySeveralMonths)
+    ActionRowCard(stringResource(R.string.credit_action), onClick = onRecordCredit)
+
+    // Only a warden's or caretaker's room has a rent to forgo, so a paying tenant is never
+    // offered this (LODGY-84).
+    if (entry.nonRevenue) {
+        ActionRowCard(stringResource(R.string.forgone_rent_action), onClick = onForgoneRent)
+    }
+
+    ActionRowCard(stringResource(R.string.transfer_action), onClick = onTransfer)
+
+    Card(onClick = onCheckout, modifier = Modifier.fillMaxWidth().padding(top = 8.dp), shape = RoundedCornerShape(14.dp)) {
+        Text(
+            stringResource(R.string.tenant_checkout_action),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+@Composable
+private fun ActionRowCard(label: String, onClick: () -> Unit) {
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth().padding(top = 8.dp), shape = RoundedCornerShape(14.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label, style = MaterialTheme.typography.titleMedium)
+            Icon(CommonIcons.ChevronRight, contentDescription = null)
         }
     }
 }

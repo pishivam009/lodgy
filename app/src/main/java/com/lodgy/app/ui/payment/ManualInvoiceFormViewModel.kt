@@ -41,6 +41,7 @@ class ManualInvoiceFormViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tenantId: String = checkNotNull(savedStateHandle["tenantId"])
+    private val bedId: String = checkNotNull(savedStateHandle["bedId"])
     private var tenancyAgreementId: String? = null
 
     private val _uiState = MutableStateFlow(ManualInvoiceFormUiState())
@@ -49,7 +50,9 @@ class ManualInvoiceFormViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val tenant = tenantRepository.getById(tenantId)
-            val agreement = tenancyAgreementRepository.getActiveByTenantId(tenantId)
+            // Resolved by bed, not tenant - the picker now selects a specific tenancy, and a
+            // multi-bed tenant must be billed on exactly that one (LODGY-101).
+            val agreement = tenancyAgreementRepository.getActiveByBedId(bedId)
             tenancyAgreementId = agreement?.id
             val today = Calendar.getInstance()
             _uiState.update {

@@ -9,18 +9,42 @@
     "Setting persists via NotificationPreferences (DataStore), same as the existing dues/vacancy toggles",
     "Default value preserves today's behavior for anyone who upgrades without touching the setting (no surprise new notifications the warden didn't ask for)"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-18T14:26:00Z",
-  "updatedAt": "2026-09-18T14:26:00Z",
+  "updatedAt": "2026-09-18T16:41:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T14:26:00Z",
       "actor": "User",
       "action": "created",
       "note": "\"notify for payment dues on x days before monthly cycle - add this x to be configurable in Notifications section.\" Confirmed in code: DuesReminderWorker only checks dueDate < today (after the fact); no advance-warning path exists today, unlike vacancy reminders which already have a configurable threshold."
+    },
+    {
+      "timestamp": "2026-09-18T15:45:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "Added NotificationPreferences.duesAdvanceThresholdDays (0-3, default 0/off, same clamp pattern as vacancyThresholdDays). 'X days before' is interpreted as X days before the invoice's dueDate specifically (not a separate billing-cycle-day calculation) - dueDate is already derived from billingCycleDay elsewhere and is what the existing overdue check keys off, so reusing it keeps one definition of 'due' rather than two. Added DuesReminderWorker.notifyDueSoonInvoices: same outstanding-amount/credit netting as the overdue path, windowed to [today, today+X days], explicitly excluding anything already overdue so a tenant never gets both notifications for the same invoice. New FilterChipRow in NotificationSettingsScreen (Off/1/2/3 days) shown only when the dues toggle is on. Default 0 confirmed to change nothing for an existing install. Tests: NotificationSettingsViewModelTest and DuesReminderWorkerTest both extended (4 new worker tests covering off-by-default, in-window, already-overdue-not-double-counted, and out-of-window cases). Verified live on-device: opened Notifications settings, selected '1 day before', force-stopped and reopened the app, selection persisted. Full gate: 644 tests, 0 failures, 95.06% line coverage."
+    },
+    {
+      "timestamp": "2026-09-18T16:20:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - all 4 ACs hold. Re-verified live on-device myself (reset the PIN via wardens.pinHash per LODGY-102's now-fixed 'Forgot PIN?' - confirmed that fix is genuinely correct in its current state, not the intermediate broken attempt documented in LODGY-102's own history): Notifications screen shows Off/1/2/3-day options only when the dues toggle is on, selecting '1 day before' persisted across a force-stop/relaunch. Read DuesReminderWorker.kt directly: notifyDueSoonInvoices correctly excludes dueDate < today (no double-notification with the overdue path, confirmed by the dedicated test), and the windowing math (today to today+X days) is correct. Confirmed default 0 means zero behavior change on upgrade - the exact wording an existing warden needs. New tests read as genuine assertions, not tautologies."
+    },
+    {
+      "timestamp": "2026-09-18T16:41:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Opened Notifications myself - 'Also warn me before rent is due' with Off/1 day before/2 days before/3 days before reads exactly like the ask, sitting right under the existing dues toggle where I'd look for it. My earlier '1 day before' choice was still selected after the app relocked and I signed back in - it's a real setting, not a session flag. This is the kind of quiet, one-time-set control I want, not something I'll be fighting with every day."
     }
   ]
 }

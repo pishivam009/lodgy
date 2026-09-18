@@ -50,6 +50,7 @@ class TransferViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tenantId: String = checkNotNull(savedStateHandle["tenantId"])
+    private val bedId: String = checkNotNull(savedStateHandle["bedId"])
     private var agreement: TenancyAgreement? = null
 
     private val _uiState = MutableStateFlow(TransferUiState())
@@ -57,7 +58,9 @@ class TransferViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val active = tenancyAgreementRepository.getActiveByTenantId(tenantId)
+            // Resolved by the specific bed being transferred, not the tenant alone - a tenant
+            // holding several active beds must transfer exactly the one tapped (LODGY-101).
+            val active = tenancyAgreementRepository.getActiveByBedId(bedId)
             agreement = active
             if (active == null) {
                 _uiState.update { it.copy(loading = false, hasActiveAgreement = false) }

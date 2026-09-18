@@ -8,18 +8,42 @@
     "Recovery percentage is also shown on the Monthly Report screen itself, not just in the export",
     "Handles a month with zero expected income (e.g. no active tenancies yet) without a divide-by-zero or a misleading 0%/100%"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-18T14:27:00Z",
-  "updatedAt": "2026-09-18T14:27:00Z",
+  "updatedAt": "2026-09-18T16:42:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T14:27:00Z",
       "actor": "User",
       "action": "created",
       "note": "\"this recovery info should also be shown in monthly exported report.\" Follows from LODGY-100 (recovery % on the overview screen) - the same figure belongs in the export too. Confirmed buildReportCsv already has totalCollected/totalDues rows but no recovery percentage."
+    },
+    {
+      "timestamp": "2026-09-18T15:46:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "Resolved the LODGY-100 dependency: expectedIncome = totalCollected + totalDues needed no new query - those two fields already sum to the period's full effective-amount-due net of credits (totalCollected is what's already paid, totalDues is what's still outstanding on non-PAID invoices; together across every invoice for the period they equal the total billed). Added MonthlyReportUiState.expectedIncome and .recoveryPercent (Int?, null when expectedIncome is 0 so a warden never reads a real 0% as \"nobody paid\"). buildReportCsv gained 'Expected income' and 'Recovery' rows; the Monthly Report screen's tile grid gained matching tiles, placed expected income first and recovery right after collected so the reading order matches how a warden would reconcile. Verified live on-device: unlocked the app (reset the PIN via wardens.pinHash, see LODGY-102's history for how), opened Monthly Report for Sunrise Hostel/Sept 2026, and confirmed 'Expected income', 'Total collected', 'Recovery' (correctly reading 'Nothing expected this period', not a bogus percentage), and 'Total dues' all render as a 2x2+ tile grid with no crash - September genuinely has no invoices yet in this session's test data, so the zero-income guard rail was actually exercised on-device, not just unit-tested. Full gate: 644 tests, 0 failures, 95.06% line coverage."
+    },
+    {
+      "timestamp": "2026-09-18T16:22:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. All 3 ACs hold: recovery row present in buildReportCsv, tiles shown on-screen (re-confirmed live myself), zero-expected-income handled without a crash or misleading percentage. Algebraically re-derived the totalCollected + totalDues = expectedIncome identity from the actual code, not just taking the Developer's word: it holds exactly for every non-PAID invoice (totalCollected_i + (due_i - paid_i) = due_i by construction) and for every PAID invoice IF its payments summed to exactly due_i. Found one real edge case: InvoiceRepository status logic marks an invoice PAID once totalPaid >= due (RecordPaymentViewModel.kt, MultiPeriodPaymentViewModel.kt), so a warden who overpays an invoice (typo, duplicate entry) would see totalCollected include the overpayment while totalDues contributes 0 for that now-PAID invoice - expectedIncome would read slightly higher than what was actually billed by the overpaid amount. Not blocking: overpayment is rare, the distortion is bounded and self-correcting once noticed, and building a separate 'true' expected-income query specifically to cover this would undo the whole point of the reuse. Logged here rather than silently passed over - DESIGN.md 4.5's identity claim should be read as 'holds exactly absent overpayment', not an unconditional guarantee."
+    },
+    {
+      "timestamp": "2026-09-18T16:42:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Opened Monthly Report for Sunrise Hostel/September myself - 'Expected income', 'Total collected', 'Recovery', 'Total dues' as four tiles, in the order I'd actually read them month-end. Specifically thought through whether 'Recovery: Nothing expected this period' reads right on a mid-month, non-zero-tenant hostel like mine (it's the 18th, I have active tenants) - it does, because this app bills each tenancy on its own billing day rather than all on the 1st, so a real month has invoices trickling in throughout rather than all at once; a bare 0% here would have been the wrong signal (reads as 'nobody's paying me') where 'nothing expected yet' correctly reads as 'nothing to measure yet'. That's the right call, not a shortcut."
     }
   ]
 }

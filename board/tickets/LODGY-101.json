@@ -2,25 +2,57 @@
   "id": "LODGY-101",
   "epic": "Tenant Onboarding",
   "title": "New use case: a tenant who occupies two beds in different rooms",
-  "description": "New real-world case surfaced by the warden: some tenants take two beds in different rooms (e.g. a family, or someone renting extra storage/space), not just one bed each. TenancyAgreement currently has a single `bedId` - one agreement is one tenant on one bed. A tenant with two beds today would need two separate TenancyAgreement rows, which is likely fine at the raw data level but needs checking against everywhere the app currently assumes 'a tenant has at most one active tenancy/bed': tenant profile screen, dashboard occupancy counts, invoice generation (is there one invoice per agreement, or would this tenant now get two separate invoices for two beds - and is that the right billing shape or should it consolidate?), checkout flow (checking out of one bed shouldn't silently end the other), and any 'find this tenant's current room/bed' lookup that assumes a single result.\n\nNeeds Product Owner scoping before implementation: is two-invoices-per-tenant the right behavior, or should multi-bed tenants get one consolidated invoice? Does the tenant profile screen need to show multiple active tenancies side by side? This ticket is filed to capture the use case, not to prescribe the fix.",
+  "description": "New real-world case surfaced by the warden: some tenants take two beds in different rooms (e.g. a family, or someone renting extra storage/space), not just one bed each.\n\n**Scoped.** No schema change: a multi-bed tenant is simply two `TenancyAgreement` rows sharing the same `tenantId`, one per bed - already the model's shape for a returning tenant's second stay (see DATA-MODEL.md). Invoice generation already iterates every active agreement independently, not per tenant (`InvoiceGenerationWorker` reads `getAllActive()`), so two beds under one tenant already bill correctly as two separate invoices with zero change - that IS the right behavior, not a bug to fix.\n\nThe real gap is the read path. `TenancyAgreementRepository.getActiveByTenantId(tenantId)` returns whichever ACTIVE row it finds first - already known to be unsafe for exactly this reason: LODGY-87's 'mark own room' feature deliberately gives every marked room its own separate Tenant record instead of reusing one, specifically because 'one tenant holding several active agreements would make getActiveByTenantId pick the wrong one for transfer, checkout and invoicing' (see the comment in `BedGridViewModel.onMarkOwnRoomConfirmed`, and DESIGN.md 4.3). Six call sites use `getActiveByTenantId`: CheckoutViewModel, TransferViewModel, ManualInvoiceFormViewModel and ForgoneRentViewModel are all launched from a specific bed already (nav currently passes only `tenantId`, not `bedId`) - these should resolve via the already-unambiguous `getActiveByBedId` instead, which means threading `bedId` through their nav routes. TenantProfileViewModel currently collapses to one agreement via `agreements.latest()` - this is the one place genuinely about the tenant rather than one bed, so it needs to show every currently-active tenancy as its own section instead.\n\nOnboarding also has no entry point for this: tenant onboarding always creates a brand-new `Tenant` row (`TenantFormViewModel`'s `existingTenant` is only used for editing, not for reusing a tenant on a new bed) - needs a search-and-pick-existing-tenant step.\n\nLODGY-87's own workaround is left alone - it already works, and rewriting it isn't required now that the constraint it worked around no longer holds.",
   "acceptanceCriteria": [
-    "Decision recorded (DESIGN.md) on whether a multi-bed tenant gets one TenancyAgreement per bed or a new data shape, and how billing/invoicing should work across their beds",
-    "Tenant profile screen correctly shows all of a tenant's active bed(s), not just one",
-    "Checking a tenant out of one bed does not affect their tenancy on another bed",
-    "Dashboard/occupancy counts and invoice generation handle a tenant with more than one active bed without double-counting or under-counting"
+    "Onboarding a vacant bed offers a way to attach the new agreement to an existing tenant (search by name/phone) instead of only creating a new Tenant row",
+    "CheckoutViewModel, TransferViewModel, ManualInvoiceFormViewModel, and ForgoneRentViewModel resolve the tenancy by the specific bedId the action was launched from (via getActiveByBedId), not by tenantId alone - verified by a test where a tenant has two active agreements and the correct one is acted on every time, not whichever getActiveByTenantId happened to find first",
+    "Tenant profile screen shows every currently-active tenancy as its own section (bed/room, stay duration, and actions scoped to that specific tenancy), for a tenant with 1 or with N active beds",
+    "Checking a tenant out of one bed does not affect their tenancy on another bed - covered by a test with two active agreements for the same tenant",
+    "Invoice generation and dashboard/occupancy counts are confirmed (by reading the code, they already iterate per-agreement/per-bed not per-tenant) to correctly bill and count a multi-bed tenant without any change needed - if that's wrong, fix it",
+    "DESIGN.md 4.3 documents the decision (already drafted this pass - verify the Developer's implementation matches it)"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-18T14:28:00Z",
-  "updatedAt": "2026-09-18T14:28:00Z",
+  "updatedAt": "2026-09-18T16:45:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T14:28:00Z",
       "actor": "User",
       "action": "created",
       "note": "\"a new use case came: some tenants take two beds in different rooms.\" Filed to capture the use case for Product Owner triage - confirmed TenancyAgreement.bedId is currently single-valued (one bed per agreement), so this needs scoping across onboarding, billing, checkout, and occupancy counting before implementation."
+    },
+    {
+      "timestamp": "2026-09-18T15:05:00Z",
+      "actor": "Product Owner",
+      "action": "edited",
+      "note": "Scoped: no schema change needed. Traced getActiveByTenantId to 6 call sites and confirmed via the existing onMarkOwnRoomConfirmed comment (LODGY-87) that this exact ambiguity was already known and worked around rather than fixed - this ticket fixes the root cause instead. Confirmed invoice generation already iterates per-agreement (getAllActive), so billing needs no change. Rewrote acceptance criteria to be concrete: bed-scoped resolution for the 4 action screens, a real multi-tenancy view on the profile screen, and a genuine 'attach to existing tenant' onboarding path. Documented the decision in DESIGN.md 4.3. Handing to Developer."
+    },
+    {
+      "timestamp": "2026-09-18T16:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "Implemented per the Product Owner's scope. TenantProfileViewModel now exposes activeTenancies: List<TenancyEntry> (was a single .latest() pick) plus lastClosedTenancy for the fully-checked-out case; TenantProfileScreen renders one card per active tenancy when there's more than one, falling back to the original compact single-tenancy header when there's exactly one (zero visual change for the common case). CheckoutViewModel, TransferViewModel, CreditFormViewModel, MultiPeriodPaymentViewModel, ManualInvoiceFormViewModel and ForgoneRentViewModel all now resolve via getActiveByBedId(bedId) with bedId threaded through their nav routes from TenantProfileScreen's per-tenancy action callbacks (ForgoneRentViewModel's now-unused tenantId param was removed rather than left dead). Also fixed a real correctness bug this surfaced in CheckoutViewModel: it unconditionally called tenantRepository.setVacated() on every checkout, which would have wrongly marked a multi-bed tenant fully vacated after closing just one of their tenancies - now checks for another active agreement first. ManualInvoiceForm's tenant picker was rebuilt to list active tenancies (tenant + bed/room label) rather than tenants, since a multi-bed tenant needs disambiguating there too. Added a genuine 'attach to existing tenant' entry point: TenantFormScreen gained a 'This is an existing tenant' link (shown only when creating a new tenant for a bed, not when editing) leading to a new ExistingTenantPickerScreen that skips tenant-profile creation and goes straight to Agreement Terms for the picked tenant + bed. Expected/occupancy counting confirmed unchanged by reading the code (AC5) - no fix needed. Tests: added a two-active-beds case to TenantProfileViewModelTest, a two-active-beds checkout case to CheckoutViewModelTest (confirms setVacated is NOT called when another bed stays active), rewrote ManualInvoiceTenantPickerViewModelTest for the new agreement-based listing, and updated bedId wiring across all 6 affected ViewModel test files. Full gate: 644 tests, 0 failures, 95.06% line coverage. Verified live on-device: opened AC2 Test's profile (single active tenancy - confirmed the fallback header path still renders exactly as before), tapped through to Record a Credit and confirmed the bed-scoped nav resolved the tenancy correctly with no crash. Did not get to click through a genuine two-bed tenant live (none exist in this session's seeded data and creating one would mean building the fixture from scratch) - that scenario is covered by the new unit tests, not live-observed; flagging for the Tester to decide if that gap needs closing before Done."
+    },
+    {
+      "timestamp": "2026-09-18T16:30:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS, with the two-bed live-click-through gap consciously accepted rather than ignored. Attempted to close it myself: inserted a genuine second ACTIVE TenancyAgreement for AC2 Test on a fresh bed via sqlite3 (matching CLAUDE.md's seed-through-the-database pattern), intending to click through TenantProfileScreen's multi-card rendering live. Lost significant time to emulator/adb flakiness unrelated to the app (the process re-locked and dropped to the home launcher repeatedly between commands, confirmed via dumpsys window focus checks and logcat - no Lodgy crash, no app-side error, just environment friction). Removed the fixture cleanly afterward (confirmed via a SELECT returning no rows) rather than leave synthetic data behind. Deciding not to keep fighting the automation: getActiveByBedId(bedId) is a single-row query keyed only on bedId (WHERE bedId=:bedId AND status='ACTIVE' LIMIT 1) - it is structurally incapable of picking 'the wrong bed' regardless of how many agreements a tenant holds, so the core correctness claim in AC2/AC4 doesn't depend on rendering to be true. Verified everything else that IS reachable: re-read TenantProfileViewModel/Screen's size>1 branch (a straightforward loop over the same TenancyActionsCard already proven live for the size==1 case), re-confirmed the onboarding picker's nav wiring end-to-end in the code (TenantFormScreen.onPickExisting -> EXISTING_TENANT_PICKER_ROUTE -> ExistingTenantPickerScreen.onTenantSelected -> AGREEMENT_FORM_ROUTE, matching the already-proven single-tenant onboarding chain's unwind logic), and re-ran the full test suite including the two new multi-bed-specific tests (a tenant-with-two-beds case in TenantProfileViewModelTest, a checkout-leaves-tenant-active-with-another-bed case in CheckoutViewModelTest). AC6 (DESIGN.md 4.3) matches the shipped code. All 6 ACs pass on this basis."
+    },
+    {
+      "timestamp": "2026-09-18T16:45:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, on the same basis the Tester used - I don't have a real two-bed tenant to click through either, and I trust the reasoning that getActiveByBedId can't pick the wrong bed by construction, plus the dedicated tests for the two scenarios that actually matter (checkout not wrongly vacating a still-active tenant, the profile screen actually listing both tenancies). While looking at this I noticed the Tenants list itself would still only show one of a multi-bed tenant's rooms if I searched for them by name - filed as LODGY-105 rather than blocking this ticket on it, since everything THIS ticket promised (onboarding a second bed for an existing tenant, the profile screen, and each bed-specific action) is genuinely there and correct."
     }
   ]
 }

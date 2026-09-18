@@ -9,18 +9,42 @@
     "Definition of 'expected income' is documented in DESIGN.md and reused by LODGY-99's export",
     "Handles zero expected income (no active tenancies) without a divide-by-zero or misleading percentage"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "Medium",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-18T14:27:30Z",
-  "updatedAt": "2026-09-18T14:27:30Z",
+  "updatedAt": "2026-09-18T16:43:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T14:27:30Z",
       "actor": "User",
       "action": "created",
       "note": "\"overview screen should also have monthly expected income and actual collected in the month to get recovery percentage.\" Confirmed DashboardScreen currently has no monthly income/collection figures at all, only a today's-collections tile; the closest existing data (totalCollected/totalDues) lives on the separate Monthly Report screen."
+    },
+    {
+      "timestamp": "2026-09-18T15:48:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "Defined 'expected income' as totalCollected + totalDues (documented in DESIGN.md 4.5, per AC3) and reused it for both this ticket and LODGY-99's export - one definition, not two. Added monthlyExpectedIncome/monthlyCollected to DashboardViewModel (scoped to the current calendar month and whatever hostel filter - null or one specific hostel - is active, matching the screen's existing scoping pattern for every other tile) and a recoveryPercent: Int? that's null rather than 0%/100% when nothing's been billed. New 'This month's recovery' card on the Dashboard, below the stat grid and above the backup tile, showing expected/collected side by side plus the percentage, or a 'Nothing billed yet this month' line when null. Verified live on-device: Home screen renders the card correctly reading 'Nothing billed yet this month' (September genuinely has no invoices yet in this session's test data - the zero-state path, not just the populated one). Full gate: 644 tests, 0 failures, 95.06% line coverage."
+    },
+    {
+      "timestamp": "2026-09-18T16:24:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. All 4 ACs hold, including AC3 (definition documented in DESIGN.md 4.5 and confirmed reused by LODGY-99's implementation, not just described). Re-verified live myself: Home screen's 'This month's recovery' card is scoped correctly to the current calendar month and respects the hostel filter (read DashboardViewModel.loadMetrics - monthlyExpectedIncome/monthlyCollected are computed from invoicesInHostel, which is already filtered by the active scope, same as every other tile on the screen). Same overpayment edge case noted on LODGY-99 applies here too (shared identity) - not re-litigating it, logged once is enough."
+    },
+    {
+      "timestamp": "2026-09-18T16:43:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted, same reasoning as LODGY-99 - checked directly on Home myself (this is the screen I actually open first, so this is where the recovery framing matters most). 'This month's recovery' with the honest 'Nothing billed yet this month' line sits naturally below the four stat tiles, doesn't compete with them for attention, and doesn't invent a number it can't back up yet this early in the month."
     }
   ]
 }

@@ -1,25 +1,56 @@
 {
   "id": "LODGY-102",
   "epic": "Auth",
-  "title": "PinLockScreen overlaps its keypad with the hostel name/title on a very short screen",
-  "description": "Found incidentally while verifying LODGY-97's PinSetupScreen fix on-device: resized the emulator to 720x1000 (short screen) to check PinSetupScreen's new scroll behavior, and observed PinLockScreen (the unlock screen shown to a returning warden, not the first-time setup screen fixed under LODGY-97) rendering with the numeric keypad overlapping the hostel name and 'Enter your PIN' text - digits and title text drawn on top of each other, both partially readable.\n\nThe state that produced this was contrived (files/datastore/auth_prefs.preferences_pb deleted while Room already had a hostel - not reachable through any normal user flow, since PIN setup always precedes hostel setup) - it is NOT confirmed to reproduce on a normal PIN unlock in normal use, only that PinLockScreen's layout doesn't scroll/reflow either. Needs a clean repro (short screen + normal unlock flow, no manual state tampering) before treating this as confirmed - filed so it isn't lost, not confirmed as user-reachable yet.",
+  "title": "\"Forgot PIN?\" is completely hidden behind the keypad on PinLockScreen - not a short-screen edge case",
+  "description": "Filed as a low-priority, unconfirmed short-screen theory; on clean repro it turned out to be a real, severe, always-present bug at NORMAL resolution (1080x1920), nothing to do with screen size.\n\nPinLockScreen used the same unreserved `Box(fillMaxSize())` overlay layout LODGY-97 fixed in PinSetupScreen: a top `Column` (icon, title, PIN dots, error text, optional biometric icon, then the 'Forgot PIN?' TextButton as its last child) with `Keypad` absolutely positioned at `Alignment.BottomCenter` on top of it, no reserved space for either. On a fresh install with no error text and no biometric enabled, the top Column's content is short enough that 'Forgot PIN?' lands directly under the keypad's first row - confirmed via `uiautomator dump`: the button's bounds `[391,822][690,966]` sit almost exactly inside the '2' key's bounds `[396,852][684,1074]`. The keypad is composed after the Column in the same Box, so it draws over the button and swallows every touch in that region. The link was in the accessibility tree (reachable by TalkBack) but not by an ordinary sighted tap, at any screen size, on a completely fresh install - a locked-out warden had no way to reach PIN recovery at all.\n\nMissed by LODGY-97's audit because that audit grepped for `verticalScroll` at the file level - PinLockScreen.kt already contained that string (used by the separate `ForgotPinFlow` composable further down the same file), so the file was excluded even though the main lock-screen composable itself had no scroll and the same Box-overlay defect as PinSetupScreen.\n\nFixed: converted the outer `Box` to a `Column`, gave the informational top content `Modifier.weight(1f).verticalScroll(rememberScrollState())`, and moved 'Forgot PIN?' OUT of that scrollable region entirely into a fixed footer alongside the Keypad (not just made scrollable-and-hope-it-fits, which still failed to guarantee visibility - see history) - mirroring PinSetupScreen's fixed-footer treatment for its Submit button.",
   "acceptanceCriteria": [
-    "Reproduce (or rule out) the overlap on a normal PIN unlock flow at a small/short screen size, without deleting or corrupting any app state manually",
-    "If reproducible: PinLockScreen's content no longer overlaps on short screens - apply the same scroll/layout treatment used for PinSetupScreen under LODGY-97 if it applies",
-    "If not reproducible under any normal flow: close as not-a-bug with the finding documented, since the only way to trigger it required an impossible combination of stored state"
+    "\"Forgot PIN?\" is visible and tappable by a normal sighted tap on a fresh install, at standard resolution, with no scrolling required",
+    "The fix holds on a short/small screen too (the originally suspected case)",
+    "Verified live: tapped through the full forgotten-PIN flow (Save a backup -> reset) on-device and reached a working \"Set up your PIN\" screen afterward",
+    "No regression to the PIN dots, error text, or biometric prompt icon, which remain in the scrollable informational region above"
   ],
-  "status": "Todo",
-  "priority": "Low",
+  "status": "Delivered",
+  "priority": "High",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-18T14:24:00Z",
-  "updatedAt": "2026-09-18T14:24:00Z",
+  "updatedAt": "2026-09-18T16:46:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T14:24:00Z",
       "actor": "Developer",
       "action": "created",
       "note": "Surfaced during LODGY-97's on-device verification, not from user report. Deliberately low priority pending a clean repro - the observed state required manually deleting auth_prefs while a hostel already existed in Room, which normal onboarding order (PIN before hostel) cannot produce."
+    },
+    {
+      "timestamp": "2026-09-18T15:20:00Z",
+      "actor": "Developer",
+      "action": "edited",
+      "note": "Re-investigated while getting the emulator past its lock screen for LODGY-98/99/100/101 verification. Discovered the PIN itself lives in Room's wardens.pinHash (AppRootViewModel), not the DataStore file I'd deleted earlier - so that deletion never actually cleared anything, and the overlap I originally saw was real PinLockScreen state, not a corrupted one. Reproduced cleanly at full 1080x1920 resolution with zero state tampering: 'Forgot PIN?' sits directly under the keypad's '2' button and is completely untappable. Raised from Low to High and rewrote the description/AC accordingly - this is not the short-screen edge case it was filed as."
+    },
+    {
+      "timestamp": "2026-09-18T15:35:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "Testing",
+      "note": "First attempt (Box -> Column with weight(1f)+verticalScroll, same as PinSetupScreen) was insufficient on its own: it stopped the overlap but the top content still overflowed the available weighted space on a normal screen, scrolling 'Forgot PIN?' below the fold instead of just fixing it in place - traded one invisible button for another. Real fix: moved 'Forgot PIN?' out of the scrollable top region entirely, into a fixed footer alongside the Keypad (both center-aligned children of the outer Column, outside the weight(1f) scroll area). Verified live end-to-end on-device: reset the PIN via direct sqlite3 UPDATE on wardens.pinHash (matching CLAUDE.md's sanctioned DB-seeding workflow), relaunched, confirmed 'Forgot PIN?' renders below the title with no overlap and is tappable, tapped through to the 'Forgot your PIN?' screen, saved a backup via the real SAF picker, and completed a full PIN reset through 'Set up your PIN' -> 'Confirm PIN' back into the unlocked app. All pre-existing seeded data (Sunrise Hostel, AC2 Test, Anil Verma tenants) confirmed intact throughout. compileDebugKotlin clean, full gate green (644 tests, 0 failures, 95.06% line coverage)."
+    },
+    {
+      "timestamp": "2026-09-18T16:32:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS - independently re-verified the CURRENT state on-device, not the Developer's own report of it. Unlocked the app fresh (own PIN entry, not reusing a cached session) and confirmed on a clean screenshot: 'Forgot PIN?' renders below 'Lodgy' with clear whitespace before the keypad starts, no overlap, and is genuinely tappable - confirmed by tapping it and landing on the 'Forgot your PIN?' screen. This matches the fixed-footer approach described in the ticket's history, not the earlier scroll-only attempt that was documented as insufficient. All 4 ACs hold. Read PinLockScreen.kt directly: the Column/weight(1f)/verticalScroll structure and the Forgot PIN button's placement outside that scrollable region, alongside Keypad, match what's described. DESIGN.md's new bullet near 4.12 (LODGY-102) accurately describes the fix, including the honest note about the first attempt being insufficient - good practice, not overclaiming a one-shot fix."
+    },
+    {
+      "timestamp": "2026-09-18T16:46:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted - and used it for real, not as a formality. Relaunched the app after it had relocked mid-session and 'Forgot PIN?' was sitting right there under my hostel name, exactly where I'd look for it if I actually forgot my PIN one day. This is the scenario that matters: a warden locked out of their own phone with no other way in. It working cleanly is the whole point of the ticket."
     }
   ]
 }

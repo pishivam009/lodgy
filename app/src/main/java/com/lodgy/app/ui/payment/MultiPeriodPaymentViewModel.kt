@@ -59,13 +59,16 @@ class MultiPeriodPaymentViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tenantId: String = checkNotNull(savedStateHandle["tenantId"])
+    private val bedId: String = checkNotNull(savedStateHandle["bedId"])
 
     private val _uiState = MutableStateFlow(MultiPeriodPaymentUiState())
     val uiState: StateFlow<MultiPeriodPaymentUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            val agreement = tenancyAgreementRepository.getLatestByTenantId(tenantId)
+            // Resolved by bed, not tenant - splitting a payment across several months must apply
+            // to the one tenancy this action was opened for (LODGY-101).
+            val agreement = tenancyAgreementRepository.getActiveByBedId(bedId)
             val rows = agreement
                 ?.let { invoiceRepository.getByTenancyAgreementId(it.id).first() }
                 .orEmpty()

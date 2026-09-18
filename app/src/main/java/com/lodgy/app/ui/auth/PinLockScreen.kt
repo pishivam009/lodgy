@@ -118,9 +118,13 @@ fun PinLockScreen(
         return
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(top = 72.dp),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(top = 72.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
@@ -178,20 +182,23 @@ fun PinLockScreen(
                     Icon(AuthIcons.Fingerprint, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 }
             }
+        }
 
-            // Discoverable exactly where a locked-out warden looks for it, not buried in settings
-            // they cannot reach anyway (LODGY-76, AC1).
-            TextButton(onClick = viewModel::onForgotPinClicked, modifier = Modifier.padding(top = 14.dp)) {
-                Text(stringResource(R.string.forgot_pin_link))
-            }
+        // Kept out of the scrollable region above, alongside the keypad, so it never has to
+        // compete with the icon/title/dots for space - a locked-out warden must always be able to
+        // reach it without knowing to scroll first (LODGY-76, AC1; found not reaching a sighted
+        // tap at all before this fix, LODGY-102).
+        TextButton(
+            onClick = viewModel::onForgotPinClicked,
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp),
+        ) {
+            Text(stringResource(R.string.forgot_pin_link))
         }
 
         Keypad(
             onDigit = viewModel::onDigit,
             onBackspace = viewModel::onBackspace,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp, vertical = 24.dp),
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 24.dp, vertical = 24.dp),
         )
     }
 }
