@@ -153,6 +153,47 @@ class TenantDirectoryViewModelTest {
         assertEquals("102", viewModel.uiState.value.items.single().location?.roomNumber)
     }
 
+    /** LODGY-105: a tenant with two active beds must be findable and sortable from either room,
+     *  not collapsed to one row that hides the other bed. */
+    @Test
+    fun `a tenant with two active beds gets two distinct rows`() {
+        every { tenantRepository.getAll() } returns flowOf(listOf(tenant("Ravi", "999", id = "t1")))
+        every { agreementRepository.observeAll() } returns flowOf(
+            listOf(agreement("t1", "b1").copy(id = "a1"), agreement("t1", "b2").copy(id = "a2")),
+        )
+        coEvery { bedRepository.getLocation("b1") } returns BedLocation("101", "A")
+        coEvery { bedRepository.getLocation("b2") } returns BedLocation("102", "A")
+
+        val items = viewModel().uiState.value.items
+
+        assertEquals(2, items.size)
+        assertEquals(setOf("a1", "a2"), items.map { it.key }.toSet())
+        assertEquals(setOf("101", "102"), items.mapNotNull { it.location?.roomNumber }.toSet())
+        assertEquals(listOf("Ravi", "Ravi"), items.map { it.tenant.name })
+    }
+
+    /** A vacated tenant still gets exactly one row (their last bed), not one per historical
+     *  agreement - only currently-active beds are meant to multiply. */
+    @Test
+    fun `a checked-out tenant with two past agreements still gets one row`() {
+        every { tenantRepository.getAll() } returns
+            flowOf(listOf(tenant("Old", "999", id = "t1", status = TenantStatus.VACATED)))
+        every { agreementRepository.observeAll() } returns flowOf(
+            listOf(
+                agreement("t1", "b1").copy(id = "a1", status = AgreementStatus.CLOSED, moveInDate = 0L),
+                agreement("t1", "b2").copy(id = "a2", status = AgreementStatus.CLOSED, moveInDate = 1_000L),
+            ),
+        )
+        coEvery { bedRepository.getLocation("b2") } returns BedLocation("102", "A")
+
+        // Filter defaults to ACTIVE, which would hide a vacated tenant entirely - switch to ALL.
+        val viewModel = viewModel()
+        viewModel.onFilterChange(TenantFilter.ALL)
+
+        assertEquals(1, viewModel.uiState.value.items.size)
+        assertEquals("102", viewModel.uiState.value.items.single().location?.roomNumber)
+    }
+
     @Test
     fun `an agreement created after the tenant row still resolves a location`() {
         val agreements = MutableStateFlow(emptyList<TenancyAgreement>())

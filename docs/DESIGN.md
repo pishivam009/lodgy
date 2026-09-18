@@ -323,7 +323,15 @@ Notes:
   `getActiveByBedId`. The tenant profile screen is the one place genuinely
   about the tenant rather than one bed, so it now lists every currently
   active tenancy as its own section — bed, stay duration, and actions, scoped
-  to that tenancy — rather than collapsing to a single `.latest()` pick.
+  to that tenancy — rather than collapsing to a single `.latest()` pick. The
+  Tenants directory list had the same collapsing read at its own call site,
+  missed by LODGY-101's audit since that ticket named six specific screens
+  and the directory wasn't one of them; LODGY-105 closed it the same way -
+  one row per active agreement, keyed by agreement id so a two-bed tenant is
+  findable and sortable from either room, with the `.latest()` fallback kept
+  only for a tenant with no active agreement (fully checked out, or none
+  yet), which still gets the single historical row this list has always
+  shown for that case.
   Onboarding a second bed for an existing tenant needed a real entry point:
   the tenant form gained a search-and-pick step so the warden can attach a
   new agreement to a tenant who already has one, instead of always creating a

@@ -7,18 +7,50 @@
     "Import screen's description (or a note shown right after a successful restore) tells the warden they'll set up a new PIN, before or immediately after they hit that screen - not left to discover it silently",
     "Copy makes clear this is expected/normal, not a sign the restore partially failed"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-18T17:20:00Z",
-  "updatedAt": "2026-09-18T17:20:00Z",
+  "updatedAt": "2026-09-18T18:36:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T17:20:00Z",
       "actor": "User",
       "action": "created",
       "note": "Found while accepting LODGY-103 - checked backup_import_description in strings.xml and confirmed it says nothing about the PIN reset, even though that's now a documented, deliberate behavior. Low priority - a copy-only fix, not a data or logic gap."
+    },
+    {
+      "timestamp": "2026-09-18T18:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Copy-only fix - no code/logic change needed, just strings.xml + values-hi/strings.xml."
+    },
+    {
+      "timestamp": "2026-09-18T18:10:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "backup_import_description now ends with: \"You'll set up a new PIN on this device afterwards - your hostels, tenants and settings all come back, only the PIN doesn't.\" backup_restart_body now ends with: \"You'll be asked to set up a new PIN - that's expected, not a sign anything went wrong.\" Both satisfy AC #1 (warned before/immediately after hitting the screen) and AC #2 (explicitly framed as expected, not a failure). Hindi strings in values-hi/strings.xml given matching additions for parity. Verified via full test suite (650 tests, 0 failures, coverage gate met) that strings.xml parses and nothing else broke; did not additionally re-verify the two screens rendering on-device this pass (no logic path changed, pure string content)."
+    },
+    {
+      "timestamp": "2026-09-18T18:26:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. Read both strings directly in values/strings.xml (lines 517, 525): backup_import_description and backup_restart_body both now name the PIN reset explicitly and frame it as expected, not a failure - satisfies AC #1 and AC #2 literally. Read values-hi/strings.xml (lines 507, 515) and confirmed the Hindi additions are genuine translations matching the English intent, not left blank or copy-pasted English - maintains this codebase's bilingual parity requirement. No logic changed, no code paths to re-test; full suite green (650 tests, 0 failures, coverage gate met)."
+    },
+    {
+      "timestamp": "2026-09-18T18:36:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. This is exactly the moment I flagged when I filed the ticket - I'd have hit 'Set up your PIN' right after a restore and wondered if I'd lost something. The new copy tells me upfront (on the Import screen, before I even pick a file) that only the PIN resets and everything else - hostels, tenants, settings - comes back, and the restart dialog repeats the same reassurance right when I'd see the PIN setup screen. Reads calm, not alarming, in both English and Hindi. No further gap."
     }
   ]
 }

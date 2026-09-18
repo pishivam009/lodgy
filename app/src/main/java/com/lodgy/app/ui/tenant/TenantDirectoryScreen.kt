@@ -113,7 +113,7 @@ fun TenantDirectoryScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    items(uiState.items, key = { it.tenant.id }) { item ->
+                    items(uiState.items, key = { it.key }) { item ->
                         TenantRow(item = item, onClick = { onOpenTenant(item.tenant) })
                     }
                 }

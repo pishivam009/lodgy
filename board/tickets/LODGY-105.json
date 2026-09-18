@@ -8,18 +8,72 @@
     "Search by name/phone still finds the tenant regardless of which bed's row (if split) matches",
     "Sorting by Room behaves sensibly for a multi-bed tenant under whichever display choice is made"
   ],
-  "status": "Todo",
+  "status": "Delivered",
   "priority": "Low",
   "version": "0.5.0",
   "assigneeRole": null,
   "createdAt": "2026-09-18T16:40:00Z",
-  "updatedAt": "2026-09-18T16:40:00Z",
+  "updatedAt": "2026-09-18T18:35:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T16:40:00Z",
       "actor": "User",
       "action": "created",
       "note": "Found while doing UAT on LODGY-101 (accepted separately - its own stated scope holds). Checked TenantDirectoryViewModel.kt directly: it uses the same tenant-collapses-to-one-agreement pattern LODGY-101 fixed elsewhere, just at a call site that ticket's audit didn't name. Low priority since it's a display gap, not a data-correctness one - the underlying agreements are all still correct and reachable from the profile screen, just not all visible from the list."
+    },
+    {
+      "timestamp": "2026-09-18T17:50:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Chose 'one row per active tenancy' (matches LODGY-101's already-established TenancyEntry pattern rather than inventing a merged-row display)."
+    },
+    {
+      "timestamp": "2026-09-18T18:10:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "TenantDirectoryViewModel.kt: replaced the tenant-keyed combine with tenants.flatMap { } - a tenant with one or more ACTIVE agreements now emits one TenantDirectoryItem per active agreement (keyed by agreement.id), a tenant with none (fully checked out or never had one) still emits exactly one fallback item via the existing .latest() extension (keyed by tenant.id). Added a `key: String` field to TenantDirectoryItem since LazyColumn's key must now be unique per row, not per tenant - updated TenantDirectoryScreen.kt's items(...) key accordingly. Search/filter/sort all operate on the flattened item list unchanged, so a split tenant is findable and sortable from either row. New unit tests: 'a tenant with two active beds gets two distinct rows' and 'a checked-out tenant with two past agreements still gets one row' (the latter confirms the fallback path still collapses history to one row, only active beds multiply). Full suite: 650 tests, 0 failures, coverage gate (0.93 line) met. assembleDebug succeeded, APK installed on emulator-5554.\n\nHonest gap: could not click through the multi-bed rendering live on-device this session - the emulator's PIN lock screen stopped responding to synthetic digit taps (verified via pixel-diffed before/after screenshots showing zero change, and a post-4-tap UI dump still showing the PIN entry screen), while taps on other controls on the same screen (Forgot PIN?, Back) worked and navigated correctly. This is a synthetic-input quirk isolated to this emulator session, not a code change in this diff - TenantRow's rendering (which already puts item.location above the tenant name) was not touched. Recommend the Tester decide whether unit tests + code reading are sufficient to pass, or whether to first get past the PIN screen (a SQL-fixture tenant with two active beds, room r998/bed b998a/agreement a998 on tenant 'AC2 Test', is already seeded in the emulator's DB for this) before approving."
+    },
+    {
+      "timestamp": "2026-09-18T18:15:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "In Progress",
+      "note": "FAIL (docs, not behavior): independently reproduced the PIN-keypad input dead-zone via a different method (KEYCODE_1..4 hardware keyevents, which just shifted D-pad focus onto the 'Forgot PIN?' button instead of typing digits) - this confirms the Developer's finding, it's a session/device input issue, not something specific to how they clicked, and I'm not failing the ticket over it. The real gap: docs/DESIGN.md's LODGY-101 paragraph (line ~323) states 'The tenant profile screen is the one place genuinely about the tenant rather than one bed, so it now lists every currently active tenancy... rather than collapsing to a single .latest() pick' - LODGY-105 makes that statement wrong by extension, since the Tenants directory now does the same thing the profile screen does. CLAUDE.md is explicit that a doc update is part of the same commit as the work, not a follow-up. Code and tests themselves read correctly: flatMap + per-active-agreement TenantDirectoryItem with a stable key, .latest() fallback preserved for the checked-out case - I re-read both new tests and they exercise exactly the two behaviors in question. Add one sentence to that DESIGN.md bullet (or a short LODGY-105 follow-up) noting the directory list now does the same, then resubmit."
+    },
+    {
+      "timestamp": "2026-09-18T18:22:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Testing",
+      "note": "docs/DESIGN.md's LODGY-101 bullet extended with a paragraph naming LODGY-105 explicitly: the directory had the same collapsing read at its own call site (missed by LODGY-101's six-screen audit), now closed the same way - one row per active agreement, .latest() fallback kept only for the no-active-agreement case. No code changes this pass."
+    },
+    {
+      "timestamp": "2026-09-18T18:25:00Z",
+      "actor": "Tester",
+      "action": "status_change",
+      "from": "Testing",
+      "to": "Done",
+      "note": "PASS. docs/DESIGN.md now correctly describes the directory's one-row-per-active-agreement behavior alongside the profile screen's, closing the gap from my previous FAIL. Re-verified against all three acceptance criteria: (1) shown as one row per active tenancy - confirmed in TenantDirectoryViewModel.kt's flatMap + the 'two distinct rows' test; (2) search by name/phone still finds the tenant regardless of which row matches - query filtering runs on the flattened per-agreement item list in the second combine() block, unaffected by the flatMap change, and the existing 'query filters by name...' test still passes unmodified; (3) Room sort behaves sensibly for a multi-bed tenant - each row now carries its own `location`, so roomSortKey() sorts each bed independently rather than picking one ambiguous room for the whole tenant, which is a strict improvement over the pre-fix ambiguity the ticket described. Edge case checked by reading: a tenant filtered out by TenantFilter.ACTIVE (VACATED) still only produces one row via .latest(), not one per historical agreement - confirmed by the 'checked-out tenant with two past agreements still gets one row' test, which correctly uses TenantFilter.ALL so the row isn't hidden entirely. On-device click-through remains blocked by the PIN-keypad input issue (reproduced independently by two different methods now); accepting unit tests + code reading as sufficient given the narrowness of the diff and that TenantRow's rendering was never touched. Full suite still green: 650 tests, 0 failures, coverage gate met."
+    },
+    {
+      "timestamp": "2026-09-18T18:32:00Z",
+      "actor": "User",
+      "action": "comment",
+      "note": "Tried the click-through myself before deciding: attempted a fresh tap on digit '1' with logcat cleared right before, and separately checked dumpsys window for any invisible overlay stealing touches - no exceptions logged, no overlay above MainActivity, and other controls on the exact same screen (Forgot PIN?, Back) respond to taps normally. Three of us (Developer, Tester, me) have now hit the identical dead zone on the numeric keypad specifically, via three different input methods (touch tap, hardware keyevent, and this overlay/logcat check) - I'm satisfied this is a synthetic-input quirk isolated to this emulator session and this one PIN-entry composable, not something LODGY-105's diff touches (it doesn't go near PIN entry code at all)."
+    },
+    {
+      "timestamp": "2026-09-18T18:35:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. As a warden, the actual annoyance this fixes is real: I have a tenant who rents a bed for herself and a second one for her mother down the corridor, and today she'd vanish from my Tenants list search results half the time depending on which room I was thinking of. One row per bed, both searchable and both sortable by room, is exactly what I'd want when I'm mid-conversation with her about which room needs a fan fixed. The fallback for a fully-checked-out tenant staying as a single row also matches how I think about someone who's already moved out - I don't want their old rooms cluttering the list twice. Cleaned up the AC2 Test fixture (tenant 531fd538-2155-41ef-8509-e527587b7d7d, agreement a998, bed b998a, room r998) from the emulator's database via on-device sqlite3 + WAL checkpoint, so it's not left behind for whoever uses this emulator next."
     }
   ]
 }

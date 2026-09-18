@@ -3,6 +3,7 @@ package com.lodgy.app.ui.tenant
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lodgy.app.data.dao.BedLocation
+import com.lodgy.app.data.entity.AgreementStatus
 import com.lodgy.app.data.entity.Tenant
 import com.lodgy.app.data.entity.TenantStatus
 import com.lodgy.app.data.repository.BedRepository
@@ -16,7 +17,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
+/** [key] is the tenancy agreement's id where there is one, or the tenant's own id as a fallback
+ *  for a tenant with no agreement at all - a tenant with two active beds produces two of these,
+ *  one per bed, so the list never hides one the way a single tenant-keyed row would (LODGY-105). */
 data class TenantDirectoryItem(
+    val key: String,
     val tenant: Tenant,
     val location: BedLocation?,
 )
@@ -68,13 +73,31 @@ class TenantDirectoryViewModel @Inject constructor(
                 tenantRepository.getAll(),
                 tenancyAgreementRepository.observeAll(),
             ) { tenants, agreements ->
-                val latestByTenant = agreements.groupBy { it.tenantId }
-                    .mapValues { (_, forTenant) -> forTenant.latest() }
-                tenants.map { tenant ->
-                    TenantDirectoryItem(
-                        tenant = tenant,
-                        location = latestByTenant[tenant.id]?.let { bedRepository.getLocation(it.bedId) },
-                    )
+                val byTenant = agreements.groupBy { it.tenantId }
+                tenants.flatMap { tenant ->
+                    val forTenant = byTenant[tenant.id].orEmpty()
+                    val active = forTenant.filter { it.status == AgreementStatus.ACTIVE }
+                    if (active.isNotEmpty()) {
+                        // One row per active bed, not one row for the tenant - a tenant holding
+                        // two beds must be findable and sortable by either room (LODGY-105).
+                        active.map { agreement ->
+                            TenantDirectoryItem(
+                                key = agreement.id,
+                                tenant = tenant,
+                                location = bedRepository.getLocation(agreement.bedId),
+                            )
+                        }
+                    } else {
+                        // Fully checked out (or never had an agreement) - the single historical
+                        // row this list has always shown for that case.
+                        listOf(
+                            TenantDirectoryItem(
+                                key = tenant.id,
+                                tenant = tenant,
+                                location = forTenant.latest()?.let { bedRepository.getLocation(it.bedId) },
+                            ),
+                        )
+                    }
                 }
             }.collect { allItems.value = it }
         }
