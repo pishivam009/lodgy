@@ -9,12 +9,12 @@
     "No existing field's behavior changes - only that the screen can scroll to reveal all of them",
     "Verified by actually running the app on-device (or emulator) and reaching Save, not just a passing unit test - this bug already had passing unit tests"
   ],
-  "status": "Done",
+  "status": "Delivered",
   "priority": "High",
   "version": "0.5.0",
   "assigneeRole": "Developer",
   "createdAt": "2026-09-18T13:15:00Z",
-  "updatedAt": "2026-09-18T13:50:00Z",
+  "updatedAt": "2026-09-18T14:05:00Z",
   "history": [
     {
       "timestamp": "2026-09-18T13:15:00Z",
@@ -45,6 +45,14 @@
       "from": "Testing",
       "to": "Done",
       "note": "PASS - all 4 ACs independently re-verified on-device, including AC2 which the developer had not re-checked. Onboarded AC2 Test (Room 101 Bed B, non-revenue ON) end to end - Save & Move In was already reachable without scrolling (as expected, this path was never broken), tenancy created successfully. Confirmed via direct DB read: agreedRent=0, advanceDeposit=0, billingCycleDay=10, nonRevenue=1 - all correct. Separately confirmed AC3 on the developer's own test tenant (Scroll Fix, non-revenue OFF): agreedRent=6000, advanceDeposit=6000, billingCycleDay=5, moveInDate correct, nonRevenue=0 - the scroll fix changed no field values. AC1 and AC4 already covered by the developer's on-device verification plus my own observation of the same screen. No regressions found."
+    },
+    {
+      "timestamp": "2026-09-18T14:05:00Z",
+      "actor": "User",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Accepted. Did the real thing this ticket is about: added a fresh room, then onboarded a paying tenant (Vikram Singh, Room 201 Bed A, non-revenue off - the case that used to be broken) start to finish - name, phone, rent, deposit, billing day, move-in date. One natural swipe down through Agreement Terms reached Save & Move In, same gesture I already use everywhere else in this app. Nothing about it felt like a workaround or a fix - it just worked, which is the actual bar for something I'll be doing with a real person standing in front of me."
     }
   ]
 }
