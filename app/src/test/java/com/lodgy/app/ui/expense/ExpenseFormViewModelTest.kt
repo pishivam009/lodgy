@@ -3,8 +3,10 @@ package com.lodgy.app.ui.expense
 import androidx.lifecycle.SavedStateHandle
 import com.lodgy.app.data.entity.Expense
 import com.lodgy.app.data.entity.ExpenseCategory
+import com.lodgy.app.data.entity.Hostel
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.ExpenseRepository
+import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.testutil.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -23,13 +25,20 @@ class ExpenseFormViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val expenseRepository: ExpenseRepository = mockk()
+    private val hostelRepository: HostelRepository = mockk()
     private val hostelPreferences: HostelPreferences = mockk()
 
+    private fun hostel(id: String, name: String) =
+        Hostel(id = id, wardenId = "w1", name = name, address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+
     private fun viewModel(expenseId: String? = null) =
-        ExpenseFormViewModel(expenseRepository, hostelPreferences, SavedStateHandle(mapOf<String, Any?>("expenseId" to expenseId).filterValues { it != null }))
+        ExpenseFormViewModel(expenseRepository, hostelRepository, hostelPreferences, SavedStateHandle(mapOf<String, Any?>("expenseId" to expenseId).filterValues { it != null }))
 
     @Test
     fun `creating a new expense starts blank and not in edit mode`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf(null)
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
+
         val state = viewModel().uiState.value
         assertFalse(state.isEditing)
         assertEquals("", state.amount)
@@ -52,6 +61,9 @@ class ExpenseFormViewModelTest {
 
     @Test
     fun `canSave requires a numeric amount`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
+
         val viewModel = viewModel()
         assertFalse(viewModel.uiState.value.canSave)
         viewModel.onAmountChange("abc")
@@ -61,8 +73,26 @@ class ExpenseFormViewModelTest {
     }
 
     @Test
+    fun `a new expense defaults to the currently selected hostel but can be switched`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise"), hostel("h2", "Moonlight")))
+        coEvery { expenseRepository.create("h2", ExpenseCategory.WIFI, 100.0, false, any(), null) } returns mockk()
+
+        val viewModel = viewModel()
+        assertEquals("h1", viewModel.uiState.value.selectedHostelId)
+        assertEquals(listOf("h1", "h2"), viewModel.uiState.value.hostels.map { it.id })
+
+        viewModel.onHostelChange("h2")
+        viewModel.onAmountChange("100")
+        viewModel.save()
+
+        coVerify { expenseRepository.create("h2", ExpenseCategory.WIFI, 100.0, false, any(), null) }
+    }
+
+    @Test
     fun `saving a new expense reads the selected hostel and creates it there`() {
         every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
         coEvery { expenseRepository.create("h1", ExpenseCategory.WIFI, 100.0, false, any(), null) } returns mockk()
 
         val viewModel = viewModel()
@@ -76,6 +106,7 @@ class ExpenseFormViewModelTest {
     @Test
     fun `saving a new expense with no selected hostel does nothing`() {
         every { hostelPreferences.selectedHostelId } returns flowOf(null)
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
 
         val viewModel = viewModel()
         viewModel.onAmountChange("100")
@@ -101,6 +132,9 @@ class ExpenseFormViewModelTest {
 
     @Test
     fun `save does nothing when the amount is not numeric`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
+
         val viewModel = viewModel()
         viewModel.onAmountChange("nope")
 

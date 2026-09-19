@@ -559,6 +559,12 @@ Notes:
   matched on hostel *and* period; matching on period alone would flag another
   property's invoices.
 - Export the month as CSV, and see 4.8 for the printable PDF packet
+- **Which property the report describes is asked, not assumed** (LODGY-107): a
+  warden with more than one hostel gets a chip row to switch between them on
+  this screen; a single-hostel warden sees the plain hostel name as before,
+  with no extra step. The choice starts from the app's selected-hostel
+  preference but does not write back to it - it is local to this screen, like
+  the Dashboard and All Rooms hostel filters.
   (LODGY-23, LODGY-45).
 
 ### 4.6 Tenant notes
@@ -600,6 +606,12 @@ Notes:
 - The `isRecurring` flag the warden already sets is what drives the
   recurring-expense notification in 4.10. No pattern inference over past
   entries: the tag is the signal (LODGY-60).
+- **Adding an expense asks which property it's for** (LODGY-107) rather than
+  silently attributing it to whichever hostel is currently selected
+  elsewhere in the app. Shown only when the warden has more than one
+  property, pre-filled with the currently selected one so the common case
+  stays a single tap. Not editable once saved - changing an expense's
+  property after the fact is out of scope here.
 
 ### 4.8 Backup & restore (replaces cloud sync for now)
 - **Export**: zips the Room DB file + the photos directory + two of the
@@ -1044,3 +1056,5 @@ changed. The ticket holds the full argument; this is the shape of it.
 | Invoice generation catches up within the period, but never across months | A phone asleep on the billing day silently skipped a month's rent; backfilling further would invent dues for months already settled in cash | LODGY-90 |
 | A caught-up invoice is dated from its billing day, not from the catch-up | Otherwise rent owed since the 5th would present as due today, understating arrears on the screen the warden trusts for who is late | LODGY-90 |
 | The billing decision is a pure function, not a condition inside the worker | Every case is a date boundary; leaving it in the worker made the edges testable only by waiting for the right day of the month | LODGY-90 |
+| The expense form and the Monthly Report ask which property explicitly, only when there is more than one | Both used to read `hostelPreferences.selectedHostelId` with no field or picker on screen - a warden logging an expense for the wrong property, or reading last month's numbers for the wrong one, had no chance to notice, the same shape of problem LODGY-85 fixed for onboarding | LODGY-107 |
+| The Monthly Report's chosen property is local to that screen, not written back to `hostelPreferences` | Switching hostels to view a different report should not also change which property every other screen opens to next, the same decoupling Dashboard and All Rooms already use for their own hostel filters | LODGY-107 |

@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -133,7 +136,19 @@ fun MonthlyReportScreen(onBack: () -> Unit, viewModel: MonthlyReportViewModel = 
         }
 
         Column(modifier = Modifier.padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(uiState.hostelName, style = MaterialTheme.typography.titleMedium)
+            if (uiState.hostels.size > 1) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(uiState.hostels) { hostel ->
+                        FilterChip(
+                            selected = uiState.hostelId == hostel.id,
+                            onClick = { viewModel.selectHostel(hostel.id) },
+                            label = { Text(hostel.name) },
+                        )
+                    }
+                }
+            } else {
+                Text(uiState.hostelName, style = MaterialTheme.typography.titleMedium)
+            }
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(

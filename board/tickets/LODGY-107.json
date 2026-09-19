@@ -1,0 +1,50 @@
+{
+  "id": "LODGY-107",
+  "epic": "Expenses",
+  "title": "Expense form and monthly report silently use the globally selected hostel instead of asking",
+  "description": "Raised directly by the user: 'while entering the expenses the form should specifically ask which building is it used for. Right now it picks the one already selected. Same for monthly report.'\n\nExpenseFormViewModel.save() reads hostelPreferences.selectedHostelId directly when creating a new expense, with no field in the form showing or letting the warden change it - a warden with more than one property who forgets to switch the app's globally selected hostel before logging an expense gets no chance to notice, and the expense is silently attributed to the wrong building. MonthlyReportScreen has the same shape: it shows uiState.hostelName as a plain, non-interactive label and computes every figure from the same global preference, with no way to view a different property's report without leaving the screen, switching hostels from the Properties list, and coming back.",
+  "acceptanceCriteria": [
+    "Adding a new expense shows which hostel it will be logged against, defaulting to the currently selected one, and lets the warden change it before saving - for a warden with only one hostel, no extra step is shown",
+    "Saving a new expense uses whichever hostel is actually selected in the form, not a silent read of the global preference",
+    "The Monthly Report screen lets a warden with more than one hostel switch which property's report they are viewing without leaving the screen; a single-hostel warden sees no change",
+    "Switching hostels within the Monthly Report screen does not change the app's overall selected-hostel preference used elsewhere"
+  ],
+  "status": "Delivered",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-19T09:00:00Z",
+  "updatedAt": "2026-09-19T09:45:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-19T09:00:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed directly from the user's request and assigned to Developer immediately - straightforward, well-scoped UI/UX gap in an already-shipped feature, no design ambiguity to resolve first."
+    },
+    {
+      "timestamp": "2026-09-19T09:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - ExpenseFormViewModel/Screen and MonthlyReportViewModel/Screen."
+    },
+    {
+      "timestamp": "2026-09-19T09:40:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Done",
+      "note": "ExpenseFormViewModel: new-expense path now fetches all hostels, defaults selectedHostelId from hostelPreferences (unchanged default), and exposes it plus onHostelChange - save() reads state.selectedHostelId instead of the preference directly. canSave requires it set (editing is unaffected, hostel stays fixed on an existing expense). ExpenseFormScreen shows a chip row above Category, only when !isEditing && hostels.size > 1. MonthlyReportViewModel: replaced the continuous hostelPreferences.selectedHostelId.collect with a one-shot seed plus a new selectHostel(id) the screen can call directly - local to this screen, never written back to the preference, same decoupling Dashboard/AllRooms already use for their own hostel filters. MonthlyReportScreen swaps the static hostel-name Text for a FilterChip row when hostels.size > 1, plain text otherwise. New string expense_field_hostel (\"Property\"/\"प्रॉपर्टी\") in both locales. docs/DESIGN.md updated: two decision-log rows plus a bullet each under 4.5 and 4.7. Tests: added 'a new expense defaults to the currently selected hostel but can be switched' and 'a warden with more than one property can switch which report they are viewing', updated existing tests for the new HostelRepository dependency. Full suite: 652 tests, 0 failures, coverage gate met, assembleDebug succeeded. Did not re-verify on-device this pass - the emulator's PIN lock screen is still not responding to synthetic taps in this session (see LODGY-105's history for the same finding); judged on tests + code given how narrow and mechanical the change is."
+    },
+    {
+      "timestamp": "2026-09-19T09:45:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Built directly at the user's request in a live session rather than through the async Tester/User skill workflow; the user is reviewing the result directly. Marking Delivered on the strength of the full test/build gate passing and the acceptance criteria being met in the code - flagging honestly that this was not independently re-tested by a separate persona pass this time."
+    }
+  ]
+}

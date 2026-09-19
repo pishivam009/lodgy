@@ -7,6 +7,7 @@ import com.lodgy.app.data.entity.Expense
 import com.lodgy.app.data.entity.ExpenseCategory
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.ExpenseRepository
+import com.lodgy.app.data.repository.HostelRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class ExpenseHostelOption(val id: String, val name: String)
+
 data class ExpenseFormUiState(
     val isEditing: Boolean = false,
     val category: ExpenseCategory = ExpenseCategory.WIFI,
@@ -23,17 +26,21 @@ data class ExpenseFormUiState(
     val incurredOnMillis: Long = System.currentTimeMillis(),
     val isRecurring: Boolean = false,
     val note: String = "",
+    /** Only populated when adding - which hostel an existing expense belongs to isn't editable. */
+    val hostels: List<ExpenseHostelOption> = emptyList(),
+    val selectedHostelId: String? = null,
     val saved: Boolean = false,
     /** Delete a duplicate or wrong expense row (LODGY-64); confirmed first (LODGY-57). */
     val pendingDelete: Boolean = false,
     val deleted: Boolean = false,
 ) {
-    val canSave: Boolean get() = amount.toDoubleOrNull() != null
+    val canSave: Boolean get() = amount.toDoubleOrNull() != null && (isEditing || selectedHostelId != null)
 }
 
 @HiltViewModel
 class ExpenseFormViewModel @Inject constructor(
     private val expenseRepository: ExpenseRepository,
+    private val hostelRepository: HostelRepository,
     private val hostelPreferences: HostelPreferences,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -60,6 +67,21 @@ class ExpenseFormViewModel @Inject constructor(
                     )
                 }
             }
+        } else {
+            viewModelScope.launch {
+                val hostels = hostelRepository.getAll().first()
+                // Pre-filled from the currently selected hostel rather than left blank - the
+                // warden almost always wants that one - but shown and changeable, not silently
+                // applied (LODGY-107): a warden who forgets to switch it before logging an
+                // expense for a different property used to get no chance to notice.
+                val defaultId = hostelPreferences.selectedHostelId.first() ?: hostels.firstOrNull()?.id
+                _uiState.update {
+                    it.copy(
+                        hostels = hostels.map { hostel -> ExpenseHostelOption(hostel.id, hostel.name) },
+                        selectedHostelId = defaultId,
+                    )
+                }
+            }
         }
     }
 
@@ -68,6 +90,7 @@ class ExpenseFormViewModel @Inject constructor(
     fun onIncurredOnChange(millis: Long) = _uiState.update { it.copy(incurredOnMillis = millis) }
     fun onRecurringToggle(value: Boolean) = _uiState.update { it.copy(isRecurring = value) }
     fun onNoteChange(value: String) = _uiState.update { it.copy(note = value) }
+    fun onHostelChange(value: String) = _uiState.update { it.copy(selectedHostelId = value) }
 
     fun save() {
         val state = _uiState.value
@@ -77,7 +100,7 @@ class ExpenseFormViewModel @Inject constructor(
             if (existing != null) {
                 expenseRepository.update(existing, state.category, amount, state.isRecurring, state.incurredOnMillis, state.note.ifBlank { null })
             } else {
-                val hostelId = hostelPreferences.selectedHostelId.first() ?: return@launch
+                val hostelId = state.selectedHostelId ?: return@launch
                 expenseRepository.create(hostelId, state.category, amount, state.isRecurring, state.incurredOnMillis, state.note.ifBlank { null })
             }
             _uiState.update { it.copy(saved = true) }

@@ -539,6 +539,7 @@
     <string name="expense_recurring_badge">हर महीने</string>
     <string name="expense_form_title_add">खर्च जोड़ें</string>
     <string name="expense_form_title_edit">खर्च बदलें</string>
+    <string name="expense_field_hostel">प्रॉपर्टी</string>
     <string name="expense_field_category">श्रेणी</string>
     <string name="expense_field_amount">राशि</string>
     <string name="expense_field_date">तारीख</string>

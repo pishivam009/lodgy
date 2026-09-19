@@ -64,9 +64,11 @@ class MonthlyReportViewModelTest {
     }
 
     private fun viewModel(
+        hostels: List<Hostel> = emptyList(),
         credits: List<Credit> = emptyList(),
         reconciled: Boolean = false,
     ): MonthlyReportViewModel {
+        every { hostelRepository.getAll() } returns flowOf(hostels)
         coEvery { creditRepository.getAllOnce() } returns credits
         coEvery { reconciliationRepository.getForPeriod(any(), any(), any()) } returns
             if (reconciled) {
@@ -231,6 +233,31 @@ class MonthlyReportViewModelTest {
 
         assertEquals(1200.0, state.totalCredits, 0.0001)
         assertEquals(3800.0, state.totalDues, 0.0001)
+    }
+
+    @Test
+    fun `a warden with more than one property can switch which report they are viewing`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        val sunrise = Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        val moonlight = Hostel(id = "h2", wardenId = "w1", name = "Moonlight", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h1") } returns sunrise
+        coEvery { hostelRepository.getById("h2") } returns moonlight
+        every { floorRepository.getByHostelId(any()) } returns flowOf(emptyList())
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
+        every { invoiceRepository.getAll() } returns flowOf(emptyList())
+        coEvery { paymentRepository.getAll() } returns emptyList()
+        every { expenseRepository.getByHostelId(any()) } returns flowOf(emptyList())
+
+        val viewModel = viewModel(hostels = listOf(sunrise, moonlight))
+
+        assertEquals("h1", viewModel.uiState.value.hostelId)
+        assertEquals("Sunrise", viewModel.uiState.value.hostelName)
+        assertEquals(listOf("h1", "h2"), viewModel.uiState.value.hostels.map { it.id })
+
+        viewModel.selectHostel("h2")
+
+        assertEquals("h2", viewModel.uiState.value.hostelId)
+        assertEquals("Moonlight", viewModel.uiState.value.hostelName)
     }
 
     @Test

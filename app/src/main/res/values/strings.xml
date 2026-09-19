@@ -549,6 +549,7 @@
     <string name="expense_recurring_badge">RECURRING</string>
     <string name="expense_form_title_add">Add Expense</string>
     <string name="expense_form_title_edit">Edit Expense</string>
+    <string name="expense_field_hostel">Property</string>
     <string name="expense_field_category">Category</string>
     <string name="expense_field_amount">Amount</string>
     <string name="expense_field_date">Date</string>

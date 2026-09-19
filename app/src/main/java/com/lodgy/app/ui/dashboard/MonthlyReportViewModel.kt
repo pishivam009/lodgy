@@ -29,7 +29,10 @@ import kotlinx.coroutines.launch
 data class MonthlyReportUiState(
     val loading: Boolean = true,
     val hasActiveHostel: Boolean = false,
+    val hostelId: String? = null,
     val hostelName: String = "",
+    /** Only populated (and only shown as a picker) when the warden has more than one property. */
+    val hostels: List<HostelOption> = emptyList(),
     val month: Int = Calendar.getInstance().get(Calendar.MONTH) + 1,
     val year: Int = Calendar.getInstance().get(Calendar.YEAR),
     val totalCollected: Double = 0.0,
@@ -79,23 +82,30 @@ class MonthlyReportViewModel @Inject constructor(
     private val reconciliationRepository: ReconciliationRepository,
 ) : ViewModel() {
 
-    private var hostelId: String? = null
-
     private val _uiState = MutableStateFlow(MonthlyReportUiState())
     val uiState: StateFlow<MonthlyReportUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            hostelPreferences.selectedHostelId.collect { id ->
-                hostelId = id
-                if (id == null) {
-                    _uiState.update { it.copy(loading = false, hasActiveHostel = false) }
-                } else {
-                    val hostel = hostelRepository.getById(id)
-                    _uiState.update { it.copy(hasActiveHostel = true, hostelName = hostel?.name.orEmpty()) }
-                    refresh()
-                }
+            val hostels = hostelRepository.getAll().first()
+            _uiState.update { it.copy(hostels = hostels.map { hostel -> HostelOption(hostel.id, hostel.name) }) }
+            // Seeded from the app's selected-hostel preference for a sensible first open, but from
+            // here on this screen's choice of hostel is its own, switchable via the picker without
+            // touching that preference - the same local-override shape Dashboard and All Rooms use.
+            val initialId = hostelPreferences.selectedHostelId.first() ?: hostels.firstOrNull()?.id
+            if (initialId == null) {
+                _uiState.update { it.copy(loading = false, hasActiveHostel = false) }
+            } else {
+                selectHostel(initialId)
             }
+        }
+    }
+
+    fun selectHostel(id: String) {
+        viewModelScope.launch {
+            val hostel = hostelRepository.getById(id)
+            _uiState.update { it.copy(hasActiveHostel = true, hostelId = id, hostelName = hostel?.name.orEmpty()) }
+            refresh()
         }
     }
 
@@ -110,7 +120,7 @@ class MonthlyReportViewModel @Inject constructor(
     }
 
     private suspend fun refresh() {
-        val id = hostelId ?: return
+        val id = _uiState.value.hostelId ?: return
         val state = _uiState.value
 
         val bedsInHostel = floorRepository.getByHostelId(id).first()
@@ -182,7 +192,7 @@ class MonthlyReportViewModel @Inject constructor(
 
     /** A manual attestation only: nothing is diffed, nothing is locked, and it can be taken back. */
     fun onReconciledChange(reconciled: Boolean) {
-        val id = hostelId ?: return
+        val id = _uiState.value.hostelId ?: return
         val state = _uiState.value
         viewModelScope.launch {
             if (reconciled) {
