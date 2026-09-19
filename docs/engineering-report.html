@@ -74,7 +74,7 @@
 <header>
   <h1>Lodgy engineering report</h1>
   <p class="lede">Code, coverage, security posture and non-functional characteristics of the app as it stands. Every figure here was measured from this commit &mdash; the JaCoCo XML, the JUnit results, the merged manifest and the board &mdash; not estimated.</p>
-  <p class="meta">Lodgy <code>v0.5.0 (build 5)</code> &middot; commit <code>4f67105</code> &middot; schema v7 &middot; measured 7 Sep 2026</p>
+  <p class="meta">Lodgy <code>v0.5.0 (build 5)</code> &middot; commit <code>94527bd</code> &middot; schema v9 &middot; measured 19 Sep 2026</p>
   <nav>
     <a href="#glance">At a glance</a><a href="#codebase">Codebase</a><a href="#coverage">Test coverage</a>
     <a href="#security">Security</a><a href="#nfr">Non-functional</a><a href="#delivery">Delivery</a>
@@ -86,11 +86,11 @@
   <h2>At a glance</h2>
   <p class="sub">The five numbers that describe the project's health. The coverage gate is enforced by the build, not by convention &mdash; a change that drops line coverage below 93% fails <code>jacocoCoverageVerification</code> and does not ship.</p>
   <div class="cards">
-    <div class="card"><div class="n">27,353</div><div class="l">lines of Kotlin</div></div>
-    <div class="card"><div class="n">569</div><div class="l">unit tests, 0 failing</div></div>
-    <div class="card"><div class="n">95.89<small>%</small></div><div class="l">line coverage &middot; gate 93%</div></div>
+    <div class="card"><div class="n">31,529</div><div class="l">lines of Kotlin</div></div>
+    <div class="card"><div class="n">665</div><div class="l">unit tests, 0 failing</div></div>
+    <div class="card"><div class="n">95.17<small>%</small></div><div class="l">line coverage &middot; gate 93%</div></div>
     <div class="card"><div class="n">0</div><div class="l">open security findings</div></div>
-    <div class="card"><div class="n">90</div><div class="l">tickets, 5 releases</div></div>
+    <div class="card"><div class="n">110</div><div class="l">tickets, 5 releases</div></div>
   </div>
 </section>
 
@@ -100,66 +100,66 @@
 
   <div class="scroll"><table>
     <tr><th>Area</th><th class="num">Files</th><th class="num">Lines</th><th>Notes</th></tr>
-    <tr><td>Production Kotlin</td><td class="num">186</td><td class="num">17,171</td><td>Of which 14,669 are code; 948 comment, 1,554 blank</td></tr>
-    <tr><td>Test Kotlin</td><td class="num">91</td><td class="num">10,182</td><td>0.59 lines of test per line of production code</td></tr>
-    <tr><td>Resources (XML)</td><td class="num">10</td><td class="num">1,132</td><td>Strings, themes, file-provider paths</td></tr>
-    <tr><td>Documentation (Markdown)</td><td class="num">5</td><td class="num">1,693</td><td>Design, data model, user manual, security review, releases</td></tr>
+    <tr><td>Production Kotlin</td><td class="num">199</td><td class="num">19,680</td><td>Approximately 17,055 code; 887 comment, 1,738 blank</td></tr>
+    <tr><td>Test Kotlin</td><td class="num">98</td><td class="num">11,849</td><td>0.60 lines of test per line of production code</td></tr>
+    <tr><td>Resources (XML)</td><td class="num">10</td><td class="num">1,262</td><td>Strings, themes, file-provider paths</td></tr>
+    <tr><td>Documentation (Markdown)</td><td class="num">5</td><td class="num">2,157</td><td>Design, data model, user manual, security review, releases</td></tr>
   </table></div>
 
   <h3>Structure</h3>
   <div class="cards">
-    <div class="card"><div class="n">38</div><div class="l">Compose screens</div></div>
-    <div class="card"><div class="n">39</div><div class="l">ViewModels</div></div>
-    <div class="card"><div class="n">13</div><div class="l">Room entities</div></div>
-    <div class="card"><div class="n">15</div><div class="l">DAOs</div></div>
-    <div class="card"><div class="n">13</div><div class="l">repositories</div></div>
+    <div class="card"><div class="n">41</div><div class="l">Compose screens</div></div>
+    <div class="card"><div class="n">42</div><div class="l">ViewModels</div></div>
+    <div class="card"><div class="n">14</div><div class="l">Room entities</div></div>
+    <div class="card"><div class="n">14</div><div class="l">DAOs</div></div>
+    <div class="card"><div class="n">14</div><div class="l">repositories</div></div>
     <div class="card"><div class="n">28</div><div class="l">declared dependencies</div></div>
   </div>
 
-  <div class="note"><strong>On the comment ratio.</strong> 948 comment lines against 14,669 of code is deliberate and unevenly distributed: comments cluster where a decision would otherwise look arbitrary &mdash; why a flag lives on the tenancy rather than the bed, why one policy is <code>UPDATE</code> and not <code>KEEP</code>. Routine code carries none.</div>
+  <div class="note"><strong>On the comment ratio.</strong> 887 comment lines against roughly 17,055 of code is deliberate and unevenly distributed: comments cluster where a decision would otherwise look arbitrary &mdash; why a flag lives on the tenancy rather than the bed, why one policy is <code>UPDATE</code> and not <code>KEEP</code>, why a property picker writes back to a shared preference on two screens but not on a third. Routine code carries none.</div>
 </section>
 
 <section id="coverage">
   <h2>Test coverage</h2>
-  <p class="sub">569 tests across 90 classes, run on every build alongside the coverage gate. These are JVM unit tests over ViewModels, repositories, workers and pure logic; Compose UI itself is verified on a device rather than instrumented, which is why UI-only packages sit lower.</p>
+  <p class="sub">665 tests across 98 classes, run on every build alongside the coverage gate. These are JVM unit tests over ViewModels, repositories, workers and pure logic; Compose UI itself is verified on a device rather than instrumented, which is why UI-only packages sit lower.</p>
 
   <div class="cards">
-    <div class="card"><div class="n">95.89<small>%</small></div><div class="l">line &middot; 3,551 / 3,704</div></div>
-    <div class="card"><div class="n">90.05<small>%</small></div><div class="l">instruction</div></div>
-    <div class="card"><div class="n">85.38<small>%</small></div><div class="l">method</div></div>
-    <div class="card"><div class="n">97.21<small>%</small></div><div class="l">class</div></div>
-    <div class="card"><div class="n">74.69<small>%</small></div><div class="l">branch</div></div>
+    <div class="card"><div class="n">95.17<small>%</small></div><div class="l">line &middot; 4,061 / 4,267</div></div>
+    <div class="card"><div class="n">89<small>%</small></div><div class="l">instruction</div></div>
+    <div class="card"><div class="n">84.3<small>%</small></div><div class="l">method</div></div>
+    <div class="card"><div class="n">94.8<small>%</small></div><div class="l">class</div></div>
+    <div class="card"><div class="n">73<small>%</small></div><div class="l">branch</div></div>
   </div>
 
   <h3>By package</h3>
   <div class="scroll"><table>
     <tr><th>Package</th><th class="num">Lines</th><th class="num">Covered</th><th style="width:26%">Coverage</th></tr>
-    <tr><td><code>ui.tenant</code></td><td class="num">465</td><td class="num">458</td><td><div class="bar"><span style="width:98.5%"></span></div> 98.5%</td></tr>
-    <tr><td><code>ui.property</code></td><td class="num">566</td><td class="num">557</td><td><div class="bar"><span style="width:98.4%"></span></div> 98.4%</td></tr>
-    <tr><td><code>ui.payment</code></td><td class="num">504</td><td class="num">492</td><td><div class="bar"><span style="width:97.6%"></span></div> 97.6%</td></tr>
-    <tr><td><code>ui.backup</code></td><td class="num">252</td><td class="num">250</td><td><div class="bar"><span style="width:99.2%"></span></div> 99.2%</td></tr>
+    <tr><td><code>ui.tenant</code></td><td class="num">515</td><td class="num">493</td><td><div class="bar"><span style="width:95.7%"></span></div> 95.7%</td></tr>
+    <tr><td><code>ui.property</code></td><td class="num">607</td><td class="num">598</td><td><div class="bar"><span style="width:98.5%"></span></div> 98.5%</td></tr>
+    <tr><td><code>ui.payment</code></td><td class="num">582</td><td class="num">570</td><td><div class="bar"><span style="width:97.9%"></span></div> 97.9%</td></tr>
+    <tr><td><code>ui.backup</code></td><td class="num">391</td><td class="num">381</td><td><div class="bar"><span style="width:97.4%"></span></div> 97.4%</td></tr>
     <tr><td><code>pdf</code></td><td class="num">244</td><td class="num">240</td><td><div class="bar"><span style="width:98.4%"></span></div> 98.4%</td></tr>
-    <tr><td><code>ui.dashboard</code></td><td class="num">240</td><td class="num">237</td><td><div class="bar"><span style="width:98.8%"></span></div> 98.8%</td></tr>
-    <tr><td><code>work</code></td><td class="num">198</td><td class="num">196</td><td><div class="bar"><span style="width:99.0%"></span></div> 99.0%</td></tr>
-    <tr><td><code>backup</code></td><td class="num">179</td><td class="num">177</td><td><div class="bar"><span style="width:98.9%"></span></div> 98.9%</td></tr>
+    <tr><td><code>ui.dashboard</code></td><td class="num">271</td><td class="num">264</td><td><div class="bar"><span style="width:97.4%"></span></div> 97.4%</td></tr>
+    <tr><td><code>work</code></td><td class="num">256</td><td class="num">245</td><td><div class="bar"><span style="width:95.7%"></span></div> 95.7%</td></tr>
+    <tr><td><code>backup</code></td><td class="num">234</td><td class="num">232</td><td><div class="bar"><span style="width:99.1%"></span></div> 99.1%</td></tr>
     <tr><td><code>ui.auth</code></td><td class="num">150</td><td class="num">145</td><td><div class="bar"><span style="width:96.7%"></span></div> 96.7%</td></tr>
-    <tr><td><code>ui.expense</code></td><td class="num">104</td><td class="num">99</td><td><div class="bar"><span style="width:95.2%"></span></div> 95.2%</td></tr>
-    <tr><td><code>data.prefs</code></td><td class="num">95</td><td class="num">94</td><td><div class="bar"><span style="width:99.0%"></span></div> 99.0%</td></tr>
-    <tr><td><code>ui.note</code></td><td class="num">84</td><td class="num">81</td><td><div class="bar"><span style="width:96.4%"></span></div> 96.4%</td></tr>
-    <tr><td><code>data.repository</code></td><td class="num">334</td><td class="num">280</td><td><div class="bar w"><span style="width:83.8%"></span></div> 83.8%</td></tr>
-    <tr><td><code>ui.more</code></td><td class="num">38</td><td class="num">33</td><td><div class="bar w"><span style="width:86.8%"></span></div> 86.8%</td></tr>
+    <tr><td><code>ui.expense</code></td><td class="num">128</td><td class="num">123</td><td><div class="bar"><span style="width:96.1%"></span></div> 96.1%</td></tr>
+    <tr><td><code>ui.note</code></td><td class="num">96</td><td class="num">93</td><td><div class="bar"><span style="width:96.9%"></span></div> 96.9%</td></tr>
+    <tr><td><code>data.repository</code></td><td class="num">393</td><td class="num">335</td><td><div class="bar w"><span style="width:85.2%"></span></div> 85.2%</td></tr>
+    <tr><td><code>data.prefs</code></td><td class="num">101</td><td class="num">96</td><td><div class="bar"><span style="width:95.0%"></span></div> 95.0%</td></tr>
+    <tr><td><code>ui.more</code></td><td class="num">44</td><td class="num">39</td><td><div class="bar w"><span style="width:88.6%"></span></div> 88.6%</td></tr>
     <tr><td><code>ui</code></td><td class="num">30</td><td class="num">26</td><td><div class="bar w"><span style="width:86.7%"></span></div> 86.7%</td></tr>
     <tr><td><code>media</code></td><td class="num">15</td><td class="num">12</td><td><div class="bar w"><span style="width:80.0%"></span></div> 80.0%</td></tr>
-    <tr><td><code>ui.common</code></td><td class="num">85</td><td class="num">56</td><td><div class="bar b"><span style="width:65.9%"></span></div> 65.9%</td></tr>
+    <tr><td><code>ui.common</code></td><td class="num">108</td><td class="num">69</td><td><div class="bar b"><span style="width:63.9%"></span></div> 63.9%</td></tr>
     <tr><td><code>data</code>, <code>notify</code>, <code>security</code>, <code>contact</code>, <code>locale</code></td><td class="num">100</td><td class="num">100</td><td><div class="bar"><span style="width:100%"></span></div> 100%</td></tr>
   </table></div>
 
-  <div class="note"><strong>Where the gaps are, and why.</strong> <code>ui.common</code> at 65.9% is the lowest, and it is mostly Composable helpers whose branches are exercised on the device rather than in JVM tests &mdash; the status-icon and label mapping logic inside it <em>is</em> unit-tested. <code>data.repository</code> at 83.8% is thin pass-through to Room DAOs, where a test would assert that a delegating call delegates. Branch coverage (74.69%) sits well below line coverage across the board, which is the honest signature of a suite that tests the paths a warden takes more thoroughly than every defensive early-return.</div>
+  <div class="note"><strong>Where the gaps are, and why.</strong> <code>ui.common</code> at 63.9% is the lowest, and it has grown since the last measurement (LODGY-65's shared confirm-dialog infrastructure and LODGY-107&ndash;110's shared hostel-filter chip rows both live here); it is mostly Composable helpers whose branches are exercised on the device rather than in JVM tests &mdash; the status-icon, label mapping and <code>UpdateChange</code> message logic inside it <em>is</em> unit-tested. <code>data.repository</code> at 85.2% is thin pass-through to Room DAOs, where a test would assert that a delegating call delegates. Branch coverage (73%) sits well below line coverage across the board, which is the honest signature of a suite that tests the paths a warden takes more thoroughly than every defensive early-return.</div>
 </section>
 
 <section id="security">
   <h2>Security</h2>
-  <p class="sub">Reviewed 4 Sep 2026 against the OWASP Mobile Top 10 surfaces that exist in a local-only app. The threat model is a single warden's phone holding tenant names, phone numbers, ID-proof photos and rent records; the attackers designed against are another app on the same device, and someone who picks the phone up.</p>
+  <p class="sub">Reviewed 4 Sep 2026 against the OWASP Mobile Top 10 surfaces that exist in a local-only app. The threat model is a single warden's phone holding tenant names, phone numbers, ID-proof photos and rent records; the attackers designed against are another app on the same device, and someone who picks the phone up. No code shipped since has touched an exported component, a permission, storage location or the PIN/crypto path, so this review's findings still describe the app as built.</p>
 
   <div class="scroll"><table>
     <tr><th>#</th><th>Finding</th><th>Severity</th><th>Status</th></tr>
@@ -199,14 +199,14 @@
   <div class="scroll"><table>
     <tr><th style="width:19%">Attribute</th><th>Position</th><th style="width:24%">How it is held</th></tr>
     <tr><td><strong>Offline operation</strong></td><td>Every feature works with no connectivity. There is no backend, no sync and no API surface.</td><td>No <code>INTERNET</code> permission &mdash; enforced by the OS, not by discipline</td></tr>
-    <tr><td><strong>Data durability</strong></td><td>The warden's only copy lives on the phone, so a schema change ships a real migration or it does not ship. Currently schema v7 with 6 hand-written migrations.</td><td><code>fallbackToDestructiveMigration</code> never enabled; each migration tested against a populated database pulled from a real device</td></tr>
+    <tr><td><strong>Data durability</strong></td><td>The warden's only copy lives on the phone, so a schema change ships a real migration or it does not ship. Currently schema v9 with 8 hand-written migrations.</td><td><code>fallbackToDestructiveMigration</code> never enabled; each migration tested against a populated database pulled from a real device</td></tr>
     <tr><td><strong>Recoverability</strong></td><td>Manual export/import of a zip (database plus photos) through the system picker, and an unattended daily backup to a folder chosen once. A forgotten PIN is recoverable without losing data.</td><td>Round trip verified end to end; the dashboard shows a stale or failed backup as loudly as a healthy one</td></tr>
-    <tr><td><strong>Test quality</strong></td><td>Line coverage may not fall below 93%.</td><td><code>jacocoCoverageVerification</code> fails the build; currently 95.88%</td></tr>
+    <tr><td><strong>Test quality</strong></td><td>Line coverage may not fall below 93%.</td><td><code>jacocoCoverageVerification</code> fails the build; currently 95.17%</td></tr>
     <tr><td><strong>Compatibility</strong></td><td>Android 7.0 (API 24) and above, targeting API 37.</td><td><code>minSdk 24</code>, <code>targetSdk 37</code>, <code>compileSdk 37</code></td></tr>
-    <tr><td><strong>Localisation</strong></td><td>English and Hindi, switchable in-app, with English the first-launch default. 490 English strings against 483 Hindi &mdash; the seven differences are deliberate (app name, language names, per-language message templates).</td><td>Every string key diffed across both files: no missing keys, no format-specifier mismatches</td></tr>
+    <tr><td><strong>Localisation</strong></td><td>English and Hindi, switchable in-app, with English the first-launch default. 551 English strings against 544 Hindi &mdash; the differences are deliberate (app name, language names, per-language message templates).</td><td>Every string key diffed across both files: no missing keys, no format-specifier mismatches</td></tr>
     <tr><td><strong>Accessibility</strong></td><td>Colour is never the only signal: each status carries its own icon and a text label alongside its RAG tint, so red-green colour blindness, a screen reader and a printout all read the same state.</td><td>Icon and label rendered together in the shared status components</td></tr>
     <tr><td><strong>Theming</strong></td><td>Light and dark, following the system.</td><td><code>values-night</code>; the theme paints its own ground so no screen inherits an unthemed background</td></tr>
-    <tr><td><strong>Package size</strong></td><td>16.6 MB debug, of which 14.4 MB is unminified <code>classes.dex</code>. A size-reduction programme was considered and declined.</td><td>Minification deliberately off &mdash; the regression risk was judged higher than the benefit at this stage</td></tr>
+    <tr><td><strong>Package size</strong></td><td>17.0 MB debug. A size-reduction programme was considered and declined (LODGY-48).</td><td>Minification deliberately off &mdash; the regression risk was judged higher than the benefit at this stage</td></tr>
     <tr><td><strong>Privacy</strong></td><td>No analytics, no telemetry, no crash reporting, no account. Nothing about a tenant leaves the phone unless the warden exports it themselves.</td><td>Follows from having no network capability at all</td></tr>
   </table></div>
 </section>
@@ -216,11 +216,11 @@
   <p class="sub">Work is tracked on a file-backed board, one JSON per ticket, with the full history of every status change kept in the ticket rather than in a chat log. Each ticket records the release it shipped in.</p>
 
   <div class="cards">
-    <div class="card"><div class="n">90</div><div class="l">tickets</div></div>
-    <div class="card"><div class="n">89</div><div class="l">Delivered (through UAT)</div></div>
+    <div class="card"><div class="n">110</div><div class="l">tickets</div></div>
+    <div class="card"><div class="n">109</div><div class="l">Delivered (through UAT)</div></div>
     <div class="card"><div class="n">0</div><div class="l">open</div></div>
     <div class="card"><div class="n">1</div><div class="l">Won't Do</div></div>
-    <div class="card"><div class="n">56</div><div class="l">decision-log entries</div></div>
+    <div class="card"><div class="n">73</div><div class="l">decision-log entries</div></div>
   </div>
 
   <h3>Releases</h3>
@@ -230,20 +230,21 @@
     <tr><td><code>0.2.0</code> build 2</td><td class="num">15</td><td>First feedback wave &mdash; finding things, transfers, credits, PDF receipts</td><td><strong>Delivered</strong></td></tr>
     <tr><td><code>0.3.0</code> build 3</td><td class="num">17</td><td>Hardening &mdash; security review, coverage, filters, confirmations, notifications</td><td><strong>Delivered</strong></td></tr>
     <tr><td><code>0.4.0</code> build 4</td><td class="num">26</td><td>Post-launch feedback &mdash; deletes, auto-backup, all-property views, non-rented rooms</td><td><strong>Delivered</strong>, closed 6 Sep</td></tr>
-    <tr><td><code>0.5.0</code> build 5</td><td class="num">2</td><td>Open &mdash; dashboard tiles that answer the question they raise; a missed billing day that skipped a month silently, now caught up</td><td>Current</td></tr>
+    <tr><td><code>0.5.0</code> build 5</td><td class="num">21</td><td>Occupancy history as data, scroll fixes across 19 screens, recovery % and multi-bed tenants, PIN/backup/notification fixes, and a run of property-scoping and invoice-detail work driven directly by the user</td><td><strong>Current</strong>, open</td></tr>
   </table></div>
 
   <h3>By epic</h3>
   <div class="scroll"><table>
     <tr><th>Epic</th><th class="num">Tickets</th><th>Epic</th><th class="num">Tickets</th></tr>
-    <tr><td>Property Setup</td><td class="num">14</td><td>Usability</td><td class="num">8</td></tr>
-    <tr><td>Tenant Onboarding</td><td class="num">10</td><td>Notifications</td><td class="num">6</td></tr>
-    <tr><td>Reporting &amp; Dashboard</td><td class="num">10</td><td>Auth</td><td class="num">5</td></tr>
-    <tr><td>Backup &amp; Restore</td><td class="num">10</td><td>Appearance</td><td class="num">4</td></tr>
-    <tr><td>Rent &amp; Payments</td><td class="num">9</td><td>Other (7 epics)</td><td class="num">13</td></tr>
+    <tr><td>Property Setup</td><td class="num">17</td><td>Notifications</td><td class="num">8</td></tr>
+    <tr><td>Tenant Onboarding</td><td class="num">14</td><td>Auth</td><td class="num">6</td></tr>
+    <tr><td>Backup &amp; Restore</td><td class="num">13</td><td>Expenses</td><td class="num">5</td></tr>
+    <tr><td>Reporting &amp; Dashboard</td><td class="num">12</td><td>Appearance</td><td class="num">4</td></tr>
+    <tr><td>Rent &amp; Payments</td><td class="num">11</td><td>Other (6 epics)</td><td class="num">11</td></tr>
+    <tr><td>Usability</td><td class="num">9</td><td></td><td class="num"></td></tr>
   </table></div>
 
-  <div class="note"><strong>What UAT turned up.</strong> All 88 tickets have now been through user acceptance by someone working as the warden &mdash; onboarding, part payments, corrections, a checkout with a deposit deduction, a tenant-paid repair credited back, backup and restore. Two things came out of it rather than one: LODGY-68's dashboard tile instructed a tap on text that was not a tap target (fixed inside 0.4.0), and invoice auto-generation fires only on the exact billing day with no catch-up, so a phone asleep on the 5th skips that month's rent silently &mdash; filed as LODGY-90, fixed and delivered the same day.</div>
+  <div class="note"><strong>What UAT turned up.</strong> Every ticket through LODGY-104 went through user acceptance by someone working as the warden &mdash; onboarding, part payments, corrections, a checkout with a deposit deduction, a tenant-paid repair credited back, backup and restore. From LODGY-105 onward, the release shifted shape: most of it was built directly from specific, live requests rather than found in UAT, including six scope questions the developer raised explicitly rather than guessing (LODGY-110) &mdash; whether a property picker should update the app's shared context, whether two screens with similar filters should behave identically, and whether moving an expense between properties needed a confirmation. All were answered directly and built to match, rather than assumed.</div>
 </section>
 
 <section id="limits">
@@ -251,19 +252,21 @@
   <p class="sub">Recorded so that none of these reads as an oversight later. Each was considered, decided and written into the design.</p>
   <ul>
     <li><strong>The database is not encrypted at rest.</strong> The PIN gates the app, not the file. Extracting it requires root or a device image, which is out of scope for now; SQLCipher can be dropped in later without a schema change because it wraps the same Room database.</li>
-    <li><strong>No historical occupancy.</strong> A report for a past month uses today's bed states, and says so on screen rather than implying otherwise. True past-period occupancy needs bed-state snapshots, which are designed for but not built.</li>
+    <li><strong>No historical occupancy for financial reporting.</strong> A monthly report for a past month uses today's bed states for occupancy, and says so on screen rather than implying otherwise (LODGY-52). This is separate from the tenant/bed occupancy <em>history</em> shipped in LODGY-91&ndash;95, which records who occupied what and when as real data - the report's occupancy percentage specifically still doesn't reconstruct a past month from it.</li>
     <li><strong>No automatic messaging.</strong> Reminders open WhatsApp or SMS pre-filled and stop; the warden reviews and sends. This is why no paid API, no backend and no <code>SEND_SMS</code> permission are needed.</li>
     <li><strong>No cloud sync and no account.</strong> Moving phones is the backup zip, by hand. Two people cannot share live data &mdash; that needs a real backend and is a phase-3 concern.</li>
-    <li><strong>Branch coverage is not gated.</strong> Only line coverage is enforced. At 74.69% branch coverage, defensive early-returns are the least-tested paths in the codebase.</li>
+    <li><strong>Branch coverage is not gated.</strong> Only line coverage is enforced. At 73% branch coverage, defensive early-returns are the least-tested paths in the codebase.</li>
     <li><strong>Google Drive is not integrated.</strong> Drive works because the system file picker offers it, and the app needs no Drive SDK, OAuth or network permission for that. The Drive-specific round trip was signed off by the product owner rather than demonstrated on a device with a Google account.</li>
+    <li><strong>Personal/home expenses and income are out of scope.</strong> Every expense ties to a rentable property, and "income" only exists as tenant rent - there is no ledger for a warden's own household finances. Raised directly during this release and deliberately not started: it is closer to a product pivot (property tool &rarr; whole-life finance tool) than a fix, and needs its own scoping pass.</li>
   </ul>
 </section>
 
 <footer>
-  Generated from commit <code>52696cb</code> on 7 Sep 2026. Line counts from the working tree; coverage from
-  <code>jacocoTestReport.xml</code>; test totals from the JUnit XML; permissions from the merged debug manifest;
+  Generated from commit <code>94527bd</code> on 19 Sep 2026. Line counts from the working tree; coverage from
+  <code>jacocoTestReport</code>; test totals from the JUnit XML; permissions from the merged debug manifest;
   ticket figures from <code>board/tickets/</code>. Security findings summarised from
-  <code>docs/SECURITY-REVIEW.md</code>, which carries the full reasoning for each.
+  <code>docs/SECURITY-REVIEW.md</code>, which carries the full reasoning for each and was not re-run this
+  release - no change since 4 Sep 2026 touched its surface.
   Sources of record: <code>docs/DESIGN.md</code>, <code>docs/DATA-MODEL.md</code>,
   <code>docs/USER-MANUAL.md</code>, <code>docs/RELEASES.md</code>.
 </footer>
