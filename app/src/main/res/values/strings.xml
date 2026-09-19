@@ -79,6 +79,7 @@
     <string name="update_confirm_unit_rent">Monthly rent goes from ₹%1$.0f to ₹%2$.0f. Invoices generated from now on use the new rent; invoices already raised are unchanged.</string>
     <string name="update_confirm_hostel_rename">Renaming this property to “%1$s”. You have reconciled %2$d month(s) against its old name, and PDFs you have already exported still carry it.</string>
     <string name="update_confirm_tenancy_rent">Rent goes from ₹%1$.0f to ₹%2$.0f a month. Invoices generated from now on use the new rent; invoices already raised are unchanged.</string>
+    <string name="update_confirm_expense_property">This expense moves from %1$s to %2$s.</string>
 
 
     <string name="floor_list_title">Floors</string>

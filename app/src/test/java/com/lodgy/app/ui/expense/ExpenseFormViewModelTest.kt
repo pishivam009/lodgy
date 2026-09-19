@@ -8,6 +8,7 @@ import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.testutil.MainDispatcherRule
+import com.lodgy.app.ui.common.UpdateChange
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -62,7 +63,7 @@ class ExpenseFormViewModelTest {
     }
 
     @Test
-    fun `editing an expense can move it to a different property`() {
+    fun `changing an expense's property on save asks for confirmation first`() {
         val expense = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WATER, amount = 250.0, isRecurring = true, incurredOn = 555L, note = "tanker", createdAt = 0L, updatedAt = 0L)
         coEvery { expenseRepository.getById("e1") } returns expense
         every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise"), hostel("h2", "Moonlight")))
@@ -72,7 +73,42 @@ class ExpenseFormViewModelTest {
         viewModel.onHostelChange("h2")
         viewModel.save()
 
+        assertEquals(listOf(UpdateChange.ExpenseProperty("Sunrise", "Moonlight")), viewModel.uiState.value.pendingChanges)
+        coVerify(exactly = 0) { expenseRepository.update(any(), any(), any(), any(), any(), any(), any()) }
+
+        viewModel.confirmSave()
+
         coVerify { expenseRepository.update(expense, "h2", ExpenseCategory.WATER, 250.0, true, 555L, "tanker") }
+        assertTrue(viewModel.uiState.value.pendingChanges.isEmpty())
+    }
+
+    @Test
+    fun `dismissing the property-change confirmation leaves the expense untouched`() {
+        val expense = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WATER, amount = 250.0, isRecurring = true, incurredOn = 555L, note = "tanker", createdAt = 0L, updatedAt = 0L)
+        coEvery { expenseRepository.getById("e1") } returns expense
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise"), hostel("h2", "Moonlight")))
+
+        val viewModel = viewModel("e1")
+        viewModel.onHostelChange("h2")
+        viewModel.save()
+        viewModel.dismissChanges()
+
+        assertTrue(viewModel.uiState.value.pendingChanges.isEmpty())
+        coVerify(exactly = 0) { expenseRepository.update(any(), any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `saving an edited expense without changing its property skips the confirmation`() {
+        val expense = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WATER, amount = 250.0, isRecurring = true, incurredOn = 555L, note = "tanker", createdAt = 0L, updatedAt = 0L)
+        coEvery { expenseRepository.getById("e1") } returns expense
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise")))
+        coEvery { expenseRepository.update(expense, "h1", ExpenseCategory.WATER, 250.0, true, 555L, "tanker") } returns Unit
+
+        val viewModel = viewModel("e1")
+        viewModel.save()
+
+        assertTrue(viewModel.uiState.value.pendingChanges.isEmpty())
+        coVerify { expenseRepository.update(expense, "h1", ExpenseCategory.WATER, 250.0, true, 555L, "tanker") }
     }
 
     @Test

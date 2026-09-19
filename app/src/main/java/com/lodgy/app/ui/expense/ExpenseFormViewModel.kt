@@ -8,6 +8,7 @@ import com.lodgy.app.data.entity.ExpenseCategory
 import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.HostelRepository
+import com.lodgy.app.ui.common.UpdateChange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +33,9 @@ data class ExpenseFormUiState(
     /** Delete a duplicate or wrong expense row (LODGY-64); confirmed first (LODGY-57). */
     val pendingDelete: Boolean = false,
     val deleted: Boolean = false,
+    /** Moving an existing expense to a different property is confirmed before it saves
+     *  (LODGY-110), the same silent-money-move guard as a tenancy transfer's rent change. */
+    val pendingChanges: List<UpdateChange> = emptyList(),
 ) {
     val canSave: Boolean get() = amount.toDoubleOrNull() != null && selectedHostelId != null
 }
@@ -92,8 +96,25 @@ class ExpenseFormViewModel @Inject constructor(
 
     fun save() {
         val state = _uiState.value
+        state.amount.toDoubleOrNull() ?: return
+        val hostelId = state.selectedHostelId ?: return
+        val existing = existingExpense
+        if (existing != null && existing.hostelId != hostelId) {
+            val from = state.hostels.firstOrNull { it.id == existing.hostelId }?.name.orEmpty()
+            val to = state.hostels.firstOrNull { it.id == hostelId }?.name.orEmpty()
+            _uiState.update { it.copy(pendingChanges = listOf(UpdateChange.ExpenseProperty(from, to))) }
+        } else {
+            confirmSave()
+        }
+    }
+
+    fun dismissChanges() = _uiState.update { it.copy(pendingChanges = emptyList()) }
+
+    fun confirmSave() {
+        val state = _uiState.value
         val amount = state.amount.toDoubleOrNull() ?: return
         val hostelId = state.selectedHostelId ?: return
+        _uiState.update { it.copy(pendingChanges = emptyList()) }
         viewModelScope.launch {
             val existing = existingExpense
             if (existing != null) {

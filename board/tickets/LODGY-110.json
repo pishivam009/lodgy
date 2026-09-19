@@ -1,0 +1,50 @@
+{
+  "id": "LODGY-110",
+  "epic": "Expenses",
+  "title": "Scope corrections on LODGY-107/108/109: global context, matching defaults, and a confirm on moving an expense's property",
+  "description": "The user answered six open scope questions raised after LODGY-107/108/109 shipped:\n\n1. The Monthly Report's property picker SHOULD change the app's overall selected-hostel context, not stay local to that screen only (reverses LODGY-107's original decision).\n2. Monthly Report's reconciliation switch being read-only under All is fine as shipped - no change.\n3. The Expenses screen and Monthly Report should behave the same way for their default hostel scope and picker (currently Expenses defaults to All while Monthly Report defaults to a specific hostel and only Monthly Report writes back to the global preference per point 1) - resolved as: both default from the app's selected-hostel preference and both write that preference back when the warden picks a specific property; All remains a selectable option on both but is not the default and is not written back (there is no single 'global All').\n4. Editing an expense and changing its property should show a confirm dialog before saving, not move it silently - matches this app's existing pattern (DESIGN.md 4.12) of confirming updates that move money/history the warden cannot see on the screen they are on.\n5. LODGY-108's invoice detail screen shape (a hub linking to the existing Record Payment/Reminder/Receipt screens rather than merging into the Receipt screen) is confirmed correct - no change.\n6. LODGY-108's list card keeping its inline action buttons alongside the new tap-to-detail behavior is confirmed correct - no change.",
+  "acceptanceCriteria": [
+    "Switching the Monthly Report's property picker to a specific hostel updates the app's overall selected-hostel preference (picking All does not)",
+    "The Expenses screen's default hostel scope and write-back behavior matches the Monthly Report's exactly: both seed from the selected-hostel preference (falling back to the first hostel), and both write a specific pick back to that preference; All is available on both but never becomes the stored preference",
+    "Changing an existing expense's property and saving shows a confirmation dialog naming the old and new property before the move happens; saving without changing the property (or when adding a new expense) is unaffected",
+    "Points 2, 5 and 6 require no code change - explicitly confirmed as correct by the user"
+  ],
+  "status": "Delivered",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-19T12:00:00Z",
+  "updatedAt": "2026-09-19T12:40:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-19T12:00:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed from the user's direct answers to the six scope questions raised after LODGY-107/108/109. Three require code changes (1, 3, 4); three are confirmations that the shipped behavior was already correct (2, 5, 6)."
+    },
+    {
+      "timestamp": "2026-09-19T12:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - MonthlyReportViewModel (write-back), ExpenseListViewModel (matching default + write-back, reintroducing HostelPreferences), ExpenseFormViewModel/Screen (confirm dialog on a hostel move while editing, reusing the existing UpdateChange/UpdateConfirmDialog infrastructure from LODGY-65)."
+    },
+    {
+      "timestamp": "2026-09-19T12:35:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Done",
+      "note": "1) MonthlyReportViewModel.selectHostel(id) now calls hostelPreferences.setSelectedHostelId(id) whenever id is non-null (including the initial seed - idempotent, same value already stored). All (null) never writes, since there's no single global 'All'. 2) ExpenseListViewModel restructured to match exactly: reintroduced HostelPreferences, seeds filterHostelId the same way Monthly Report seeds hostelId (selectedHostelId.first() ?: first hostel), and onHostelFilterChange writes back on a non-null pick through the same code path used for both the initial seed and a user pick (mirroring selectHostel's reuse). 3) Added UpdateChange.ExpenseProperty(from, to) to the shared LODGY-65 confirm infrastructure (ui/common/UpdateConfirm.kt) plus its string in both locales. ExpenseFormViewModel.save() now checks, only when editing and the picked hostel differs from the expense's current one, and if so populates pendingChanges instead of saving immediately; confirmSave() does the actual write, dismissChanges() cancels. ExpenseFormScreen renders the shared UpdateConfirmDialog. Adding a new expense, or editing without changing the property, saves immediately as before - no dialog. docs/DESIGN.md and docs/USER-MANUAL.md updated, including correcting the LODGY-107/109 passages that described the now-reversed local-only behavior. Tests: MonthlyReportViewModelTest gained a write-back coVerify on the existing switch test plus a new All-does-not-write test; ExpenseListViewModelTest rewritten around the matching default/write-back; ExpenseFormViewModelTest's move-property test rewritten around confirm/dismiss, plus a new no-change-skips-confirmation test. Full suite: 665 tests, 0 failures, coverage gate met, assembleDebug succeeded. Not re-verified on-device - same PIN-lock input blocker as LODGY-105/107/108/109."
+    },
+    {
+      "timestamp": "2026-09-19T12:40:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Built directly from the user's explicit answers to all six scope questions; marking Delivered on the strength of those direct answers plus the full test/build gate passing. Points 2, 5 and 6 required no code change, confirmed as-is by the user."
+    }
+  ]
+}

@@ -577,8 +577,10 @@ Notes:
   warden with more than one hostel gets a chip row to switch between them on
   this screen; a single-hostel warden sees the plain hostel name as before,
   with no extra step. The choice starts from the app's selected-hostel
-  preference but does not write back to it - it is local to this screen, like
-  the Dashboard and All Rooms hostel filters.
+  preference, and picking a specific property here writes it back (LODGY-110)
+  - unlike the Dashboard and All Rooms hostel filters, which stay local to
+  each screen, the warden treats this switch as "I'm working on this property
+  now" and expects the rest of the app to follow.
 - **The property chip row includes an All option** (LODGY-109) that aggregates
   every figure - occupancy, collections, dues, credits, expenses - across
   every property for the chosen month/year, the same scope-list approach
@@ -637,14 +639,16 @@ Notes:
   reopening a Sunrise expense never defaults the picker to Moonlight.
   Changing the picker while editing actually moves the expense to that
   property (`ExpenseRepository.update` now takes a `hostelId`).
-- **The Expenses screen defaults to every property, not the selected one**
-  (LODGY-109): a multi-hostel warden's total used to be silently scoped to
-  whichever hostel was globally selected, the same silent-scoping problem
-  LODGY-107 fixed for the expense form and Monthly Report. It now sources
-  from `ExpenseDao.observeAll()` (a new reactive, unscoped query alongside
-  the existing per-hostel one) and gets the same All/one hostel filter chip
-  row Dashboard and All Rooms already use - a single-hostel warden sees no
-  change, since there is nothing to filter.
+- **The Expenses screen gained an All-properties option** (LODGY-109), and
+  behaves exactly like the Monthly Report's picker (LODGY-110): both seed
+  from the app's selected-hostel preference, falling back to the first
+  hostel, and both write a specific pick back to that preference, so
+  switching either one also changes what the other (and the rest of the app)
+  opens to. All is available on both but is never the seeded default and is
+  never written back - there is no single "global All" for it to become. The
+  screen sources from `ExpenseDao.observeAll()` (a new reactive, unscoped
+  query alongside the existing per-hostel one). A single-hostel warden sees
+  no filter at all, since there is nothing to choose between.
 
 ### 4.8 Backup & restore (replaces cloud sync for now)
 - **Export**: zips the Room DB file + the photos directory + two of the
@@ -1090,6 +1094,7 @@ changed. The ticket holds the full argument; this is the shape of it.
 | A caught-up invoice is dated from its billing day, not from the catch-up | Otherwise rent owed since the 5th would present as due today, understating arrears on the screen the warden trusts for who is late | LODGY-90 |
 | The billing decision is a pure function, not a condition inside the worker | Every case is a date boundary; leaving it in the worker made the edges testable only by waiting for the right day of the month | LODGY-90 |
 | The expense form and the Monthly Report ask which property explicitly, only when there is more than one | Both used to read `hostelPreferences.selectedHostelId` with no field or picker on screen - a warden logging an expense for the wrong property, or reading last month's numbers for the wrong one, had no chance to notice, the same shape of problem LODGY-85 fixed for onboarding | LODGY-107 |
-| The Monthly Report's chosen property is local to that screen, not written back to `hostelPreferences` | Switching hostels to view a different report should not also change which property every other screen opens to next, the same decoupling Dashboard and All Rooms already use for their own hostel filters | LODGY-107 |
+| The Monthly Report's and the Expenses screen's chosen property write back to `hostelPreferences`, unlike Dashboard's or All Rooms' own filters | The user's call: picking a property on either of these two screens reads as "I'm working on this property now," not as a one-off view filter, so the rest of the app should follow; All is exempt since there is no single global "All" to write | LODGY-107, LODGY-110 |
 | An invoice's detail screen is a hub that links onward, not a merge of the receipt screen | `AcknowledgementScreen` already renders the full payments/credits breakdown and their delete-correction actions; folding that into a new screen would duplicate tested code and blur a specifically-scoped receipt screen into a general one | LODGY-108 |
 | Reconciliation under the Monthly Report's All filter is read-only, not aggregated into a write | `ReconciliationMark` is keyed to one hostel and period; a combined scope has no single row to write true/false to, so the switch reports whether every property in scope already is, rather than inventing a multi-property attestation the schema does not model | LODGY-109 |
+| Moving an existing expense to a different property is confirmed before it saves, reusing the shared `UpdateChange`/`UpdateConfirmDialog` from LODGY-65 | The user's call: it moves money between ledgers the warden cannot see side by side on this screen, the same class of silent change DESIGN.md 4.12 already draws the line on for rent and pricing edits | LODGY-110 |

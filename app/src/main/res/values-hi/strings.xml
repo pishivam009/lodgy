@@ -75,6 +75,7 @@
     <string name="update_confirm_unit_rent">मासिक किराया ₹%1$.0f से ₹%2$.0f हो जाएगा। अब से बनने वाले बिल नया किराया लगाएंगे; पहले बन चुके बिल नहीं बदलेंगे।</string>
     <string name="update_confirm_hostel_rename">इस प्रॉपर्टी का नाम “%1$s” किया जा रहा है। आपने पुराने नाम के साथ %2$d महीने का मिलान कर रखा है, और पहले निर्यात किए गए PDF पर भी पुराना नाम ही है।</string>
     <string name="update_confirm_tenancy_rent">किराया ₹%1$.0f से ₹%2$.0f प्रति माह हो जाएगा। अब से बनने वाले बिल नया किराया लगाएंगे; पहले बन चुके बिल नहीं बदलेंगे।</string>
+    <string name="update_confirm_expense_property">यह खर्च %1$s से %2$s में स्थानांतरित हो जाएगा।</string>
 
 
     <string name="floor_list_title">मंज़िलें</string>

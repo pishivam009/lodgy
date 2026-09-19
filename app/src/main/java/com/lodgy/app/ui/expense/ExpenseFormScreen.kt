@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
 import com.lodgy.app.data.entity.ExpenseCategory
+import com.lodgy.app.ui.common.UpdateConfirmDialog
 import com.lodgy.app.ui.common.label
 import com.lodgy.app.ui.icons.CommonIcons
 import java.text.SimpleDateFormat
@@ -181,6 +182,12 @@ fun ExpenseFormScreen(
             DatePicker(state = datePickerState)
         }
     }
+
+    UpdateConfirmDialog(
+        changes = uiState.pendingChanges,
+        onConfirm = viewModel::confirmSave,
+        onDismiss = viewModel::dismissChanges,
+    )
 
     if (uiState.pendingDelete) {
         AlertDialog(

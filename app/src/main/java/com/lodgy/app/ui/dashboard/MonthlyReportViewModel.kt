@@ -101,11 +101,17 @@ class MonthlyReportViewModel @Inject constructor(
         }
     }
 
-    /** Null means every property - aggregates every figure below across all of them (LODGY-109). */
+    /** Null means every property - aggregates every figure below across all of them (LODGY-109).
+     *  Picking a specific property also becomes the app's overall selected hostel (LODGY-110), so
+     *  switching the report you're reading and switching what the rest of the app opens to next are
+     *  the same action; there is no single "global All" for the All option to write back to. */
     fun selectHostel(id: String?) {
         viewModelScope.launch {
             val name = id?.let { hostelRepository.getById(it)?.name.orEmpty() }.orEmpty()
             _uiState.update { it.copy(hasActiveHostel = true, hostelId = id, hostelName = name) }
+            if (id != null) {
+                hostelPreferences.setSelectedHostelId(id)
+            }
             refresh()
         }
     }

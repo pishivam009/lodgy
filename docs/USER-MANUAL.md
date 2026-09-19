@@ -293,19 +293,26 @@ only future ones stop.
   maintenance, repair, accommodation, other), amount, date, an optional note,
   and a **recurring monthly** flag.
 - **If you run more than one property**, the form asks which one this expense
-  is for, starting from whichever you last had open but changeable before you
-  save — it no longer just assumes. Editing an expense later shows the same
-  picker and can move it to a different property if you logged it against
-  the wrong one. A single property means no extra step either way.
+  is for, starting from whichever property you're currently working in but
+  changeable before you save — it no longer just assumes. Picking a different
+  one here also switches which property the rest of the app opens to next,
+  the same as picking one on the Monthly Report does. Editing an expense
+  later shows the same picker and can move it to a different property if you
+  logged it against the wrong one — moving it asks you to confirm first,
+  naming the old and new property, since it's moving money between ledgers.
+  A single property means no extra step either way.
 - **Accommodation** entries are the ones Lodgy writes for you, if you asked for
   a warden or caretaker room's forgone rent to be recorded (section 3). They
   read *Forgone rent, Room 101 · Bed B* so you can tell them from what you paid
   out of pocket.
 - Filter by category, sort by date or amount.
-- **The total shown is across every property** you run, not just one — with a
-  filter chip row (including **All**) to narrow to a single property if you
-  want just its number. A single-property warden sees no filter, since
-  there's nothing to choose between.
+- **If you run more than one property**, a filter chip row (including
+  **All**) lets you see one property's expenses and total, or every
+  property's combined — defaulting to whichever property you're currently
+  working in, same as the form above. Picking a specific property here also
+  switches the rest of the app to it; picking All is just for this screen. A
+  single-property warden sees no filter, since there's nothing to choose
+  between.
 - Expenses roll into the monthly report's income-versus-expense figure.
 
 ## 6. Seeing where you stand
@@ -323,8 +330,10 @@ only future ones stop.
   occupancy, income minus expense, total expenses and credits for the period.
   - **If you run more than one property**, a chip row lets you switch which
     one the report describes, or pick **All** to see every figure combined
-    across all of them for that month. Switching here doesn't change which
-    property the rest of the app is showing you - it's just this screen.
+    across all of them for that month. Picking a specific property here also
+    switches the rest of the app to it, the same as the Expenses screen's
+    filter above; picking All is just for this screen - there's nothing
+    everywhere else in the app for "all properties" to mean.
   - Occupancy is measured from the beds **as they stand today**, not as they
     stood during a past month. Open a period that has already closed and the
     report says so on the screen, rather than letting the figure read as

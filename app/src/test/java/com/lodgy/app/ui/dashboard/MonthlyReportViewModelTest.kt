@@ -79,6 +79,7 @@ class MonthlyReportViewModelTest {
         coEvery { reconciliationRepository.mark(any(), any(), any(), any()) } returns
             ReconciliationMark(id = "m1", hostelId = "h1", periodMonth = 1, periodYear = 2026, note = null, createdAt = 0L, updatedAt = 0L)
         coEvery { reconciliationRepository.unmark(any(), any(), any()) } returns Unit
+        coEvery { hostelPreferences.setSelectedHostelId(any()) } returns Unit
         return MonthlyReportViewModel(
             hostelPreferences, hostelRepository, floorRepository, roomRepository, bedRepository,
             tenancyAgreementRepository, invoiceRepository, paymentRepository, expenseRepository,
@@ -258,6 +259,30 @@ class MonthlyReportViewModelTest {
 
         assertEquals("h2", viewModel.uiState.value.hostelId)
         assertEquals("Moonlight", viewModel.uiState.value.hostelName)
+        coVerify { hostelPreferences.setSelectedHostelId("h2") }
+    }
+
+    @Test
+    fun `picking All does not write back to the app's overall selected-hostel preference`() {
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        val sunrise = Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        val moonlight = Hostel(id = "h2", wardenId = "w1", name = "Moonlight", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h1") } returns sunrise
+        coEvery { hostelRepository.getById("h2") } returns moonlight
+        every { floorRepository.getByHostelId(any()) } returns flowOf(emptyList())
+        coEvery { tenancyAgreementRepository.getAll() } returns emptyList()
+        every { invoiceRepository.getAll() } returns flowOf(emptyList())
+        coEvery { paymentRepository.getAll() } returns emptyList()
+        every { expenseRepository.getByHostelId(any()) } returns flowOf(emptyList())
+
+        val viewModel = viewModel(hostels = listOf(sunrise, moonlight))
+        // The initial seed (h1) writes back once; picking All afterwards must not write again.
+        coVerify(exactly = 1) { hostelPreferences.setSelectedHostelId(any()) }
+
+        viewModel.selectHostel(null)
+
+        assertEquals(null, viewModel.uiState.value.hostelId)
+        coVerify(exactly = 1) { hostelPreferences.setSelectedHostelId(any()) }
     }
 
     @Test

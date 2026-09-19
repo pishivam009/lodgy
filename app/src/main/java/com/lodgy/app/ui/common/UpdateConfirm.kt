@@ -23,6 +23,8 @@ sealed interface UpdateChange {
     data class UnitRent(val from: Double, val to: Double) : UpdateChange
     data class HostelRename(val to: String, val reconciledPeriods: Int) : UpdateChange
     data class TenancyRent(val from: Double, val to: Double) : UpdateChange
+    /** Moving an expense to a different property's ledger (LODGY-110). */
+    data class ExpenseProperty(val from: String, val to: String) : UpdateChange
 }
 
 @Composable
@@ -33,6 +35,7 @@ fun UpdateChange.message(): String = when (this) {
     is UpdateChange.HostelRename ->
         stringResource(R.string.update_confirm_hostel_rename, to, reconciledPeriods)
     is UpdateChange.TenancyRent -> stringResource(R.string.update_confirm_tenancy_rent, from, to)
+    is UpdateChange.ExpenseProperty -> stringResource(R.string.update_confirm_expense_property, from, to)
 }
 
 /**
