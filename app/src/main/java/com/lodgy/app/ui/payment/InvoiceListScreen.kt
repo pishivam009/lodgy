@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lodgy.app.R
+import com.lodgy.app.data.isOverdue
 import com.lodgy.app.data.entity.Invoice
 import com.lodgy.app.data.entity.InvoiceStatus
 import com.lodgy.app.ui.common.FilterChipRow
@@ -43,6 +45,10 @@ import com.lodgy.app.ui.icons.CommonIcons
 import com.lodgy.app.ui.icons.StatusIcons
 import com.lodgy.app.ui.theme.LodgyStatus
 import com.lodgy.app.ui.theme.StatusLevel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +56,7 @@ fun InvoiceListScreen(
     onRecordPayment: (Invoice) -> Unit,
     onSendReminder: (Invoice) -> Unit,
     onOpenReceipt: (Invoice) -> Unit,
+    onOpenDetail: (Invoice) -> Unit,
     onAddManualInvoice: () -> Unit,
     viewModel: InvoiceListViewModel = hiltViewModel(),
 ) {
@@ -140,6 +147,7 @@ fun InvoiceListScreen(
                 items(uiState.filteredItems, key = { it.invoice.id }) { item ->
                     InvoiceRow(
                         item = item,
+                        onOpenDetail = { onOpenDetail(item.invoice) },
                         onRecordPayment = { onRecordPayment(item.invoice) },
                         onSendReminder = { onSendReminder(item.invoice) },
                         onOpenReceipt = { onOpenReceipt(item.invoice) },
@@ -153,11 +161,15 @@ fun InvoiceListScreen(
 @Composable
 private fun InvoiceRow(
     item: InvoiceListItem,
+    onOpenDetail: () -> Unit,
     onRecordPayment: () -> Unit,
     onSendReminder: () -> Unit,
     onOpenReceipt: () -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    val dateFormat = remember { SimpleDateFormat("d MMM yyyy", Locale.getDefault()) }
+    val overdue = isOverdue(item.invoice.status, item.invoice.dueDate, startOfToday())
+
+    Card(onClick = onOpenDetail, modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
@@ -173,6 +185,11 @@ private fun InvoiceRow(
                         stringResource(R.string.invoice_period, item.invoice.periodMonth, item.invoice.periodYear),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        stringResource(R.string.invoice_due_date, dateFormat.format(Date(item.invoice.dueDate))),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (overdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 StatusChip(item.invoice.status)
@@ -237,3 +254,11 @@ private fun InvoiceRow(
 private fun StatusChip(status: InvoiceStatus) {
     StatusBadge(status.level, status.icon, status.label())
 }
+
+/** Local midnight, the same day boundary InvoiceListUiState's own overdue filter uses. */
+private fun startOfToday(): Long = Calendar.getInstance().apply {
+    set(Calendar.HOUR_OF_DAY, 0)
+    set(Calendar.MINUTE, 0)
+    set(Calendar.SECOND, 0)
+    set(Calendar.MILLISECOND, 0)
+}.timeInMillis

@@ -515,6 +515,20 @@ Notes:
 - The invoice list filters by status and period and sorts by due date or
   amount, so finding this month doesn't mean scrolling every invoice ever
   created (LODGY-54).
+- **Each invoice card shows its due date**, coloured as an error when the
+  invoice is overdue by the same `isOverdue()` definition the OVERDUE filter
+  already uses (LODGY-108) - due date was already sorted and filtered on
+  internally but never shown, so a warden had no way to see when an unpaid
+  invoice was actually due without opening Record Payment first.
+- **Tapping an invoice card opens `InvoiceDetailScreen`** (LODGY-108): the
+  same figures the card shows, plus the due date, with Record Payment, Send
+  Reminder and View Receipt as onward actions - a hub, in the same shape
+  `TenantProfileScreen` already is for a tenant. It does not duplicate the
+  payments/credits breakdown or the delete-correction actions the receipt
+  screen (`AcknowledgementScreen`) already owns; that screen is reached from
+  here the same way it always was, via View Receipt. The card's own three
+  inline buttons are unchanged and still work directly, so nothing that
+  worked before requires going through the new screen first.
 
 ### 4.5 Reporting & dashboard
 - Home dashboard: today's collections, count of overdue invoices, vacant
@@ -1058,3 +1072,4 @@ changed. The ticket holds the full argument; this is the shape of it.
 | The billing decision is a pure function, not a condition inside the worker | Every case is a date boundary; leaving it in the worker made the edges testable only by waiting for the right day of the month | LODGY-90 |
 | The expense form and the Monthly Report ask which property explicitly, only when there is more than one | Both used to read `hostelPreferences.selectedHostelId` with no field or picker on screen - a warden logging an expense for the wrong property, or reading last month's numbers for the wrong one, had no chance to notice, the same shape of problem LODGY-85 fixed for onboarding | LODGY-107 |
 | The Monthly Report's chosen property is local to that screen, not written back to `hostelPreferences` | Switching hostels to view a different report should not also change which property every other screen opens to next, the same decoupling Dashboard and All Rooms already use for their own hostel filters | LODGY-107 |
+| An invoice's detail screen is a hub that links onward, not a merge of the receipt screen | `AcknowledgementScreen` already renders the full payments/credits breakdown and their delete-correction actions; folding that into a new screen would duplicate tested code and blur a specifically-scoped receipt screen into a general one | LODGY-108 |

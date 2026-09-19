@@ -443,6 +443,9 @@
     <string name="invoice_period">%1$d/%2$d</string>
     <string name="invoice_amount_of">₹%2$.0f में से ₹%1$.0f</string>
     <string name="invoice_record_payment">दर्ज करें</string>
+    <string name="invoice_due_date">देय तारीख: %1$s</string>
+    <string name="invoice_due_date_label">देय तारीख</string>
+    <string name="invoice_detail_title">इनवॉइस</string>
 
     <string name="record_payment_title">भुगतान दर्ज करें</string>
     <string name="record_payment_already_paid">पहले से भुगतान किया गया</string>

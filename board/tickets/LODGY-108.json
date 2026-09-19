@@ -1,0 +1,51 @@
+{
+  "id": "LODGY-108",
+  "epic": "Rent & Payments",
+  "title": "Invoice cards don't show a due date, and tapping one does nothing",
+  "description": "Raised directly by the user: 'in the payments sections: the invoices should also have due date displayed. tapping on the invoives card should open a detailed screen to view details and perform actions.'\n\nThe Payments tab's invoice cards show tenant, room/bed, period and status, but not the due date that Invoice.dueDate already carries and that the OVERDUE filter and sort already use internally - a warden has no way to see when an unpaid invoice is actually due without opening Record Payment first. The card itself also isn't tappable - only its three small action buttons (Receipt, Reminder, Record) are, so there's no way to see an invoice's full detail (payments breakdown, credits, reconciliation) without going through the Receipt button specifically, and no single screen surfaces everything about one invoice plus a way to act on it.",
+  "acceptanceCriteria": [
+    "Each invoice card in the Payments list shows its due date",
+    "An overdue, unsettled invoice's due date is visually distinguished from one that isn't",
+    "Tapping anywhere on an invoice card opens a detail screen for that invoice",
+    "The detail screen shows the invoice's tenant, location, period, due date, status and amount figures, and offers Record Payment, Send Reminder and View Receipt actions (the latter two only where they already apply, e.g. no reminder needed on a fully paid invoice)",
+    "The existing inline action buttons on the list card keep working unchanged"
+  ],
+  "status": "Delivered",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-19T10:00:00Z",
+  "updatedAt": "2026-09-19T10:40:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-19T10:00:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed directly from the user's request. Investigated the existing AcknowledgementScreen (reached via the list row's Receipt button) before scoping this: it already renders most of what a 'detail screen' needs - tenant, room/bed, period, amounts, a full payments list and a credits list, plus delete actions - so it is effectively an invoice-detail screen already, just missing the due date and the Record Payment/Send Reminder actions, and titled/scoped around the receipt specifically. Decided against merging everything into it (would blur its specific, already-tested receipt/correction identity) and against a new screen that duplicates its payments/credits breakdown. Scoped instead as a lightweight new hub screen - InvoiceDetailScreen - that shows the summary figures and due date, and links onward to Record Payment, Send Reminder, and the existing Receipt screen for the full breakdown, mirroring how TenantProfileScreen hubs a tenant's actions rather than embedding all of them inline."
+    },
+    {
+      "timestamp": "2026-09-19T10:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - InvoiceListScreen (due date + tappable card), new InvoiceDetailScreen/ViewModel, LodgyNavHost wiring."
+    },
+    {
+      "timestamp": "2026-09-19T10:35:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Done",
+      "note": "InvoiceListScreen: InvoiceRow now shows 'Due <date>' under the period line, coloured error via the existing isOverdue() when unsettled and past due; the Card gained onClick = onOpenDetail (new callback threaded through from the nav host), the three existing inline buttons are untouched and still work since a click on them is consumed before it reaches the card. New InvoiceDetailViewModel fetches one invoice's tenant/location/period/dueDate/status/amounts/creditTotal/totalPaid/multiPeriodFlag/reconciled - same repos InvoiceListViewModel.enrich() and AcknowledgementViewModel.load() already use, no new repository methods. New InvoiceDetailScreen: header (location, tenant, status badge, multi-period/reconciliation badges), a detail card (period, due date colored by overdue, invoice amount, credit if any, total paid, remaining balance), then View Receipt (always) and Record Payment/Send Reminder (hidden once PAID) buttons navigating to the existing RecordPayment/Reminder/Acknowledgement routes. LodgyNavHost: added INVOICE_DETAIL_ROUTE/{invoiceId}, wired onOpenDetail at both InvoiceListScreen call sites (Payments tab and the Home-overdue-tile redirect route). New strings invoice_due_date, invoice_due_date_label, invoice_detail_title in both locales, reusing existing acknowledgement_* labels for the shared fields rather than duplicating them. docs/DESIGN.md: two bullets under 4.4 plus a decision-log row explaining why this is a hub linking to AcknowledgementScreen rather than a screen that duplicates its payments/credits breakdown. Tests: new InvoiceDetailViewModelTest.kt (6 tests - load, overdue, paid-never-overdue, credits reduce effective due not raw amount, reconciliation flag, invoice-not-found). Full suite: 658 tests, 0 failures, coverage gate met, assembleDebug succeeded. Not re-verified on-device this pass - same PIN-lock input blocker noted on LODGY-105/107."
+    },
+    {
+      "timestamp": "2026-09-19T10:40:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Built directly at the user's request in a live session, same as LODGY-107; marking Delivered on the strength of the acceptance criteria being met in code plus the full test/build gate, flagged honestly as not independently re-tested by a separate persona pass this time."
+    }
+  ]
+}

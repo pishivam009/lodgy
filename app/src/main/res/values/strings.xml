@@ -447,6 +447,9 @@
     <string name="invoice_period">%1$d/%2$d</string>
     <string name="invoice_amount_of">₹%1$.0f of ₹%2$.0f</string>
     <string name="invoice_record_payment">Record</string>
+    <string name="invoice_due_date">Due %1$s</string>
+    <string name="invoice_due_date_label">Due date</string>
+    <string name="invoice_detail_title">Invoice</string>
 
     <string name="record_payment_title">Record Payment</string>
     <string name="record_payment_already_paid">Already paid</string>

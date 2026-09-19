@@ -46,6 +46,7 @@ import com.lodgy.app.ui.note.NoteFormScreen
 import com.lodgy.app.ui.note.NotesTimelineScreen
 import com.lodgy.app.ui.payment.AcknowledgementScreen
 import com.lodgy.app.ui.payment.CreditFormScreen
+import com.lodgy.app.ui.payment.InvoiceDetailScreen
 import com.lodgy.app.ui.payment.InvoiceListScreen
 import com.lodgy.app.ui.payment.ManualInvoiceFormScreen
 import com.lodgy.app.ui.payment.ManualInvoiceTenantPickerScreen
@@ -89,6 +90,7 @@ private const val MANUAL_INVOICE_FORM_ROUTE = "manual_invoice_form"
 private const val REMINDER_ROUTE = "reminder"
 private const val VACANT_VIEW_ROUTE = ROUTE_VACANT_VIEW
 private const val INVOICE_LIST_ROUTE = "invoice_list"
+private const val INVOICE_DETAIL_ROUTE = "invoice_detail"
 private const val MONTHLY_REPORT_ROUTE = "monthly_report"
 private const val EXPENSE_LIST_ROUTE = "expense_list"
 private const val EXPENSE_FORM_ROUTE = ROUTE_EXPENSE_FORM
@@ -182,6 +184,7 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                             onRecordPayment = { invoice -> navController.navigate("$RECORD_PAYMENT_ROUTE/${invoice.id}") },
                             onSendReminder = { invoice -> navController.navigate("$REMINDER_ROUTE/${invoice.id}") },
                             onOpenReceipt = { invoice -> navController.navigate("$ACKNOWLEDGEMENT_ROUTE/${invoice.id}") },
+                            onOpenDetail = { invoice -> navController.navigate("$INVOICE_DETAIL_ROUTE/${invoice.id}") },
                             onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
                         )
                         LodgyDestination.Home -> DashboardScreen(
@@ -544,7 +547,21 @@ fun LodgyNavHost(pendingRoute: String? = null) {
                     onRecordPayment = { invoice -> navController.navigate("$RECORD_PAYMENT_ROUTE/${invoice.id}") },
                     onSendReminder = { invoice -> navController.navigate("$REMINDER_ROUTE/${invoice.id}") },
                     onOpenReceipt = { invoice -> navController.navigate("$ACKNOWLEDGEMENT_ROUTE/${invoice.id}") },
+                    onOpenDetail = { invoice -> navController.navigate("$INVOICE_DETAIL_ROUTE/${invoice.id}") },
                     onAddManualInvoice = { navController.navigate(MANUAL_INVOICE_TENANT_PICKER_ROUTE) },
+                )
+            }
+
+            composable(
+                route = "$INVOICE_DETAIL_ROUTE/{invoiceId}",
+                arguments = listOf(navArgument("invoiceId") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val invoiceId = checkNotNull(backStackEntry.arguments?.getString("invoiceId"))
+                InvoiceDetailScreen(
+                    onBack = { navController.popBackStack() },
+                    onRecordPayment = { navController.navigate("$RECORD_PAYMENT_ROUTE/$invoiceId") },
+                    onSendReminder = { navController.navigate("$REMINDER_ROUTE/$invoiceId") },
+                    onOpenReceipt = { navController.navigate("$ACKNOWLEDGEMENT_ROUTE/$invoiceId") },
                 )
             }
 
