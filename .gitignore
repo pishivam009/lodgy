@@ -14,6 +14,9 @@ build/
 .cxx/
 *.apk
 *.aab
+# The one exception: apk/ holds the latest built debug APK, published so anyone
+# can download it directly from the repo without building from source.
+!/apk/*.apk
 
 # --- legacy 2021 Spring Boot prototype ---
 HELP.md
