@@ -9,8 +9,12 @@ plain terms: [`docs/USER-MANUAL.md`](docs/USER-MANUAL.md).
 
 Code size, coverage, security posture and non-functional characteristics, all
 measured rather than estimated:
-[`docs/engineering-report.html`](docs/engineering-report.html). Screens as a
-warden sees them: [`docs/design/screenshots.html`](docs/design/screenshots.html).
+[engineering report](https://pishivam009.github.io/lodgy/engineering-report.html).
+Screens as a warden sees them:
+[screenshots](https://pishivam009.github.io/lodgy/design/screenshots.html).
+
+Want to try it without building from source? Grab the latest APK:
+[`apk/lodgy-debug.apk`](apk/lodgy-debug.apk) — see [`apk/README.md`](apk/README.md).
 
 ## Tech stack
 
@@ -82,11 +86,11 @@ Low-fidelity wireframes for every screen in the app, organized by epic,
 were built before any UI code:
 
 - [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) — ER diagrams, every field, and the delete/cascade rules
-- [`docs/design/screenshots.html`](docs/design/screenshots.html) — real screenshots of the built app, in light, dark and Hindi
-- [`docs/design/wireframes.html`](docs/design/wireframes.html) — every screen, organized by epic
-- [`docs/design/wardens-guide.html`](docs/design/wardens-guide.html) — the same screens walked through task by task, for the actual end user
+- [screenshots](https://pishivam009.github.io/lodgy/design/screenshots.html) ([source](docs/design/screenshots.html)) — real screenshots of the built app, in light, dark and Hindi
+- [wireframes](https://pishivam009.github.io/lodgy/design/wireframes.html) ([source](docs/design/wireframes.html)) — every screen, organized by epic
+- [warden's guide](https://pishivam009.github.io/lodgy/design/wardens-guide.html) ([source](docs/design/wardens-guide.html)) — the same screens walked through task by task, for the actual end user
 
-Both are self-contained pages checked into the repo — GitHub renders `.html`
-as source, so clone (or download the raw file) and open them in a browser. No
-login and no build step; the guide picks up webfonts when online and falls
-back to system fonts when not.
+All three are live via GitHub Pages, served straight from `docs/` on every
+push — no login, no build step, no need to clone or download anything first.
+The guide picks up webfonts when online and falls back to system fonts when
+not.
