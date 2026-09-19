@@ -12,6 +12,9 @@ class ExpenseRepository @Inject constructor(private val expenseDao: ExpenseDao) 
     /** Across every hostel - the notification check is not scoped to the selected one. */
     suspend fun getAll(): List<Expense> = expenseDao.getAll()
 
+    /** Reactive version of [getAll] - backs the Expenses screen's All-properties total (LODGY-109). */
+    fun observeAll(): Flow<List<Expense>> = expenseDao.observeAll()
+
     suspend fun getById(id: String): Expense? = expenseDao.getById(id)
 
     /** Expenses have nothing hanging off them, so a duplicate or wrong row deletes freely (LODGY-64). */
@@ -47,6 +50,7 @@ class ExpenseRepository @Inject constructor(private val expenseDao: ExpenseDao) 
 
     suspend fun update(
         expense: Expense,
+        hostelId: String,
         category: ExpenseCategory,
         amount: Double,
         isRecurring: Boolean,
@@ -55,6 +59,7 @@ class ExpenseRepository @Inject constructor(private val expenseDao: ExpenseDao) 
     ) {
         expenseDao.update(
             expense.copy(
+                hostelId = hostelId,
                 category = category,
                 amount = amount,
                 isRecurring = isRecurring,

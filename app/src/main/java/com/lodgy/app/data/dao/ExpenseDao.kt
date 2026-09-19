@@ -29,6 +29,10 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses")
     suspend fun getAll(): List<Expense>
 
+    /** Reactive, across every hostel - backs the Expenses screen's All-properties total (LODGY-109). */
+    @Query("SELECT * FROM expenses ORDER BY incurredOn DESC")
+    fun observeAll(): Flow<List<Expense>>
+
     /** The idempotency check behind the monthly forgone-rent entry (LODGY-84): the period is
      *  read off incurredOn rather than stored twice, so a re-run on the same day cannot
      *  double-count. Times are local, which is what the warden's month means. */

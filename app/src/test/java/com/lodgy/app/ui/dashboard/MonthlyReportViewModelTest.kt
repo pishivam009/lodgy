@@ -261,6 +261,63 @@ class MonthlyReportViewModelTest {
     }
 
     @Test
+    fun `selecting All aggregates occupancy, collections and expenses across every property`() {
+        val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
+        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
+        val sunrise = Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        val moonlight = Hostel(id = "h2", wardenId = "w1", name = "Moonlight", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+        coEvery { hostelRepository.getById("h1") } returns sunrise
+        coEvery { hostelRepository.getById("h2") } returns moonlight
+
+        val floor1 = Floor(id = "f1", hostelId = "h1", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        val floor2 = Floor(id = "f2", hostelId = "h2", label = "G", sortOrder = 0, createdAt = 0L, updatedAt = 0L)
+        every { floorRepository.getByHostelId("h1") } returns flowOf(listOf(floor1))
+        every { floorRepository.getByHostelId("h2") } returns flowOf(listOf(floor2))
+        val room1 = Room(id = "r1", floorId = "f1", roomNumber = "101", type = RoomType.DOUBLE, pricePerBed = 3000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        val room2 = Room(id = "r2", floorId = "f2", roomNumber = "201", type = RoomType.SINGLE, pricePerBed = 4000.0, amenities = "", createdAt = 0L, updatedAt = 0L)
+        every { roomRepository.getByFloorId("f1") } returns flowOf(listOf(room1))
+        every { roomRepository.getByFloorId("f2") } returns flowOf(listOf(room2))
+        // Sunrise: 1 occupied of 2 beds. Moonlight: 1 occupied of 1 bed. Combined: 2 of 3.
+        every { bedRepository.getByRoomId("r1") } returns flowOf(
+            listOf(
+                Bed(id = "b1", roomId = "r1", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L),
+                Bed(id = "b2", roomId = "r1", label = "B", status = BedStatus.VACANT, createdAt = 0L, updatedAt = 0L),
+            ),
+        )
+        every { bedRepository.getByRoomId("r2") } returns flowOf(
+            listOf(Bed(id = "b3", roomId = "r2", label = "A", status = BedStatus.OCCUPIED, createdAt = 0L, updatedAt = 0L)),
+        )
+
+        val agreement1 = TenancyAgreement(id = "a1", tenantId = "t1", bedId = "b1", agreedRent = 5000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = null, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
+        val agreement2 = TenancyAgreement(id = "a2", tenantId = "t2", bedId = "b3", agreedRent = 4000.0, advanceDeposit = 0.0, billingCycleDay = 1, moveInDate = 0L, moveOutDate = null, depositRefundAmount = null, status = AgreementStatus.ACTIVE, createdAt = 0L, updatedAt = 0L)
+        coEvery { tenancyAgreementRepository.getAll() } returns listOf(agreement1, agreement2)
+
+        val invoice1 = Invoice(id = "i1", tenancyAgreementId = "a1", periodMonth = currentMonth, periodYear = currentYear, amountDue = 5000.0, dueDate = 0L, status = InvoiceStatus.PARTIAL, createdAt = 0L, updatedAt = 0L)
+        val invoice2 = Invoice(id = "i2", tenancyAgreementId = "a2", periodMonth = currentMonth, periodYear = currentYear, amountDue = 4000.0, dueDate = 0L, status = InvoiceStatus.UNPAID, createdAt = 0L, updatedAt = 0L)
+        every { invoiceRepository.getAll() } returns flowOf(listOf(invoice1, invoice2))
+
+        val payment1 = Payment(id = "p1", invoiceId = "i1", amount = 2000.0, paymentMode = PaymentMode.CASH, paidOn = 0L, note = null, createdAt = 0L, updatedAt = 0L)
+        coEvery { paymentRepository.getAll() } returns listOf(payment1)
+
+        val expense1 = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WIFI, amount = 500.0, isRecurring = false, incurredOn = periodMillis(currentYear, currentMonth), note = null, createdAt = 0L, updatedAt = 0L)
+        val expense2 = Expense(id = "e2", hostelId = "h2", category = ExpenseCategory.WATER, amount = 300.0, isRecurring = false, incurredOn = periodMillis(currentYear, currentMonth), note = null, createdAt = 0L, updatedAt = 0L)
+        every { expenseRepository.getByHostelId("h1") } returns flowOf(listOf(expense1))
+        every { expenseRepository.getByHostelId("h2") } returns flowOf(listOf(expense2))
+
+        val viewModel = viewModel(hostels = listOf(sunrise, moonlight))
+        viewModel.selectHostel(null)
+
+        val state = viewModel.uiState.value
+        assertEquals(null, state.hostelId)
+        assertEquals(66, state.occupancyPercent)
+        assertEquals(2000.0, state.totalCollected, 0.0001)
+        assertEquals(7000.0, state.totalDues, 0.0001)
+        assertEquals(800.0, state.totalExpense, 0.0001)
+    }
+
+    @Test
     fun `occupancy is flagged as a current-state figure only for a period that has closed`() {
         val now = Calendar.getInstance()
         val thisMonth = MonthlyReportUiState(month = now.get(Calendar.MONTH) + 1, year = now.get(Calendar.YEAR))

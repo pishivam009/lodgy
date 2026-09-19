@@ -35,8 +35,9 @@ class ExpenseRepositoryTest {
         val updated = slot<Expense>()
         coEvery { dao.update(capture(updated)) } returns Unit
 
-        repository.update(existing, ExpenseCategory.REPAIR, 999.0, false, 200L, "fixed tap")
+        repository.update(existing, "h2", ExpenseCategory.REPAIR, 999.0, false, 200L, "fixed tap")
 
+        assertEquals("h2", updated.captured.hostelId)
         assertEquals(ExpenseCategory.REPAIR, updated.captured.category)
         assertEquals(999.0, updated.captured.amount, 0.0001)
         assertEquals(false, updated.captured.isRecurring)

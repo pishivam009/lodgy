@@ -45,9 +45,10 @@ class ExpenseFormViewModelTest {
     }
 
     @Test
-    fun `editing an existing expense preloads its fields`() {
+    fun `editing an existing expense preloads its fields including its own hostel`() {
         val expense = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WATER, amount = 250.0, isRecurring = true, incurredOn = 555L, note = "tanker", createdAt = 0L, updatedAt = 0L)
         coEvery { expenseRepository.getById("e1") } returns expense
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise"), hostel("h2", "Moonlight")))
 
         val state = viewModel("e1").uiState.value
 
@@ -57,6 +58,21 @@ class ExpenseFormViewModelTest {
         assertEquals(555L, state.incurredOnMillis)
         assertTrue(state.isRecurring)
         assertEquals("tanker", state.note)
+        assertEquals("h1", state.selectedHostelId)
+    }
+
+    @Test
+    fun `editing an expense can move it to a different property`() {
+        val expense = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WATER, amount = 250.0, isRecurring = true, incurredOn = 555L, note = "tanker", createdAt = 0L, updatedAt = 0L)
+        coEvery { expenseRepository.getById("e1") } returns expense
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise"), hostel("h2", "Moonlight")))
+        coEvery { expenseRepository.update(expense, "h2", ExpenseCategory.WATER, 250.0, true, 555L, "tanker") } returns Unit
+
+        val viewModel = viewModel("e1")
+        viewModel.onHostelChange("h2")
+        viewModel.save()
+
+        coVerify { expenseRepository.update(expense, "h2", ExpenseCategory.WATER, 250.0, true, 555L, "tanker") }
     }
 
     @Test
@@ -120,13 +136,14 @@ class ExpenseFormViewModelTest {
     fun `saving an edited expense updates it instead of creating a new one`() {
         val expense = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WATER, amount = 250.0, isRecurring = true, incurredOn = 555L, note = "tanker", createdAt = 0L, updatedAt = 0L)
         coEvery { expenseRepository.getById("e1") } returns expense
-        coEvery { expenseRepository.update(expense, ExpenseCategory.WATER, 300.0, true, 555L, "tanker") } returns Unit
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise")))
+        coEvery { expenseRepository.update(expense, "h1", ExpenseCategory.WATER, 300.0, true, 555L, "tanker") } returns Unit
 
         val viewModel = viewModel("e1")
         viewModel.onAmountChange("300")
         viewModel.save()
 
-        coVerify { expenseRepository.update(expense, ExpenseCategory.WATER, 300.0, true, 555L, "tanker") }
+        coVerify { expenseRepository.update(expense, "h1", ExpenseCategory.WATER, 300.0, true, 555L, "tanker") }
         coVerify(exactly = 0) { expenseRepository.create(any(), any(), any(), any(), any(), any()) }
     }
 
@@ -147,6 +164,7 @@ class ExpenseFormViewModelTest {
     fun `deleting an expense removes it after confirmation`() {
         val expense = Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WATER, amount = 250.0, isRecurring = false, incurredOn = 555L, note = null, createdAt = 0L, updatedAt = 0L)
         coEvery { expenseRepository.getById("e1") } returns expense
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise")))
         coEvery { expenseRepository.delete(expense) } returns Unit
 
         val viewModel = viewModel("e1")

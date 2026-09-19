@@ -26,7 +26,6 @@ data class ExpenseFormUiState(
     val incurredOnMillis: Long = System.currentTimeMillis(),
     val isRecurring: Boolean = false,
     val note: String = "",
-    /** Only populated when adding - which hostel an existing expense belongs to isn't editable. */
     val hostels: List<ExpenseHostelOption> = emptyList(),
     val selectedHostelId: String? = null,
     val saved: Boolean = false,
@@ -34,7 +33,7 @@ data class ExpenseFormUiState(
     val pendingDelete: Boolean = false,
     val deleted: Boolean = false,
 ) {
-    val canSave: Boolean get() = amount.toDoubleOrNull() != null && (isEditing || selectedHostelId != null)
+    val canSave: Boolean get() = amount.toDoubleOrNull() != null && selectedHostelId != null
 }
 
 @HiltViewModel
@@ -52,9 +51,11 @@ class ExpenseFormViewModel @Inject constructor(
     val uiState: StateFlow<ExpenseFormUiState> = _uiState.asStateFlow()
 
     init {
-        val id = expenseId
-        if (id != null) {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            val hostels = hostelRepository.getAll().first()
+            val hostelOptions = hostels.map { hostel -> ExpenseHostelOption(hostel.id, hostel.name) }
+            val id = expenseId
+            if (id != null) {
                 val expense = expenseRepository.getById(id) ?: return@launch
                 existingExpense = expense
                 _uiState.update {
@@ -64,23 +65,20 @@ class ExpenseFormViewModel @Inject constructor(
                         incurredOnMillis = expense.incurredOn,
                         isRecurring = expense.isRecurring,
                         note = expense.note.orEmpty(),
+                        hostels = hostelOptions,
+                        // The expense's own current hostel, not the app's globally selected one -
+                        // editing a Sunrise expense should never default the picker to Moonlight
+                        // just because that's what the warden happens to be viewing elsewhere.
+                        selectedHostelId = expense.hostelId,
                     )
                 }
-            }
-        } else {
-            viewModelScope.launch {
-                val hostels = hostelRepository.getAll().first()
+            } else {
                 // Pre-filled from the currently selected hostel rather than left blank - the
                 // warden almost always wants that one - but shown and changeable, not silently
                 // applied (LODGY-107): a warden who forgets to switch it before logging an
                 // expense for a different property used to get no chance to notice.
                 val defaultId = hostelPreferences.selectedHostelId.first() ?: hostels.firstOrNull()?.id
-                _uiState.update {
-                    it.copy(
-                        hostels = hostels.map { hostel -> ExpenseHostelOption(hostel.id, hostel.name) },
-                        selectedHostelId = defaultId,
-                    )
-                }
+                _uiState.update { it.copy(hostels = hostelOptions, selectedHostelId = defaultId) }
             }
         }
     }
@@ -95,12 +93,12 @@ class ExpenseFormViewModel @Inject constructor(
     fun save() {
         val state = _uiState.value
         val amount = state.amount.toDoubleOrNull() ?: return
+        val hostelId = state.selectedHostelId ?: return
         viewModelScope.launch {
             val existing = existingExpense
             if (existing != null) {
-                expenseRepository.update(existing, state.category, amount, state.isRecurring, state.incurredOnMillis, state.note.ifBlank { null })
+                expenseRepository.update(existing, hostelId, state.category, amount, state.isRecurring, state.incurredOnMillis, state.note.ifBlank { null })
             } else {
-                val hostelId = state.selectedHostelId ?: return@launch
                 expenseRepository.create(hostelId, state.category, amount, state.isRecurring, state.incurredOnMillis, state.note.ifBlank { null })
             }
             _uiState.update { it.copy(saved = true) }

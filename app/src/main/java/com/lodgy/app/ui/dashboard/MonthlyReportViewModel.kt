@@ -101,10 +101,11 @@ class MonthlyReportViewModel @Inject constructor(
         }
     }
 
-    fun selectHostel(id: String) {
+    /** Null means every property - aggregates every figure below across all of them (LODGY-109). */
+    fun selectHostel(id: String?) {
         viewModelScope.launch {
-            val hostel = hostelRepository.getById(id)
-            _uiState.update { it.copy(hasActiveHostel = true, hostelId = id, hostelName = hostel?.name.orEmpty()) }
+            val name = id?.let { hostelRepository.getById(it)?.name.orEmpty() }.orEmpty()
+            _uiState.update { it.copy(hasActiveHostel = true, hostelId = id, hostelName = name) }
             refresh()
         }
     }
@@ -120,21 +121,26 @@ class MonthlyReportViewModel @Inject constructor(
     }
 
     private suspend fun refresh() {
-        val id = _uiState.value.hostelId ?: return
         val state = _uiState.value
+        // A specific hostel's id, or every hostel's id when the warden has picked All (LODGY-109) -
+        // the same scope-list shape DashboardViewModel already uses for its own All/one filter.
+        val scope = state.hostelId?.let { listOf(it) } ?: state.hostels.map { it.id }
+        if (scope.isEmpty()) return
 
-        val bedsInHostel = floorRepository.getByHostelId(id).first()
-            .flatMap { floor -> roomRepository.getByFloorId(floor.id).first() }
-            .flatMap { room -> bedRepository.getByRoomId(room.id).first() }
-        val bedIdsInHostel = bedsInHostel.map { it.id }.toSet()
-        val occupancyPercent = if (bedsInHostel.isEmpty()) {
+        val bedsInScope = scope.flatMap { hostelId ->
+            floorRepository.getByHostelId(hostelId).first()
+                .flatMap { floor -> roomRepository.getByFloorId(floor.id).first() }
+                .flatMap { room -> bedRepository.getByRoomId(room.id).first() }
+        }
+        val bedIdsInScope = bedsInScope.map { it.id }.toSet()
+        val occupancyPercent = if (bedsInScope.isEmpty()) {
             0
         } else {
-            (bedsInHostel.count { it.status == BedStatus.OCCUPIED } * 100) / bedsInHostel.size
+            (bedsInScope.count { it.status == BedStatus.OCCUPIED } * 100) / bedsInScope.size
         }
 
         val agreementIds = tenancyAgreementRepository.getAll()
-            .filter { it.bedId in bedIdsInHostel }
+            .filter { it.bedId in bedIdsInScope }
             .map { it.id }
             .toSet()
 
@@ -168,14 +174,16 @@ class MonthlyReportViewModel @Inject constructor(
                 (due - allPayments.filter { it.invoiceId == invoice.id }.sumOf { it.amount }).coerceAtLeast(0.0)
             }
 
-        val totalExpense = expenseRepository.getByHostelId(id).first()
+        val totalExpense = scope.flatMap { hostelId -> expenseRepository.getByHostelId(hostelId).first() }
             .filter { expense ->
                 val cal = Calendar.getInstance().apply { timeInMillis = expense.incurredOn }
                 (cal.get(Calendar.MONTH) + 1) == state.month && cal.get(Calendar.YEAR) == state.year
             }
             .sumOf { it.amount }
 
-        val reconciled = reconciliationRepository.getForPeriod(id, state.month, state.year) != null
+        // For All, "reconciled" means every property in scope is - a single toggle can't attest
+        // for a scope, so the Screen disables it there and this is read-only context in that case.
+        val reconciled = scope.all { hostelId -> reconciliationRepository.getForPeriod(hostelId, state.month, state.year) != null }
 
         _uiState.update {
             it.copy(

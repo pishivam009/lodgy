@@ -579,6 +579,14 @@ Notes:
   with no extra step. The choice starts from the app's selected-hostel
   preference but does not write back to it - it is local to this screen, like
   the Dashboard and All Rooms hostel filters.
+- **The property chip row includes an All option** (LODGY-109) that aggregates
+  every figure - occupancy, collections, dues, credits, expenses - across
+  every property for the chosen month/year, the same scope-list approach
+  DashboardViewModel already uses for its own All filter. Reconciliation is
+  the one figure that cannot aggregate into a single action: the switch shows
+  whether every property in scope happens to be reconciled, but is disabled
+  under All, since there is no single `ReconciliationMark` a combined scope
+  could write to.
   (LODGY-23, LODGY-45).
 
 ### 4.6 Tenant notes
@@ -620,12 +628,23 @@ Notes:
 - The `isRecurring` flag the warden already sets is what drives the
   recurring-expense notification in 4.10. No pattern inference over past
   entries: the tag is the signal (LODGY-60).
-- **Adding an expense asks which property it's for** (LODGY-107) rather than
-  silently attributing it to whichever hostel is currently selected
-  elsewhere in the app. Shown only when the warden has more than one
-  property, pre-filled with the currently selected one so the common case
-  stays a single tap. Not editable once saved - changing an expense's
-  property after the fact is out of scope here.
+- **Adding or editing an expense asks which property it's for** (LODGY-107,
+  LODGY-109) rather than silently attributing it to whichever hostel is
+  currently selected elsewhere in the app. Shown only when the warden has
+  more than one property. Adding pre-fills from the currently selected
+  hostel; editing pre-fills from the expense's own current hostel, not
+  whichever property the warden happens to be viewing elsewhere - so
+  reopening a Sunrise expense never defaults the picker to Moonlight.
+  Changing the picker while editing actually moves the expense to that
+  property (`ExpenseRepository.update` now takes a `hostelId`).
+- **The Expenses screen defaults to every property, not the selected one**
+  (LODGY-109): a multi-hostel warden's total used to be silently scoped to
+  whichever hostel was globally selected, the same silent-scoping problem
+  LODGY-107 fixed for the expense form and Monthly Report. It now sources
+  from `ExpenseDao.observeAll()` (a new reactive, unscoped query alongside
+  the existing per-hostel one) and gets the same All/one hostel filter chip
+  row Dashboard and All Rooms already use - a single-hostel warden sees no
+  change, since there is nothing to filter.
 
 ### 4.8 Backup & restore (replaces cloud sync for now)
 - **Export**: zips the Room DB file + the photos directory + two of the
@@ -1073,3 +1092,4 @@ changed. The ticket holds the full argument; this is the shape of it.
 | The expense form and the Monthly Report ask which property explicitly, only when there is more than one | Both used to read `hostelPreferences.selectedHostelId` with no field or picker on screen - a warden logging an expense for the wrong property, or reading last month's numbers for the wrong one, had no chance to notice, the same shape of problem LODGY-85 fixed for onboarding | LODGY-107 |
 | The Monthly Report's chosen property is local to that screen, not written back to `hostelPreferences` | Switching hostels to view a different report should not also change which property every other screen opens to next, the same decoupling Dashboard and All Rooms already use for their own hostel filters | LODGY-107 |
 | An invoice's detail screen is a hub that links onward, not a merge of the receipt screen | `AcknowledgementScreen` already renders the full payments/credits breakdown and their delete-correction actions; folding that into a new screen would duplicate tested code and blur a specifically-scoped receipt screen into a general one | LODGY-108 |
+| Reconciliation under the Monthly Report's All filter is read-only, not aggregated into a write | `ReconciliationMark` is keyed to one hostel and period; a combined scope has no single row to write true/false to, so the switch reports whether every property in scope already is, rather than inventing a multi-property attestation the schema does not model | LODGY-109 |

@@ -89,7 +89,7 @@ fun ExpenseFormScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            if (!uiState.isEditing && uiState.hostels.size > 1) {
+            if (uiState.hostels.size > 1) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.expense_field_hostel), style = MaterialTheme.typography.labelLarge)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

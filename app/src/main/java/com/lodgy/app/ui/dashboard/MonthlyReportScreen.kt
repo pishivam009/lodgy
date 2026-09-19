@@ -52,7 +52,8 @@ private fun buildReportCsv(context: Context, uiState: MonthlyReportUiState): Str
     fun amount(value: Double) = String.format(Locale.US, "%.2f", value)
 
     return buildString {
-        append(row(context.getString(R.string.monthly_report_csv_hostel), uiState.hostelName))
+        val hostelLabel = if (uiState.hostelId == null) context.getString(R.string.dashboard_scope_all) else uiState.hostelName
+        append(row(context.getString(R.string.monthly_report_csv_hostel), hostelLabel))
         append(row(context.getString(R.string.manual_invoice_field_month), uiState.month.toString()))
         append(row(context.getString(R.string.manual_invoice_field_year), uiState.year.toString()))
         append(row(context.getString(R.string.monthly_report_expected_income), amount(uiState.expectedIncome)))
@@ -138,6 +139,13 @@ fun MonthlyReportScreen(onBack: () -> Unit, viewModel: MonthlyReportViewModel = 
         Column(modifier = Modifier.padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (uiState.hostels.size > 1) {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item {
+                        FilterChip(
+                            selected = uiState.hostelId == null,
+                            onClick = { viewModel.selectHostel(null) },
+                            label = { Text(stringResource(R.string.dashboard_scope_all)) },
+                        )
+                    }
                     items(uiState.hostels) { hostel ->
                         FilterChip(
                             selected = uiState.hostelId == hostel.id,
@@ -236,7 +244,10 @@ fun MonthlyReportScreen(onBack: () -> Unit, viewModel: MonthlyReportViewModel = 
                     Switch(
                         checked = uiState.reconciled,
                         onCheckedChange = viewModel::onReconciledChange,
-                        enabled = uiState.hasActiveHostel,
+                        // Reconciliation is an attestation against one property's register - All
+                        // shows whether every property happens to be reconciled, but can't itself
+                        // be toggled, since there is no single mark for a whole scope to write.
+                        enabled = uiState.hasActiveHostel && uiState.hostelId != null,
                     )
                 }
             }

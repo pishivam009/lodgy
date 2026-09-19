@@ -1,0 +1,50 @@
+{
+  "id": "LODGY-109",
+  "epic": "Expenses",
+  "title": "Follow-ups on LODGY-107: editable property on edit, an All-properties expense total, and an All filter on the Monthly Report",
+  "description": "Three follow-ups from the user after LODGY-107 shipped the property picker for adding an expense and switching the Monthly Report's property:\n\n1. Editing an existing expense doesn't let the warden change which property it belongs to - only adding a new one does. A wrongly-attributed expense (logged against the wrong property by mistake) had no way to be corrected except delete and re-add.\n2. The main Expenses screen (ExpenseListScreen) is entirely scoped to the app's single globally selected hostel - there is no way to see a total across every property at once, unlike Dashboard and All Rooms which both default to an All-properties view.\n3. The Monthly Report's property picker (LODGY-107) only lists individual hostels - there's no All-properties option, so a warden with more than one property can't see a combined report across all of them.",
+  "acceptanceCriteria": [
+    "Editing an expense shows the same property picker adding one does (hidden for a single-hostel warden), pre-filled with the expense's own current hostel rather than whichever property is globally selected, and saving with a different hostel selected actually moves the expense to it",
+    "The Expenses screen shows a total across every property by default for a multi-hostel warden, with a hostel filter (including an All option) to narrow to one property - mirroring the Dashboard/All Rooms hostel-filter pattern, not scoped to the app's single globally selected hostel",
+    "The Monthly Report's property picker gains an All option that aggregates every figure (collections, dues, occupancy, expenses, recovery %) across every property for the selected month/year",
+    "A single-hostel warden sees no new picker or filter anywhere - all three changes are additive for multi-property wardens only"
+  ],
+  "status": "Delivered",
+  "priority": "Medium",
+  "version": "0.5.0",
+  "assigneeRole": null,
+  "createdAt": "2026-09-19T11:00:00Z",
+  "updatedAt": "2026-09-19T11:50:00Z",
+  "history": [
+    {
+      "timestamp": "2026-09-19T11:00:00Z",
+      "actor": "Product Owner",
+      "action": "created",
+      "note": "Filed directly from the user's three follow-up requests after LODGY-107. Bundled into one ticket since all three are refinements of the same hostel-scoping theme LODGY-107 introduced, not independent features."
+    },
+    {
+      "timestamp": "2026-09-19T11:00:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Todo",
+      "to": "In Progress",
+      "note": "Starting - ExpenseFormViewModel (edit picker, already largely reusing LODGY-107's plumbing), ExpenseListViewModel/Screen (All-properties default + filter), MonthlyReportViewModel/Screen (All option + aggregation, mirroring DashboardViewModel's existing multi-hostel scope pattern)."
+    },
+    {
+      "timestamp": "2026-09-19T11:45:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "In Progress",
+      "to": "Done",
+      "note": "1) ExpenseRepository.update() now takes hostelId; ExpenseFormViewModel fetches the hostel list unconditionally in init, and for editing pre-fills selectedHostelId from the expense's OWN hostel (not the globally selected one) - canSave now requires a hostel selected in both modes. ExpenseFormScreen shows the picker whenever hostels.size > 1, editing included. 2) ExpenseDao/ExpenseRepository gained observeAll() (reactive, across every hostel, alongside the existing one-shot getAll() the notification worker already used). ExpenseListViewModel dropped its HostelPreferences dependency entirely and now defaults filterHostelId to null ('every property'), with a new HostelFilterRow (All + each hostel, shown only when hostels.size > 1) mirroring Dashboard/All Rooms; hasActiveHostel now means 'the warden has any hostel at all', not 'one is selected'. 3) MonthlyReportViewModel.selectHostel(id: String?) - null now means All; refresh() computes a scope list (one id, or every hostel's id) and flatMaps floors/rooms/beds/expenses across it, mirroring DashboardViewModel's own scope pattern. Reconciliation under All is read-only (true only if every property in scope is already reconciled) since there's no single ReconciliationMark row a combined scope could write to - the Switch is disabled in that state. The All chip only appears alongside the existing per-hostel chips (hostels.size > 1); the smart single-hostel default from LODGY-107 is unchanged. docs/DESIGN.md updated (4.4/4.5/4.7 bullets + two decision-log rows). Tests: ExpenseFormViewModelTest gained 'editing an expense can move it to a different property' and an updated preload assertion; ExpenseListViewModelTest rewritten around the new constructor/state shape with a new hostel-filter test; MonthlyReportViewModelTest gained 'selecting All aggregates occupancy, collections and expenses across every property' (two hostels, distinct bed/invoice/expense data, verifies the combined figures). Also fixed ExpenseRepositoryTest for the update() signature change. Full suite: 661 tests, 0 failures, coverage gate met, assembleDebug succeeded. Not re-verified on-device - same PIN-lock input blocker as LODGY-105/107/108."
+    },
+    {
+      "timestamp": "2026-09-19T11:50:00Z",
+      "actor": "Developer",
+      "action": "status_change",
+      "from": "Done",
+      "to": "Delivered",
+      "note": "Built directly at the user's request in a live session, same as LODGY-107/108; marking Delivered on the strength of the acceptance criteria being met in code plus the full test/build gate, flagged honestly as not independently re-tested by a separate persona pass this time."
+    }
+  ]
+}

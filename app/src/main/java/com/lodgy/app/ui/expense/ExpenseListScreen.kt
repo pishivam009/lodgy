@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -73,12 +75,20 @@ fun ExpenseListScreen(
         }
 
         Column(modifier = Modifier.padding(padding)) {
+            if (uiState.hostels.size > 1) {
+                HostelFilterRow(uiState, viewModel::onHostelFilterChange)
+            }
+
             Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Row(
                     modifier = Modifier.padding(14.dp).fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Text(uiState.hostelName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        uiState.filterHostelName ?: stringResource(R.string.dashboard_scope_all),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     Text(stringResource(R.string.currency_amount, uiState.total), style = MaterialTheme.typography.titleMedium)
                 }
             }
@@ -125,6 +135,30 @@ fun ExpenseListScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+/** Only shown when there is more than one property - a single-hostel warden sees no change. */
+@Composable
+private fun HostelFilterRow(uiState: ExpenseListUiState, onSelect: (String?) -> Unit) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        item {
+            FilterChip(
+                selected = uiState.filterHostelId == null,
+                onClick = { onSelect(null) },
+                label = { Text(stringResource(R.string.dashboard_scope_all)) },
+            )
+        }
+        items(uiState.hostels) { hostel ->
+            FilterChip(
+                selected = uiState.filterHostelId == hostel.id,
+                onClick = { onSelect(hostel.id) },
+                label = { Text(hostel.name) },
+            )
         }
     }
 }

@@ -3,11 +3,9 @@ package com.lodgy.app.ui.expense
 import com.lodgy.app.data.entity.Expense
 import com.lodgy.app.data.entity.ExpenseCategory
 import com.lodgy.app.data.entity.Hostel
-import com.lodgy.app.data.prefs.HostelPreferences
 import com.lodgy.app.data.repository.ExpenseRepository
 import com.lodgy.app.data.repository.HostelRepository
 import com.lodgy.app.testutil.MainDispatcherRule
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -22,15 +20,21 @@ class ExpenseListViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val hostelPreferences: HostelPreferences = mockk()
     private val hostelRepository: HostelRepository = mockk()
     private val expenseRepository: ExpenseRepository = mockk()
 
-    private fun viewModel() = ExpenseListViewModel(hostelPreferences, hostelRepository, expenseRepository)
+    private fun hostel(id: String, name: String) =
+        Hostel(id = id, wardenId = "w1", name = name, address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
+
+    private fun expense(id: String, hostelId: String, category: ExpenseCategory, amount: Double, incurredOn: Long = 0L) =
+        Expense(id = id, hostelId = hostelId, category = category, amount = amount, isRecurring = false, incurredOn = incurredOn, note = null, createdAt = 0L, updatedAt = 0L)
+
+    private fun viewModel() = ExpenseListViewModel(hostelRepository, expenseRepository)
 
     @Test
-    fun `no active hostel reports hasActiveHostel false`() {
-        every { hostelPreferences.selectedHostelId } returns flowOf(null)
+    fun `no hostels at all reports hasActiveHostel false`() {
+        every { hostelRepository.getAll() } returns flowOf(emptyList())
+        every { expenseRepository.observeAll() } returns flowOf(emptyList())
 
         val state = viewModel().uiState.value
 
@@ -39,31 +43,51 @@ class ExpenseListViewModelTest {
     }
 
     @Test
-    fun `loads the hostel name and its expenses, exposing their total`() {
-        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
-        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
-        val expenses = listOf(
-            Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WIFI, amount = 500.0, isRecurring = true, incurredOn = 0L, note = null, createdAt = 0L, updatedAt = 0L),
-            Expense(id = "e2", hostelId = "h1", category = ExpenseCategory.WATER, amount = 300.0, isRecurring = false, incurredOn = 0L, note = null, createdAt = 0L, updatedAt = 0L),
+    fun `defaults to every property and totals across all of them`() {
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise"), hostel("h2", "Moonlight")))
+        every { expenseRepository.observeAll() } returns flowOf(
+            listOf(
+                expense("e1", "h1", ExpenseCategory.WIFI, 500.0),
+                expense("e2", "h2", ExpenseCategory.WATER, 300.0),
+            ),
         )
-        every { expenseRepository.getByHostelId("h1") } returns flowOf(expenses)
 
         val state = viewModel().uiState.value
 
         assertTrue(state.hasActiveHostel)
-        assertEquals("Sunrise", state.hostelName)
-        assertEquals("h1", state.hostelId)
+        assertEquals(null, state.filterHostelId)
+        assertEquals(2, state.visibleExpenses.size)
         assertEquals(800.0, state.total, 0.0001)
     }
 
     @Test
-    fun `the category filter narrows the list and the total follows it`() {
-        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
-        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
-        every { expenseRepository.getByHostelId("h1") } returns flowOf(
+    fun `switching the hostel filter narrows the list and the total follows it`() {
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise"), hostel("h2", "Moonlight")))
+        every { expenseRepository.observeAll() } returns flowOf(
             listOf(
-                Expense(id = "e1", hostelId = "h1", category = ExpenseCategory.WIFI, amount = 500.0, isRecurring = true, incurredOn = 0L, note = null, createdAt = 0L, updatedAt = 0L),
-                Expense(id = "e2", hostelId = "h1", category = ExpenseCategory.WATER, amount = 300.0, isRecurring = false, incurredOn = 0L, note = null, createdAt = 0L, updatedAt = 0L),
+                expense("e1", "h1", ExpenseCategory.WIFI, 500.0),
+                expense("e2", "h2", ExpenseCategory.WATER, 300.0),
+            ),
+        )
+
+        val viewModel = viewModel()
+        viewModel.onHostelFilterChange("h1")
+
+        assertEquals(listOf("e1"), viewModel.uiState.value.visibleExpenses.map { it.id })
+        assertEquals(500.0, viewModel.uiState.value.total, 0.0001)
+        assertEquals("Sunrise", viewModel.uiState.value.filterHostelName)
+
+        viewModel.onHostelFilterChange(null)
+        assertEquals(2, viewModel.uiState.value.visibleExpenses.size)
+    }
+
+    @Test
+    fun `the category filter narrows the list and the total follows it`() {
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise")))
+        every { expenseRepository.observeAll() } returns flowOf(
+            listOf(
+                expense("e1", "h1", ExpenseCategory.WIFI, 500.0),
+                expense("e2", "h1", ExpenseCategory.WATER, 300.0),
             ),
         )
 
@@ -81,12 +105,11 @@ class ExpenseListViewModelTest {
 
     @Test
     fun `sorting switches between most recent and largest`() {
-        every { hostelPreferences.selectedHostelId } returns flowOf("h1")
-        coEvery { hostelRepository.getById("h1") } returns Hostel(id = "h1", wardenId = "w1", name = "Sunrise", address = "", contactPhone = "", createdAt = 0L, updatedAt = 0L)
-        every { expenseRepository.getByHostelId("h1") } returns flowOf(
+        every { hostelRepository.getAll() } returns flowOf(listOf(hostel("h1", "Sunrise")))
+        every { expenseRepository.observeAll() } returns flowOf(
             listOf(
-                Expense(id = "old-big", hostelId = "h1", category = ExpenseCategory.WIFI, amount = 900.0, isRecurring = false, incurredOn = 100L, note = null, createdAt = 0L, updatedAt = 0L),
-                Expense(id = "new-small", hostelId = "h1", category = ExpenseCategory.WATER, amount = 100.0, isRecurring = false, incurredOn = 900L, note = null, createdAt = 0L, updatedAt = 0L),
+                expense("old-big", "h1", ExpenseCategory.WIFI, 900.0, incurredOn = 100L),
+                expense("new-small", "h1", ExpenseCategory.WATER, 100.0, incurredOn = 900L),
             ),
         )
 
