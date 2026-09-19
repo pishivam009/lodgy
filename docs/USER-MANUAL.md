@@ -188,6 +188,10 @@ only future ones stop.
   many vacated tenants a filter is hiding); sort by name or by room.
 - Room and bed are shown alongside the name wherever a tenant appears, so you
   never have to remember who is in 104-B.
+- A tenant renting more than one bed — a family, or extra storage — shows up
+  as one row per bed they currently hold, each with its own room number, so
+  searching or sorting by room finds either one instead of only showing you
+  the first.
 - The profile states how long they've been with you — *Living here since
   4 Sep 2026 — 3 months*, or *Lived here from... —* once they've checked out
   — so you have the answer on screen the moment a tenant asks about a rent
@@ -275,18 +279,33 @@ only future ones stop.
   fix it by hand. An invoice can only be deleted once its payments and credits
   are gone, so nothing is ever left dangling. Everything asks before it deletes.
 - The invoice list filters by status and by period, and sorts by due date or
-  amount.
+  amount. Each invoice's due date is shown on its card, in red once it's
+  overdue and unsettled.
+- **Tap an invoice card** to open its detail screen — tenant, room, period,
+  due date, status and the amount figures in one place, with Record Payment,
+  Send Reminder and View Receipt reachable from there too. The buttons
+  already on the card still work directly, exactly as before; the detail
+  screen is an additional way in, not a replacement for them.
 
 ## 5. Expenses
 
 - Log an expense against a hostel: category (wifi, water, electricity, tax,
   maintenance, repair, accommodation, other), amount, date, an optional note,
   and a **recurring monthly** flag.
+- **If you run more than one property**, the form asks which one this expense
+  is for, starting from whichever you last had open but changeable before you
+  save — it no longer just assumes. Editing an expense later shows the same
+  picker and can move it to a different property if you logged it against
+  the wrong one. A single property means no extra step either way.
 - **Accommodation** entries are the ones Lodgy writes for you, if you asked for
   a warden or caretaker room's forgone rent to be recorded (section 3). They
   read *Forgone rent, Room 101 · Bed B* so you can tell them from what you paid
   out of pocket.
 - Filter by category, sort by date or amount.
+- **The total shown is across every property** you run, not just one — with a
+  filter chip row (including **All**) to narrow to a single property if you
+  want just its number. A single-property warden sees no filter, since
+  there's nothing to choose between.
 - Expenses roll into the monthly report's income-versus-expense figure.
 
 ## 6. Seeing where you stand
@@ -302,6 +321,10 @@ only future ones stop.
   match. A small **›** marks the tiles you can tap.
 - **Monthly report** — per hostel, per month: total collected, total dues,
   occupancy, income minus expense, total expenses and credits for the period.
+  - **If you run more than one property**, a chip row lets you switch which
+    one the report describes, or pick **All** to see every figure combined
+    across all of them for that month. Switching here doesn't change which
+    property the rest of the app is showing you - it's just this screen.
   - Occupancy is measured from the beds **as they stand today**, not as they
     stood during a past month. Open a period that has already closed and the
     report says so on the screen, rather than letting the figure read as
@@ -312,7 +335,10 @@ only future ones stop.
     a month is marked, its invoices carry a **Checked against register** tick
     on the Payments tab too, so you can see it while you're working through
     payments instead of only on the report. The mark is per hostel: marking
-    August at one property leaves the other property's August untouched.
+    August at one property leaves the other property's August untouched. Under
+    **All**, this just shows whether every property happens to be checked
+    already - it can't be ticked from there, since there's no single register
+    a combined view could mark.
 
 ## 7. Reminders the app sends you
 
@@ -352,7 +378,10 @@ points you at system settings.
   go and choose one. You can change the folder any time from the same place.
 - **Restore (import).** Pick a backup zip to restore. It **replaces
   everything** currently on the device, warns you clearly first, and restarts
-  the app afterwards. This is the "moved to a new phone" path.
+  the app afterwards. This is the "moved to a new phone" path. Your hostels,
+  tenants and settings all come back - only the PIN doesn't, so you'll set up
+  a new one right after. That's expected, not a sign the restore missed
+  something.
 - **Keeping backups in Google Drive.** You don't need anything special for
   this — Lodgy uses your phone's own file picker, and Google Drive shows up in
   it like any other place. To **save to Drive**: tap **Export**, then in the

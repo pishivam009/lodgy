@@ -88,3 +88,56 @@ within the release rather than deferred.
   somewhere, so a warden can see which are buttons rather than learning it by
   tapping. Raised in UAT: the tile a warden reaches for is the one about money
   owed, and it was the one that did nothing.
+- **LODGY-91 … LODGY-95** — real occupancy history. A new `OccupancyPeriod`
+  record replaces the free-text note a transfer used to write, so a tenant's
+  full stay history (92), a bed or property's occupancy history (93), and a
+  bed's actual empty-since duration shown directly on the vacant sheet (95,
+  not just the gap between two tenants) are all queries, not prose. LODGY-94
+  lets the warden backfill a stay that predates the app, so history is not
+  empty on day one.
+- **LODGY-96, LODGY-97** — 19 screens across the app had no vertical scroll;
+  Save or the last field could be unreachable on a smaller phone. LODGY-96 was
+  the first one found (Agreement Terms), LODGY-97 the audit of every other
+  screen with the same gap.
+- **LODGY-98** — a configurable advance dues reminder (off, or 1/2/3 days
+  before the due date) alongside the existing overdue nudge, so a warden can
+  hear about rent before it is late, not only after.
+- **LODGY-99, LODGY-100** — recovery % (collected against what was expected,
+  net of credits) in the monthly report export and on the Home dashboard,
+  both reading the same `totalCollected + totalDues = expectedIncome`
+  identity rather than two figures that could quietly disagree.
+- **LODGY-101** — a tenant can genuinely hold more than one active tenancy
+  agreement (two beds in different rooms), not just as LODGY-87's
+  same-tenant-different-row workaround. The profile screen and the
+  bed-scoped action screens (checkout, transfer, credits, forgone rent, the
+  manual invoice form) now resolve by bed rather than picking one agreement
+  for the tenant.
+- **LODGY-102** — "Forgot PIN?" was rendered entirely behind the numeric
+  keypad on some screen sizes, with no way to reach it; it now sits in a
+  fixed position above the keypad.
+- **LODGY-103** — backup export was missing the selected hostel, notification
+  settings and theme preference; a restore came back partly reset. All three
+  now travel with the backup. The PIN deliberately still does not, and never
+  auto-syncs the backup folder - both documented, deliberate exclusions.
+- **LODGY-104** — closed Won't Do: the existing hourly vacancy/dues check
+  was already at least as frequent as the requested 3-hour interval, so no
+  change was needed. Kept on the board as a record of that decision.
+- **LODGY-105** — the tenant directory list still collapsed a multi-bed
+  tenant to a single row, the one call site LODGY-101's audit did not name;
+  now one row per active tenancy, same as the profile screen.
+- **LODGY-106** — the Import screen and the post-restore restart dialog now
+  tell the warden upfront that the PIN resets on a restore while everything
+  else comes back, so it does not read as a partial restore.
+- **LODGY-107** — the expense form and the Monthly Report used to read the
+  app's globally selected hostel silently; both now show which property is
+  in play and let a multi-hostel warden change it, with no extra step for a
+  single-hostel warden.
+- **LODGY-108** — invoice cards in the Payments list show their due date
+  (flagged when overdue), and tapping a card opens a new detail screen with
+  the same figures plus Record Payment / Send Reminder / View Receipt as
+  onward actions - a hub, not a duplicate of the existing receipt screen.
+- **LODGY-109** — three follow-ups on LODGY-107: an expense's property is
+  editable, not just set on creation; the Expenses screen defaults to a
+  total across every property instead of the selected one, with a filter to
+  narrow; and the Monthly Report's property picker gained an All option that
+  aggregates every figure across properties.
