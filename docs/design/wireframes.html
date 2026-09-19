@@ -943,7 +943,7 @@
     </div>
   </section>
   <section id="page-rent">
-    <h2><span class="count">5 screens</span>04 Rent &amp; Payments</h2>
+    <h2><span class="count">6 screens</span>04 Rent &amp; Payments</h2>
     <div class="strip">
       <figure class="board">
         <iframe title="Rent1_InvoiceList.dc.html" width="390" height="844" loading="lazy" srcdoc="&lt;!doctype html&gt;
@@ -1244,7 +1244,68 @@
 "></iframe>
         <figcaption><span class="tag">Rent5</span>Checkout</figcaption>
       </figure>
-    </div>
+          <figure class="board">
+        <iframe title="Rent6_InvoiceDetail.dc.html" width="390" height="844" loading="lazy" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+
+&lt;/head&gt;
+&lt;body&gt;
+
+
+  &lt;style&gt;
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .phone { width:390px; height:844px; background:#F4F5F7; display:flex; flex-direction:column; font-family: system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif; color:#1A1D22; overflow:hidden; position:relative; }
+    .appbar { height:56px; min-height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; background:#FFFFFF; border-bottom:1px solid #E3E5E9; }
+    .appbar-title { font-size:17px; font-weight:600; }
+    .icon-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:#4A4F58; flex-shrink:0; }
+    .content { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:14px; }
+    .row { display:flex; align-items:center; gap:10px; }
+    .row.between { justify-content:space-between; }
+    .loc { font-size:13px; font-weight:700; color:#3B6FD6; }
+    .title-lg { font-size:20px; font-weight:700; margin-top:2px; }
+    .chip { border-radius:999px; padding:4px 10px; font-size:11.5px; font-weight:700; }
+    .chip-unpaid { background:#FBE3E0; color:#A32E1F; }
+    .card { background:#fff; border:1px solid #E7E9EC; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+    .kv { display:flex; justify-content:space-between; font-size:14px; }
+    .kv .k { color:#6B7280; }
+    .kv .v { font-weight:600; }
+    .kv .v.due { color:#A32E1F; }
+    .btn { border-radius:10px; height:48px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:15px; font-weight:600; border:1px solid #D8DBE0; background:#fff; color:#4A4F58; }
+    .btn-primary { background:#3B6FD6; color:#fff; border:none; }
+  &lt;/style&gt;
+
+&lt;div class=&quot;phone&quot;&gt;
+  &lt;div class=&quot;appbar&quot;&gt;
+    &lt;div class=&quot;icon-btn&quot;&gt;&lt;svg width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M15 18l-6-6 6-6&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+    &lt;div class=&quot;appbar-title&quot;&gt;Invoice&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;content&quot;&gt;
+    &lt;div class=&quot;row between&quot;&gt;
+      &lt;div&gt;&lt;div class=&quot;loc&quot;&gt;Room 102 &amp;middot; Bed B&lt;/div&gt;&lt;div class=&quot;title-lg&quot;&gt;Suresh&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;chip chip-unpaid&quot;&gt;UNPAID&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;card&quot;&gt;
+      &lt;div class=&quot;kv&quot;&gt;&lt;div class=&quot;k&quot;&gt;Period&lt;/div&gt;&lt;div class=&quot;v&quot;&gt;9/2026&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;kv&quot;&gt;&lt;div class=&quot;k&quot;&gt;Due date&lt;/div&gt;&lt;div class=&quot;v due&quot;&gt;5 Sep 2026&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;kv&quot;&gt;&lt;div class=&quot;k&quot;&gt;Invoice amount&lt;/div&gt;&lt;div class=&quot;v&quot;&gt;&amp;#8377;6,000&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;kv&quot;&gt;&lt;div class=&quot;k&quot;&gt;Total paid&lt;/div&gt;&lt;div class=&quot;v&quot;&gt;&amp;#8377;0&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;kv&quot;&gt;&lt;div class=&quot;k&quot;&gt;Amount due&lt;/div&gt;&lt;div class=&quot;v&quot;&gt;&amp;#8377;6,000&lt;/div&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;btn&quot;&gt;Receipt&lt;/div&gt;
+    &lt;div class=&quot;btn&quot;&gt;Reminder&lt;/div&gt;
+    &lt;div class=&quot;btn btn-primary&quot;&gt;Record Payment&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+        <figcaption><span class="tag">Rent6</span>Invoice Detail (added LODGY-108)</figcaption>
+      </figure>
+</div>
   </section>
   <section id="page-reporting">
     <h2><span class="count">4 screens</span>05 Reporting &amp; Dashboard</h2>
