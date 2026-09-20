@@ -62,7 +62,7 @@
 <header>
   <div class="eyebrow">Lodgy &middot; design</div>
   <h1>Wireframes</h1>
-  <p>Low-fidelity wireframes for every screen in the app, grouped by epic. They were drawn before any UI code was written and are the reference the Compose screens are built against &mdash; read them alongside <code>docs/DESIGN.md</code>.</p>
+  <p>Low-fidelity wireframes for every screen in the app, grouped by epic. They were drawn before any UI code was written and are the reference the Compose screens are built against &mdash; read them alongside <code>docs/DESIGN.md</code>. Six frames were reworked on 20 Sep 2026 to match property-scoping and invoice-detail behaviour added after the initial build (LODGY-105&ndash;110); everything else here still reflects the original pre-build design.</p>
   <p>Each frame is the screen itself, rendered at phone size (390&times;844). Scroll a row sideways to walk through an epic.</p>
 </header>
 <nav>
@@ -668,7 +668,7 @@
   &lt;div class=&quot;search-box&quot;&gt;&lt;svg width=&quot;15&quot; height=&quot;15&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;&gt;&lt;circle cx=&quot;11&quot; cy=&quot;11&quot; r=&quot;6&quot;/&gt;&lt;path d=&quot;M20 20l-4-4&quot;/&gt;&lt;/svg&gt;Search by name or phone&lt;/div&gt;
   &lt;div class=&quot;content&quot;&gt;
     &lt;div class=&quot;list-row&quot;&gt;&lt;div class=&quot;avatar&quot;&gt;RK&lt;/div&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Ravi Kumar&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;Room 101 &amp;middot; Bed A&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;chip chip-active&quot;&gt;ACTIVE&lt;/div&gt;&lt;/div&gt;
-    &lt;div class=&quot;list-row&quot;&gt;&lt;div class=&quot;avatar&quot;&gt;AS&lt;/div&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Amit Singh&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;Room 101 &amp;middot; Bed B&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;chip chip-active&quot;&gt;ACTIVE&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;list-row&quot;&gt;&lt;div class=&quot;avatar&quot;&gt;RK&lt;/div&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Ravi Kumar&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;Room 201 &amp;middot; Bed A &amp;middot; a second bed&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;chip chip-active&quot;&gt;ACTIVE&lt;/div&gt;&lt;/div&gt;
     &lt;div class=&quot;list-row&quot;&gt;&lt;div class=&quot;avatar&quot;&gt;PN&lt;/div&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Priya Nair&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;Room 102 &amp;middot; Bed A&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;chip chip-active&quot;&gt;ACTIVE&lt;/div&gt;&lt;/div&gt;
     &lt;div class=&quot;list-row&quot;&gt;&lt;div class=&quot;avatar&quot;&gt;SD&lt;/div&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Suresh D.&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;Moved out 12 Aug 2026&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;chip chip-vacated&quot;&gt;VACATED&lt;/div&gt;&lt;/div&gt;
   &lt;/div&gt;
@@ -685,7 +685,7 @@
 &lt;/body&gt;
 &lt;/html&gt;
 "></iframe>
-        <figcaption><span class="tag">Onb1</span>Tenant Directory</figcaption>
+        <figcaption><span class="tag">Onb1</span>Tenant Directory &mdash; Ravi Kumar holds two beds, shown as two rows</figcaption>
       </figure>
       <figure class="board">
         <iframe title="Onb2_VacantBedPicker.dc.html" width="390" height="844" loading="lazy" srcdoc="&lt;!doctype html&gt;
@@ -971,6 +971,7 @@
     .grow { flex:1; min-width:0; }
     .title-sm { font-size:15px; font-weight:600; }
     .sub-sm { font-size:12.5px; color:#8B929D; margin-top:2px; }
+    .due-sm { color:#A32E1F; font-weight:700; }
     .amount { font-size:16px; font-weight:700; }
     .chip { border-radius:999px; padding:4px 10px; font-size:11.5px; font-weight:700; }
     .chip-paid { background:#E1F2E7; color:#1F7A45; }
@@ -990,9 +991,9 @@
   &lt;div class=&quot;tabbar&quot;&gt;&lt;div class=&quot;tab active&quot;&gt;All&lt;/div&gt;&lt;div class=&quot;tab&quot;&gt;Unpaid&lt;/div&gt;&lt;div class=&quot;tab&quot;&gt;Partial&lt;/div&gt;&lt;div class=&quot;tab&quot;&gt;Paid&lt;/div&gt;&lt;/div&gt;
   &lt;div class=&quot;content&quot;&gt;
     &lt;div class=&quot;card&quot;&gt;
-      &lt;div class=&quot;row between&quot;&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Ravi Kumar&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;Sep 2026 &amp;middot; due 5 Sep&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;chip chip-unpaid&quot;&gt;UNPAID&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;row between&quot;&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Ravi Kumar&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;Sep 2026&lt;/div&gt;&lt;div class=&quot;sub-sm due-sm&quot;&gt;Due 5 Sep 2026&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;chip chip-unpaid&quot;&gt;UNPAID&lt;/div&gt;&lt;/div&gt;
       &lt;div class=&quot;row between&quot;&gt;&lt;div class=&quot;amount&quot;&gt;&amp;#8377;7,500&lt;/div&gt;
-        &lt;div class=&quot;actions&quot; style=&quot;width:auto;&quot;&gt;&lt;div class=&quot;btn btn-outline sm&quot;&gt;Reminder&lt;/div&gt;&lt;div class=&quot;btn btn-primary sm&quot;&gt;Record&lt;/div&gt;&lt;/div&gt;
+        &lt;div class=&quot;actions&quot; style=&quot;width:auto;&quot;&gt;&lt;div class=&quot;btn btn-outline sm&quot;&gt;Receipt&lt;/div&gt;&lt;div class=&quot;btn btn-outline sm&quot;&gt;Reminder&lt;/div&gt;&lt;div class=&quot;btn btn-primary sm&quot;&gt;Record&lt;/div&gt;&lt;/div&gt;
       &lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;card&quot;&gt;
@@ -1018,7 +1019,7 @@
 &lt;/body&gt;
 &lt;/html&gt;
 "></iframe>
-        <figcaption><span class="tag">Rent1</span>Invoice List</figcaption>
+        <figcaption><span class="tag">Rent1</span>Invoice List &mdash; each card shows its due date and opens Invoice Detail on tap</figcaption>
       </figure>
       <figure class="board">
         <iframe title="Rent2_RecordPayment.dc.html" width="390" height="844" loading="lazy" srcdoc="&lt;!doctype html&gt;
@@ -1449,7 +1450,10 @@
     .appbar { height:56px; min-height:56px; display:flex; align-items:center; gap:12px; padding:0 16px; background:#FFFFFF; border-bottom:1px solid #E3E5E9; }
     .appbar-title { font-size:17px; font-weight:600; flex:1; }
     .icon-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:#4A4F58; flex-shrink:0; }
-    .month-pill { height:32px; padding:0 12px; border-radius:16px; background:#EEF0F3; display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#4A4F58; margin:12px 16px 0; align-self:flex-start; }
+    .month-pill { height:32px; padding:0 12px; border-radius:16px; background:#EEF0F3; display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#4A4F58; margin:10px 16px 0; align-self:flex-start; }
+    .filter-row { display:flex; gap:8px; padding:12px 16px 0; }
+    .filter-chip { height:32px; padding:0 12px; border-radius:16px; border:1px solid #D8DBE0; display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#6B7280; }
+    .filter-chip.on { background:#E4ECFB; border-color:#3B6FD6; color:#3B6FD6; }
     .content { flex:1; overflow-y:auto; padding:12px 16px 16px; display:flex; flex-direction:column; gap:14px; }
     .grid2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
     .stat-card { background:#fff; border:1px solid #E7E9EC; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:4px; }
@@ -1471,7 +1475,8 @@
     &lt;div class=&quot;appbar-title&quot;&gt;Monthly Report&lt;/div&gt;
     &lt;div class=&quot;icon-btn&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.8&quot;&gt;&lt;path d=&quot;M12 4v11&quot;/&gt;&lt;path d=&quot;M7 11l5 5 5-5&quot;/&gt;&lt;path d=&quot;M5 20h14&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
   &lt;/div&gt;
-  &lt;div class=&quot;month-pill&quot;&gt;Sunrise PG &amp;middot; Sep 2026 &lt;svg width=&quot;12&quot; height=&quot;12&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2.4&quot;&gt;&lt;path d=&quot;M6 9l6 6 6-6&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+  &lt;div class=&quot;filter-row&quot;&gt;&lt;div class=&quot;filter-chip on&quot;&gt;All properties&lt;/div&gt;&lt;div class=&quot;filter-chip&quot;&gt;Moonlight PG&lt;/div&gt;&lt;div class=&quot;filter-chip&quot;&gt;Sunrise PG&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;month-pill&quot;&gt;Sep 2026&lt;/div&gt;
   &lt;div class=&quot;content&quot;&gt;
     &lt;div class=&quot;grid2&quot;&gt;
       &lt;div class=&quot;stat-card&quot;&gt;&lt;div class=&quot;stat-value pos&quot;&gt;&amp;#8377;1,98,000&lt;/div&gt;&lt;div class=&quot;stat-label&quot;&gt;Total collected&lt;/div&gt;&lt;/div&gt;
@@ -1489,7 +1494,7 @@
 &lt;/body&gt;
 &lt;/html&gt;
 "></iframe>
-        <figcaption><span class="tag">Rep3</span>Monthly Report</figcaption>
+        <figcaption><span class="tag">Rep3</span>Monthly Report &mdash; switch to one property or combine every one into All</figcaption>
       </figure>
       <figure class="board">
         <iframe title="Rep4_ExportReport.dc.html" width="390" height="844" loading="lazy" srcdoc="&lt;!doctype html&gt;
@@ -1690,6 +1695,9 @@
     .total-bar { margin:12px 16px 0; background:#fff; border:1px solid #E7E9EC; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; }
     .total-k { font-size:12px; color:#8B929D; }
     .total-v { font-size:17px; font-weight:700; color:#C0392B; }
+    .pickrow { display:flex; gap:8px; padding:12px 16px 0; }
+    .pchip { height:32px; padding:0 12px; border-radius:16px; border:1px solid #D8DBE0; display:flex; align-items:center; font-size:12.5px; font-weight:600; color:#6B7280; }
+    .pchip.on { background:#E4ECFB; border-color:#3B6FD6; color:#3B6FD6; }
     .content { flex:1; overflow-y:auto; padding:12px 16px 16px; display:flex; flex-direction:column; gap:0; }
     .exp-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid #EDEFF2; }
     .exp-icon { width:38px; height:38px; border-radius:10px; background:#EEF0F3; color:#6B7280; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -1703,7 +1711,8 @@
 
 &lt;div class=&quot;phone&quot;&gt;
   &lt;div class=&quot;appbar&quot;&gt;&lt;div class=&quot;appbar-title&quot;&gt;Expenses&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;total-bar&quot;&gt;&lt;div&gt;&lt;div class=&quot;total-k&quot;&gt;Sunrise PG &amp;middot; Sep 2026&lt;/div&gt;&lt;div class=&quot;total-v&quot;&gt;&amp;#8377;18,400&lt;/div&gt;&lt;/div&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.8&quot; style=&quot;color:#9AA1AC;&quot;&gt;&lt;path d=&quot;M4 5h16M7 12h10M10 19h4&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+  &lt;div class=&quot;pickrow&quot;&gt;&lt;div class=&quot;pchip on&quot;&gt;All properties&lt;/div&gt;&lt;div class=&quot;pchip&quot;&gt;Moonlight PG&lt;/div&gt;&lt;div class=&quot;pchip&quot;&gt;Sunrise PG&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;total-bar&quot;&gt;&lt;div&gt;&lt;div class=&quot;total-k&quot;&gt;All properties &amp;middot; Sep 2026&lt;/div&gt;&lt;div class=&quot;total-v&quot;&gt;&amp;#8377;24,750&lt;/div&gt;&lt;/div&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.8&quot; style=&quot;color:#9AA1AC;&quot;&gt;&lt;path d=&quot;M4 5h16M7 12h10M10 19h4&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
   &lt;div class=&quot;content&quot;&gt;
     &lt;div class=&quot;exp-row&quot;&gt;&lt;div class=&quot;exp-icon&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.7&quot;&gt;&lt;path d=&quot;M2 8.5a15 15 0 0120 0M5 12a10 10 0 0114 0M8.5 15.5a5 5 0 017 0&quot;/&gt;&lt;circle cx=&quot;12&quot; cy=&quot;19&quot; r=&quot;1&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Wifi bill&lt;span class=&quot;rec-badge&quot;&gt;RECURRING&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;1 Sep 2026&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;amt&quot;&gt;&amp;#8377;1,200&lt;/div&gt;&lt;/div&gt;
     &lt;div class=&quot;exp-row&quot;&gt;&lt;div class=&quot;exp-icon&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.7&quot;&gt;&lt;path d=&quot;M13 2L4 14h6l-1 8 9-12h-6l1-8z&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;&lt;div class=&quot;grow&quot;&gt;&lt;div class=&quot;title-sm&quot;&gt;Electricity&lt;span class=&quot;rec-badge&quot;&gt;RECURRING&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;sub-sm&quot;&gt;2 Sep 2026&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;amt&quot;&gt;&amp;#8377;9,800&lt;/div&gt;&lt;/div&gt;
@@ -1716,7 +1725,7 @@
 &lt;/body&gt;
 &lt;/html&gt;
 "></iframe>
-        <figcaption><span class="tag">Exp1</span>Expense List</figcaption>
+        <figcaption><span class="tag">Exp1</span>Expense List &mdash; defaults to every property, with a filter to narrow to one</figcaption>
       </figure>
       <figure class="board">
         <iframe title="Exp2_AddExpense.dc.html" width="390" height="844" loading="lazy" srcdoc="&lt;!doctype html&gt;
@@ -1757,6 +1766,9 @@
     &lt;div class=&quot;appbar-title&quot;&gt;Add Expense&lt;/div&gt;
   &lt;/div&gt;
   &lt;div class=&quot;content&quot;&gt;
+    &lt;div class=&quot;field&quot;&gt;&lt;div class=&quot;field-label&quot;&gt;Property&lt;/div&gt;
+      &lt;div class=&quot;chiprow&quot;&gt;&lt;div class=&quot;cchip on&quot;&gt;Sunrise PG&lt;/div&gt;&lt;div class=&quot;cchip&quot;&gt;Moonlight PG&lt;/div&gt;&lt;/div&gt;
+    &lt;/div&gt;
     &lt;div class=&quot;field&quot;&gt;&lt;div class=&quot;field-label&quot;&gt;Category&lt;/div&gt;
       &lt;div class=&quot;chiprow&quot;&gt;
         &lt;div class=&quot;cchip on&quot;&gt;Wifi&lt;/div&gt;&lt;div class=&quot;cchip&quot;&gt;Water&lt;/div&gt;&lt;div class=&quot;cchip&quot;&gt;Electricity&lt;/div&gt;&lt;div class=&quot;cchip&quot;&gt;Tax&lt;/div&gt;&lt;div class=&quot;cchip&quot;&gt;Maintenance&lt;/div&gt;&lt;div class=&quot;cchip&quot;&gt;Repair&lt;/div&gt;&lt;div class=&quot;cchip&quot;&gt;Other&lt;/div&gt;
@@ -1775,7 +1787,7 @@
 &lt;/body&gt;
 &lt;/html&gt;
 "></iframe>
-        <figcaption><span class="tag">Exp2</span>Add Expense</figcaption>
+        <figcaption><span class="tag">Exp2</span>Add Expense &mdash; asks which property, shown only when there is more than one</figcaption>
       </figure>
     </div>
   </section>
@@ -1862,6 +1874,7 @@
     .file-name { font-size:13.5px; font-weight:600; }
     .file-sub { font-size:11.5px; color:#8B929D; margin-top:2px; }
     .warn-card { width:100%; background:#FBE3E0; border:1px solid #F3C6C0; border-radius:12px; padding:12px; display:flex; gap:8px; text-align:left; font-size:12.5px; color:#A32E1F; line-height:1.5; }
+    .info-card { width:100%; background:#E4ECFB; border:1px solid #C7D9F7; border-radius:12px; padding:12px; display:flex; gap:8px; text-align:left; font-size:12.5px; color:#2C56AB; line-height:1.5; }
     .footer { padding:16px; width:100%; display:flex; flex-direction:column; gap:10px; }
     .btn { border-radius:10px; height:48px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:15px; font-weight:600; border:none; }
     .btn-primary { background:#3B6FD6; color:#fff; }
@@ -1882,6 +1895,7 @@
       &lt;div&gt;&lt;div class=&quot;file-name&quot;&gt;lodgy-backup-2026-09-01.zip&lt;/div&gt;&lt;div class=&quot;file-sub&quot;&gt;14.1 MB &amp;middot; selected&lt;/div&gt;&lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;warn-card&quot;&gt;&lt;svg width=&quot;16&quot; height=&quot;16&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.8&quot; style=&quot;flex-shrink:0;margin-top:1px;&quot;&gt;&lt;path d=&quot;M12 3l10 18H2z&quot;/&gt;&lt;path d=&quot;M12 10v4M12 17h.01&quot;/&gt;&lt;/svg&gt;This replaces all data currently on this phone with the backup&#x27;s contents. This can&#x27;t be undone.&lt;/div&gt;
+    &lt;div class=&quot;info-card&quot;&gt;Your hostels, tenants and settings all come back &amp;mdash; only the PIN doesn&#x27;t. You&#x27;ll set a new one right after, which is expected.&lt;/div&gt;
   &lt;/div&gt;
   &lt;div class=&quot;footer&quot;&gt;&lt;div class=&quot;btn btn-outline&quot;&gt;Choose a Different File&lt;/div&gt;&lt;div class=&quot;btn btn-primary&quot;&gt;Restore This Backup&lt;/div&gt;&lt;/div&gt;
 &lt;/div&gt;
@@ -1889,7 +1903,7 @@
 &lt;/body&gt;
 &lt;/html&gt;
 "></iframe>
-        <figcaption><span class="tag">Backup2</span>Import</figcaption>
+        <figcaption><span class="tag">Backup2</span>Import &mdash; now says upfront that only the PIN resets</figcaption>
       </figure>
     </div>
   </section>
